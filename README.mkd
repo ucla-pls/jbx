@@ -3,10 +3,38 @@
 JBX is a expression written in [nix](https://nixos.org/nix/) to allow
 you to compile benchmarks and run analysis on them. 
 
-## Tools included
+The goal of this repository is to create single instance of
+a benchmarks, which can be used a fixed point when reasoning about
+dynamic and static analysis. This would hopefully reduce the time needed
+to build new tools.
 
-- 
+Also the JBX should stand as the platform from which it is possible to
+compare results of different analyses, both in terms of accuracy, speed, 
+and memory usage.
 
-## Benchmarks included
+## Usage
 
--
+JBX uses nix to manage and compile benchmarks. To get started one would
+have to download and install nix. According to nix, the easiest way to
+get started with nix is to run, the following:
+
+```bash
+$ curl https://nixos.org/nix/install | sh   
+```
+
+For instructions about how to use nix refer to their homepage
+[https://nixos.org/nix/](https://nixos.org/nix/).
+
+
+## Included 
+
+### Tools
+
+### Benchmarks 
+
+## To Do
+
+- Devise a structure of how to store tools, benchmarks and environment
+  variables.
+
+- Add (Dacabo)[http://www.dacapobench.org/] to the benchmarks. 
