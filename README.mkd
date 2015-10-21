@@ -14,6 +14,7 @@ and memory usage.
 
 ## Usage
 
+### Nix 
 JBX uses nix to manage and compile benchmarks. To get started one would
 have to download and install nix. According to nix, the easiest way to
 get started with nix is to run, the following:
@@ -25,6 +26,22 @@ $ curl https://nixos.org/nix/install | sh
 For instructions about how to use nix refer to their homepage
 [https://nixos.org/nix/](https://nixos.org/nix/).
 
+### Structure
+
+The structure of the benchmarks is build in several categories
+
+`benchmarks`
+: Contains benchmarks that we would like to run code on.
+
+`tools`
+: Contains expressions about how to compile and download the tools used 
+  in the analyses. 
+
+`analyses`
+: Contains all the expressions for running the analyses on benchmarks.
+
+`results`
+: Contains expressions about applying the analyses onto the benchmarks.
 
 ## Included 
 
