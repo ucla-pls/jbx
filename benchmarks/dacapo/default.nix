@@ -20,7 +20,10 @@ in rec {
   avrora = pkgs.callPackage ./avrora { 
     inherit daCapoSrc; 
     jdk = jdk7; 
-    jre = jre7;
+  };
+
+  batik = pkgs.callPackage ./batik {
+    
   };
 
 }

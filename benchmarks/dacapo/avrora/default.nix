@@ -1,5 +1,5 @@
 { stdenv, fetchcvs, daCapoSrc, ant, jdk, cvs}: 
-{
+let 
   # Reference implementation
   build = stdenv.mkDerivation {
     name = "dacapo-avrora";
@@ -19,7 +19,9 @@
       module = "avrora";
       sha256 = "0kki6ab9gibyrfbx3dk0liwdp5dz8pzigwf164jfxhwq3w8smfxn";
     };
-    buildInputs = [ ant jdk];
+    buildInputs = [ ant jdk ];
     builder = ./pure-builder.sh;
   };
-}
+# Only allow acces to the pure build, as the other is broken
+in 
+  pureBuild
