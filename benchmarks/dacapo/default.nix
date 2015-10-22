@@ -22,8 +22,10 @@ in rec {
     jdk = jdk7; 
   };
 
-  batik = pkgs.callPackage ./batik {
-    
-  };
+  batik = pkgs.callPackage ./batik { };
+
+  eclipse = pkgs.callPackage ./eclipse { };
+
+  fop = pkgs.callPackage ./fop {};
 
 }
