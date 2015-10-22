@@ -1,7 +1,6 @@
 source $stdenv/setup
 
-unpackPhase () {
-    echo "hello world"
+preConfigure () {
 }
 
-# genericBuild
+genericBuild
