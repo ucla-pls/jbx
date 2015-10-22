@@ -12,13 +12,14 @@
   # 'avrora', and hash checks it.
   pureBuild = stdenv.mkDerivation {
     name = "avrora";
+    version = "beta-1.7.110";
     src = fetchcvs {
       cvsRoot = ":pserver:anonymous@avrora.cvs.sourceforge.net:/cvsroot/avrora";
       date = "20091224";
       module = "avrora";
       sha256 = "0kki6ab9gibyrfbx3dk0liwdp5dz8pzigwf164jfxhwq3w8smfxn";
     };
-    buildInputs = [ ant jdk ];
+    buildInputs = [ ant jdk];
     builder = ./pure-builder.sh;
   };
 }

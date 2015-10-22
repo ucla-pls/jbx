@@ -1,5 +1,6 @@
 let pkgs = import ./nixpkgs {};
-in {
+in {}: {
+  inherit (pkgs) runCommand jre7;
   benchmarks = import ./benchmarks {
     inherit pkgs;
   };
