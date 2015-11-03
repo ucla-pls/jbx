@@ -1,11 +1,11 @@
-{ stdenv, fetchcvs, daCapoSrc, ant, jdk, cvs}: 
+{ stdenv, fetchcvs, daCapoSrc, ant, jdk7, cvs}: 
 let 
   # Reference implementation
   build = stdenv.mkDerivation {
     name = "dacapo-avrora";
     src = daCapoSrc;
     builder = ./builder.sh;
-    buildInputs = [ ant jdk cvs];
+    buildInputs = [ ant jdk7 cvs];
   };
   # Like the build but without using the daCapoSrc, the pure build is
   # preferable because it is without harness and cache the downloads of
@@ -19,7 +19,7 @@ let
       module = "avrora";
       sha256 = "0kki6ab9gibyrfbx3dk0liwdp5dz8pzigwf164jfxhwq3w8smfxn";
     };
-    buildInputs = [ ant jdk ];
+    buildInputs = [ ant jdk7 ];
     builder = ./pure-builder.sh;
   };
 # Only allow acces to the pure build, as the other is broken

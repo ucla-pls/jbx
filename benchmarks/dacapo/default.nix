@@ -19,12 +19,13 @@ in rec {
 
   avrora = pkgs.callPackage ./avrora { 
     inherit daCapoSrc; 
-    jdk = jdk7; 
   };
 
+  # Warning not equivlient to dacapo, uses newer version.
   batik = pkgs.callPackage ./batik { };
 
-  eclipse = pkgs.callPackage ./eclipse { };
+  # Does not work .. no eclipse found
+  # eclipse = pkgs.callPackage ./eclipse { };
 
   fop = pkgs.callPackage ./fop {};
 
