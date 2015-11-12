@@ -1,7 +1,7 @@
-{ stdenv }:
+{ stdenv, fetchurl }:
 stdenv.mkDerivation {
   name = "logicblox";
-  version = "0";
+  version = "3.10.21";
   src = ./logicblox.tar.gz;
   buildPhase = "";
   installPhase = ''
