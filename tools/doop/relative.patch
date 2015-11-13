@@ -1,10 +1,20 @@
-Only in doop-r160113-bin: .rej
 Common subdirectories: doop-r160113-bin/externals and doop-r160113-bin/externals
+diff -u doop-r160113-bin/jre-link-arguments doop-r160113-bin/jre-link-arguments
+--- doop-r160113-bin/jre-link-arguments	2013-01-15 12:31:49.000000000 -0800
++++ doop-r160113-bin/jre-link-arguments	2015-11-13 11:42:14.000000000 -0800
+@@ -1,6 +1,6 @@
+ #! /bin/bash
+ 
+-rootdir="$(pwd)"
++rootdir="${DOOP_HOME:-$(pwd)}"
+ doop="$rootdir"
+ 
+ source $doop/doop.conf
 Common subdirectories: doop-r160113-bin/lib and doop-r160113-bin/lib
 Common subdirectories: doop-r160113-bin/logic and doop-r160113-bin/logic
 diff -u doop-r160113-bin/run doop-r160113-bin/run
 --- doop-r160113-bin/run	2013-01-15 12:38:09.000000000 -0800
-+++ doop-r160113-bin/run	2015-11-12 19:37:08.000000000 -0800
++++ doop-r160113-bin/run	2015-11-13 11:37:50.000000000 -0800
 @@ -394,7 +394,7 @@
  fi
  
@@ -60,6 +70,15 @@ diff -u doop-r160113-bin/run doop-r160113-bin/run
  
  	# # Skolem Graph Creation
  	# if test $skolemGraph = "true"; then
+@@ -588,7 +588,7 @@
+ 			fi
+ 
+ 			timing java -cp lib/sootclasses-2.3.0.jar:lib/soot-fact-generation.jar Main \
+-			  -main $mainclass $sootFactGenArgs -full $(./jre-link-arguments $classlib) -d tmp/facts $jars $depargs
++			  -main $mainclass $sootFactGenArgs -full $($DOOP_HOME/jre-link-arguments $classlib) -d tmp/facts $jars $depargs
+ 
+ 			mkdir -p $cachefacts
+ 			mv tmp/facts/* $cachefacts
 @@ -600,7 +600,7 @@
  		timing $bloxbatch -db $cachedatabase -create -overwrite -blocks base
  
@@ -125,6 +144,18 @@ diff -u doop-r160113-bin/run doop-r160113-bin/run
  
  		sortPredicate Stats:VarCount
  		sortPredicate Stats:InsensHeapVarCount
+@@ -843,9 +843,9 @@
+ 
+ function show-stats()
+ {
+-	./stats-simple $database
++	$DOOP_HOME/stats-simple $database
+ 	if test "$stats" = "true"; then
+-		./stats $database
++		$DOOP_HOME/stats $database
+ 	fi
+ }
+ 
 @@ -1011,7 +1011,7 @@
  link-result
  show-stats
@@ -136,7 +167,7 @@ diff -u doop-r160113-bin/run doop-r160113-bin/run
  	run-stats
 diff -u doop-r160113-bin/run-bloxunit-testsuites doop-r160113-bin/run-bloxunit-testsuites
 --- doop-r160113-bin/run-bloxunit-testsuites	2013-01-15 12:31:46.000000000 -0800
-+++ doop-r160113-bin/run-bloxunit-testsuites	2015-11-12 19:37:23.000000000 -0800
++++ doop-r160113-bin/run-bloxunit-testsuites	2015-11-13 11:36:12.000000000 -0800
 @@ -16,7 +16,7 @@
  function timing()
  {
@@ -148,7 +179,7 @@ diff -u doop-r160113-bin/run-bloxunit-testsuites doop-r160113-bin/run-bloxunit-t
  function report()
 diff -u doop-r160113-bin/run-testsuites doop-r160113-bin/run-testsuites
 --- doop-r160113-bin/run-testsuites	2013-01-15 12:31:43.000000000 -0800
-+++ doop-r160113-bin/run-testsuites	2015-11-12 19:37:38.000000000 -0800
++++ doop-r160113-bin/run-testsuites	2015-11-13 11:36:12.000000000 -0800
 @@ -14,7 +14,7 @@
  function timing()
  {
@@ -159,4 +190,3 @@ diff -u doop-r160113-bin/run-testsuites doop-r160113-bin/run-testsuites
  
  function report()
 Common subdirectories: doop-r160113-bin/tests and doop-r160113-bin/tests
-Only in doop-r160113-bin: {}

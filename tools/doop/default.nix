@@ -1,4 +1,4 @@
-{stdenv, fetchurl, logicblox, makeWrapper, jre, coreutils, gnused, time}:
+{stdenv, fetchurl, logicblox3, makeWrapper, jre, coreutils, gnused, time}:
 let
 doop160133 = stdenv.mkDerivation {
   name = "doop";
@@ -18,13 +18,10 @@ doop160133 = stdenv.mkDerivation {
       --prefix PATH : ${jre}/bin \
       --prefix PATH : ${coreutils}/bin \
       --prefix PATH : ${gnused}/bin \
-      --set LOGICBLOX_HOME ${logicblox} \
+      --set LOGICBLOX_HOME ${logicblox3} \
       --set DOOP_HOME $out/doop \
       --set LD_LIBRARY_PATH ""
   '';
-  #inherit jre;
-  #inherit logicblox;
-  #inherit gcc;
 };
 doop5459247Beta = stdenv.mkDerivation {
   name = "doop";
@@ -41,14 +38,9 @@ doop5459247Beta = stdenv.mkDerivation {
     makeWrapper $out/doop/run $out/bin/doop \
       --prefix PATH : ${jre}/bin \
       --prefix PATH : ${coreutils}/bin \
-      --set LOGICBLOX_HOME ${logicblox} \
+      --set LOGICBLOX_HOME ${logicblox3} \
       --set DOOP_HOME $out/doop \
       --set LD_LIBRARY_PATH ""
   '';
-  inherit jre;
-  inherit logicblox;
 };
-in doop5459247Beta 
-
-
-
+in doop160133

@@ -1,6 +1,7 @@
 { pkgs }:
 rec { 
   openjdk6 = pkgs.callPackage ./openjdk6 {};
-  logicblox = pkgs.callPackage ./logicblox {};
-  doop = pkgs.callPackage ./doop { inherit logicblox; };
+  inherit (pkgs.callPackage ./logicblox {}) logicblox3 logicblox4;
+  logicblox = logicblox4;
+  doop = pkgs.callPackage ./doop { inherit logicblox3; };
 }

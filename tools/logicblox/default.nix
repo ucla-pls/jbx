@@ -1,23 +1,23 @@
-{ stdenv, fetchurl }:
+{ stdenv }:
 let 
 logicblox3 = stdenv.mkDerivation {
   name = "logicblox";
   version = "3.10.21";
-  src = ./logicblox.tar.gz;
+  src = ./logicblox-3.10.21.tar.gz;
   buildPhase = "";
-  installPhase = ''
+  installPhase = "
     mkdir $out
-    cp -r * $out
-  '';
+    cp -r logicblox/* $out
+  ";
 };
 logicblox4 = stdenv.mkDerivation {
   name = "logicblox";
   version = "4.2.0";
   src = ./logicblox-4.2.0.tar.gz;
   buildPhase = "";
-  installPhase = ''
+  installPhase = " 
     mkdir $out
     cp -r * $out
-  '';
+  ";
 };
-in logicblox4
+in { inherit logicblox4 logicblox3; }
