@@ -1,9 +1,10 @@
+Only in doop-r160113-bin: .rej
 Common subdirectories: doop-r160113-bin/externals and doop-r160113-bin/externals
 Common subdirectories: doop-r160113-bin/lib and doop-r160113-bin/lib
 Common subdirectories: doop-r160113-bin/logic and doop-r160113-bin/logic
 diff -u doop-r160113-bin/run doop-r160113-bin/run
 --- doop-r160113-bin/run	2013-01-15 12:38:09.000000000 -0800
-+++ doop-r160113-bin/run	2015-11-05 14:24:54.000000000 -0800
++++ doop-r160113-bin/run	2015-11-12 19:37:08.000000000 -0800
 @@ -394,7 +394,7 @@
  fi
  
@@ -13,6 +14,33 @@ diff -u doop-r160113-bin/run doop-r160113-bin/run
  	analysis=$1
  else
  	printf "${C_RED}ERROR${C_WHITE}: unsupported analysis \"%s\"${C_RESET}\n" "$1"
+@@ -448,7 +448,7 @@
+ 
+ function preprocess()
+ {
+-	cpp -CC -P $CPPFLAGS $*
++	cpp -CC -P $CPPFLAGS $1 > $2
+ }
+ 
+ function timing()
+@@ -456,7 +456,7 @@
+ 	echo "..."
+ 
+ 	set +e
+-	/usr/bin/time -f "%e" $* > tmp/TIMING 2>&1
++	/usr/bin/env /usr/bin/env time -f "%e" $* > tmp/TIMING 2>&1
+ 	head -n -1 tmp/TIMING | sed -r 's/ERROR([^S])/'"${C_RED}ERROR${C_RESET}"'\1/g;s/code: ([a-zA-Z_]+)/'"${C_WHITE}code: ${C_RED}"'\1'"${C_RESET}"'/g'
+ 	if grep "ERROR" tmp/TIMING > /dev/null 2>&1; then exit; fi
+ 	set -e
+@@ -472,7 +472,7 @@
+ 	printf "${C_YELLOW}MBBENCH logicblox START${C_RESET}\n"
+ 
+ 	set +e
+-	timeout $timeLimit /usr/bin/time -f "%e" $* > tmp/BENCH 2>&1
++	timeout $timeLimit /usr/bin/env /usr/bin/env time -f "%e" $* > tmp/BENCH 2>&1
+ 	head -n -1 tmp/BENCH | sed -r 's/ERROR([^S])/'"${C_RED}ERROR${C_RESET}"'\1/g;s/code: ([a-zA-Z_]+)/'"${C_WHITE}code: ${C_RED}"'\1'"${C_RESET}"'/g'
+ 	if grep "ERROR" tmp/BENCH > /dev/null 2>&1; then exit; fi
+ 	set -e
 @@ -507,12 +507,12 @@
  {
  	mkdir -p tmp
@@ -106,4 +134,29 @@ diff -u doop-r160113-bin/run doop-r160113-bin/run
  	reanalyze
  
  	run-stats
+diff -u doop-r160113-bin/run-bloxunit-testsuites doop-r160113-bin/run-bloxunit-testsuites
+--- doop-r160113-bin/run-bloxunit-testsuites	2013-01-15 12:31:46.000000000 -0800
++++ doop-r160113-bin/run-bloxunit-testsuites	2015-11-12 19:37:23.000000000 -0800
+@@ -16,7 +16,7 @@
+ function timing()
+ {
+   echo -n "... "
+-  /usr/bin/time -f "(elapsed: %es)" $*
++  /usr/bin/env time -f "(elapsed: %es)" $*
+ }
+ 
+ function report()
+diff -u doop-r160113-bin/run-testsuites doop-r160113-bin/run-testsuites
+--- doop-r160113-bin/run-testsuites	2013-01-15 12:31:43.000000000 -0800
++++ doop-r160113-bin/run-testsuites	2015-11-12 19:37:38.000000000 -0800
+@@ -14,7 +14,7 @@
+ function timing()
+ {
+   echo -n "... "
+-  /usr/bin/time -f "(elapsed: %es)" $*
++  /usr/bin/env time -f "(elapsed: %es)" $*
+ }
+ 
+ function report()
 Common subdirectories: doop-r160113-bin/tests and doop-r160113-bin/tests
+Only in doop-r160113-bin: {}
