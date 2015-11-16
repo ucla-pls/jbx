@@ -14,7 +14,11 @@ and memory usage.
 
 ## Usage
 
-Remember to download the nixpkgs. This migth takes some time.
+Remember to download the nixpkgs. This might takes some time.
+
+```bash
+$ git suhmodule init
+```
 
 ### Nix 
 JBX uses nix to manage and compile benchmarks. To get started one would
@@ -22,7 +26,7 @@ have to download and install nix. According to nix, the easiest way to
 get started with nix is to run, the following:
 
 ```bash
-$ curl https://nixos.org/nix/install | sh   
+$ curl https://nixos.org/nix/install | sh
 ```
 
 For instructions about how to use nix refer to their homepage
@@ -33,7 +37,7 @@ For instructions about how to use nix refer to their homepage
 The structure of the benchmarks is build in several categories
 
 `benchmarks/`
-: Contains benchmarks that we would like to run code on.
+: Contains benchmarks that we would like to run code on. 
 
 `tools/`
 : Contains expressions about how to compile and download the tools used 
@@ -49,11 +53,55 @@ The structure of the benchmarks is build in several categories
 
 ### Tools
 
+#### Logicblox
+
+Even though expressions for logicblox is provided, to make them work
+you would have to place the packages in the `tools/logicblox` folder.
+
+To use logicblox3 download `logicblox-3.10.21.tar.gz` and to use
+logicblox4 donwload `logicblox-4.2.0.tar.gz` and add them to the subfolder.
+
 ### Benchmarks 
 
-## To Do
+## Developing
+
+### Benchmarks
+
+Benchmarks are all executable java programs.
+
+Benchmarks MUST be described as a set with the following fields,
+`name` - the name of the benchmark, `build` - a nix expression,
+which produces the jar file in the `$out/share/java/`, `jarfile` - the
+name of jarfile, `mainclass` - the main class, `libs` - libraries
+needed, `runs` - a list of run information.
+
+### Tools
+
+When adding new tools, first check if they exist in the `nixpkgs` and
+before adding them to the project consider adding the tool to the 
+`nixpkgs` repository. This way alot more people will use the tool and
+give feedback. Alternativly addheerd to the standarts of the nixpkgs
+repository, and add the nix expression in it's own subfolder. 
+
+### Analyses
+
+Analyses are the wrappers around the tools to make them callable from
+nix. An analysis takes only one argument and that is the
+benchmark. The analysis SHOULD as such be self contained, and all
+analyses is consideredt deterministic, If the analyses is not, make
+sure to run it enough times, to get a representative result. It is
+allowed to create functions that create analyses, by parsing setup
+arguments.
+
+All analyses MUST NOT have side effect, if so find or run the program
+in a rooted environment.
+
+### To Do
 
 - Devise a structure of how to store tools, benchmarks and environment
   variables.
 
 - Add (Dacabo)[http://www.dacapobench.org/] to the benchmarks. 
+
+- Create a tutorial or toolchain for how to run analyses with
+  sideeffect.

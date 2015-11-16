@@ -23,5 +23,17 @@ let
     builder = ./pure-builder.sh;
   };
 # Only allow acces to the pure build, as the other is broken
-in 
-  pureBuild
+in {
+  name = "Avrora";
+  build = pureBuild;
+  jarfile = "avrora-beta-1.7.110.jar";
+  mainclass = "avrora.Main";
+  runs = [
+  {
+     name = "sdsd";
+     tags = ["large"];
+     args = [];
+     input = file;
+  }
+  ];
+}

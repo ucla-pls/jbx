@@ -1,5 +1,6 @@
 { pkgs } :
-let inherit (pkgs) stdenv unzip jdk7 jre7;
+let
+  inherit (pkgs) stdenv unzip jdk7 jre7;
 in rec {
   daCapoSrc = stdenv.mkDerivation {
     name = "DaCapo";
