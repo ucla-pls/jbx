@@ -29,5 +29,31 @@ in {
   jarfile = "avrora-beta-1.7.110.jar";
   mainclass = "avrora.Main";
   jreversion = "7";
-  runs = [];
+  runs = [
+    # test taken directly from 
+    {
+      name = "small";
+      args = [
+        "-seconds=30"
+	"-platform=mica2"
+	"-simulation=sensor-network"
+	"-nodecount=2,1"
+	"-stagger-start=1000000"
+	"test/tinyos/CntToRfm.elf"
+	"test/tinyos/RfmToLeds.elf"
+      ];
+    }
+    {
+      name = "default";
+      args = [
+        "-seconds=30"
+	"-platform=mica2"
+	"-simulation=sensor-network"
+	"-nodecount=4,2"
+	"-stagger-start=1000000"
+	"test/tinyos/CntToRfm.elf"
+	"test/tinyos/RfmToLeds.elf"  
+      ];
+    }
+  ];
 }
