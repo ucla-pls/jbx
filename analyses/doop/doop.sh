@@ -1,2 +1,2 @@
 
-analysis "doop" $doop/bin/doop $type $build/share/java/$jarfile $mainclass
+analyse "doop" $doop/bin/doop -noColour $mode $build/share/java/$jarfile $mainclass

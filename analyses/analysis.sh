@@ -11,6 +11,8 @@ function analyse {
 		   $@ \
 		   1> "../stdout-$id" \
 		   2> "../stderr-$id" || true
+
+    echo "$@" > "../cmd-$id"
 }
 
 mkdir -p $out/sandbox

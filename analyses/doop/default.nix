@@ -4,17 +4,19 @@ rec {
   # of this.
   base =
     options @ { # options related to the execution
-      type # the name of the analysis, e.g. 'context-insensitive'
+      mode # the name of the analysis, e.g. 'context-insensitive'
     }:
     env: # the environment
     benchmark: # the benchmark
-    mkAnalysis (options // benchmark // {
+    mkAnalysis (options // {
+      inherit (benchmark) build jarfile mainclass;
       env = env;
-      name = "doop-${name}-${benchmark.name}";
+      mode = mode;
+      name = "doop-${mode}-${benchmark.name}";
       analysis = ./doop.sh;
       doop = tools.doop;
     });
 
-  context-insensitive = options: base (options // {type = "context-insensitive";});
+  context-insensitive = options: base (options // {mode = "context-insensitive";});
 }
 

@@ -7,9 +7,9 @@
   };
 
   doop = let
-    analysis = analyses.doop.contex-insensitive {} env;
+    analysis = analyses.doop.context-insensitive {} env;
   in {
-    avrora = analyses benchmarks.dacaop.avrora;
+    avrora = analysis benchmarks.dacapo.avrora;
   };
   
 }
