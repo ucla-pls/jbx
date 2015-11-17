@@ -1,0 +1,8 @@
+# Copy to environment.nix and fix to fit the required specs
+{
+  name = "Sample Computer";
+  processor = "2.9 GHz Intel Core i5";
+  cores = 2;
+  memory = "1867 MHz DDR3";
+  memorysize = 8192;
+}

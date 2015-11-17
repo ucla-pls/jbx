@@ -15,8 +15,8 @@ in {}: rec {
   };
 
   results = import ./results {
-    inherit analyses benchmarks;
+    inherit analyses benchmarks env;
   };
 
-
+  env = import ./environment.nix;
 }  
