@@ -8,8 +8,11 @@ installPhase () {
     mkdir jars;
     bash makejar.bash $version
 
+    
     mkdir -p $out/share/java
     mv jars/* $out/share/java
+
+    cp -r test $out/test
 }
 
 genericBuild

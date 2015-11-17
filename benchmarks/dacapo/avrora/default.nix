@@ -23,8 +23,8 @@ let
     builder = ./pure-builder.sh;
   };
 # Only allow acces to the pure build, as the other is broken
-in {
-  name = "Avrora";
+in rec {
+  name = "avrora";
   build = pureBuild;
   jarfile = "avrora-beta-1.7.110.jar";
   mainclass = "avrora.Main";
@@ -39,8 +39,8 @@ in {
 	"-simulation=sensor-network"
 	"-nodecount=2,1"
 	"-stagger-start=1000000"
-	"test/tinyos/CntToRfm.elf"
-	"test/tinyos/RfmToLeds.elf"
+	"${build}/test/tinyos/CntToRfm.elf"
+	"${build}/test/tinyos/RfmToLeds.elf"
       ];
     }
     {
@@ -51,8 +51,8 @@ in {
 	"-simulation=sensor-network"
 	"-nodecount=4,2"
 	"-stagger-start=1000000"
-	"test/tinyos/CntToRfm.elf"
-	"test/tinyos/RfmToLeds.elf"  
+	"${build}/test/tinyos/CntToRfm.elf"
+	"${build}/test/tinyos/RfmToLeds.elf"  
       ];
     }
   ];
