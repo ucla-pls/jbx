@@ -13,16 +13,18 @@ let
   inherit (builtins) getAttr map;
 in rec {
   # run: is an anlysis which can be specialiced using a set of
-  # inputs. 
+  # inputs. The run also takes an environment variable. 
   run =
-    # The first argument, the inputs to the benchmark
+    # The first argument, the environment in witch its run. 
+    env: # So far there is no requirements to the environment.
+    # The second argument, the inputs to the benchmark
     input @ {
       name ? "" # Name of the input set.
       , stdin ? "" # The stdin sent to the process.
       , args ? [] # A list of arguments. 
       , ... # Maybe more things...
       }:
-    # The second argument, the benchmark.
+    # The third argument, the benchmark.
     benchmark @ {
       name # The name of the benchmark
       , build # The derivation, with the jar file
@@ -34,6 +36,7 @@ in rec {
     stdenv.mkDerivation {
       inherit (pkgs) time;
       inherit (benchmark) build jarfile mainclass;
+      env = (e: with e; "${name}: ${processor} ${memory}") env;
       inputargs = args;
       stdin = stdin;
       jre = getAttr ("jre" + jreversion) pkgs;
@@ -45,17 +48,19 @@ in rec {
   # in the `runs` attribute field. The runAll function therfor only
   # needs the benchmark suite.
   runAll =
+    env: # Passed directly to the run function.
     benchmark @ {
         name
       , inputs # The function only cares about the runs list
       , ...
     }:
     let
-      runs = map (i: run i benchmark) benchmark.inputs;
+      runs = map (i: run env i benchmark) benchmark.inputs;
     in stdenv.mkDerivation {
        inherit runs;
        name = "${benchmark.name}-all";
        builder = ./runall.sh;
     };
-    
+
+   doop =  import ./doop {inherit pkgs tools; };
 }
