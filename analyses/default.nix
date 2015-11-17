@@ -12,6 +12,25 @@ let
   inherit (pkgs.lib.strings) concatStringsSep;
   inherit (builtins) getAttr map;
 in rec {
+
+  # mkAnalysis; creates analyese wich is timed and
+  mkAnalysis =
+    options @ {
+        env  # the environment in wich the analysis is run, this is
+	     # needed for reliable timing results.
+      , name  # The name of the analysis. 
+      , analysis  # The file or string needed to be executed
+      , ... # Other environment variables
+    }:
+    stdenv.mkDerivation (options // {
+      inherit (pkgs) time;
+      env = (e: "${e.name}: " +
+                "${toString e.cores}x ${e.processor}, " +
+		"${toString e.memorysize}mb ${e.memory}"
+            ) env;
+      builder = ./analysis.sh;
+    });
+    
   # run: is an anlysis which can be specialiced using a set of
   # inputs. The run also takes an environment variable. 
   run =
@@ -32,16 +51,14 @@ in rec {
       , mainclass # The main class
       , jreversion # the java version used to compile it.
       , ... # Maybe more things
-    }:
-    stdenv.mkDerivation {
-      inherit (pkgs) time;
+    }: mkAnalysis {
+      name = "${benchmark.name}-${input.name}";
       inherit (benchmark) build jarfile mainclass;
-      env = (e: with e; "${name}: ${processor} ${memory}") env;
+      env = env;
       inputargs = args;
       stdin = stdin;
       jre = getAttr ("jre" + jreversion) pkgs;
-      name = "${benchmark.name}-${input.name}";
-      builder = ./run.sh;
+      analysis = ./run.sh;
     };
 
   # runAll is a little tool that runs all the inputs denoted
