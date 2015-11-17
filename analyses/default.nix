@@ -10,7 +10,7 @@
 let
   inherit (pkgs) stdenv time jre;
   inherit (pkgs.lib.strings) concatStringsSep;
-  inherit (builtins) getAttr;
+  inherit (builtins) getAttr map;
 in rec {
   # run: is an anlysis which can be specialiced using a set of
   # inputs. 
@@ -41,4 +41,21 @@ in rec {
       builder = ./run.sh;
     };
 
+  # runAll is a little tool that runs all the inputs denoted
+  # in the `runs` attribute field. The runAll function therfor only
+  # needs the benchmark suite.
+  runAll =
+    benchmark @ {
+        name
+      , inputs # The function only cares about the runs list
+      , ...
+    }:
+    let
+      runs = map (i: run i benchmark) benchmark.inputs;
+    in stdenv.mkDerivation {
+       inherit runs;
+       name = "${benchmark.name}-all";
+       builder = ./runall.sh;
+    };
+    
 }

@@ -5,7 +5,7 @@ cd $out/sandbox
 
 export CLASSPATH=$build/share/java/$jarfile:$CLASSPATH
 
-$time/bin/time --output ../time \
+$time/bin/time --format "%U,%S,%M" --output ../time \
 	       $jre/bin/java $mainclass $inputargs \
 	       < ${stdin:-/dev/null} \
 	       1> ../stdout 2> ../stderr || true

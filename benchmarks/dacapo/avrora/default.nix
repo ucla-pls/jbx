@@ -29,7 +29,7 @@ in rec {
   jarfile = "avrora-beta-1.7.110.jar";
   mainclass = "avrora.Main";
   jreversion = "7";
-  runs = [
+  inputs = [
     # test taken directly from 
     {
       name = "small";
@@ -53,6 +53,27 @@ in rec {
 	"-stagger-start=1000000"
 	"${build}/test/tinyos/CntToRfm.elf"
 	"${build}/test/tinyos/RfmToLeds.elf"  
+      ];
+    }
+    {
+      name = "large";
+      args = [
+        "-seconds=30"
+	"-platform=mica2"
+	"-simulation=sensor-network"
+	"-nodecount=7,3,7,2"
+	"-stagger-start=1000000"
+	"${build}/test/tinyos/CntToRfm.elf"
+	"${build}/test/tinyos/RfmToLeds.elf"
+	"${build}/test/tinyos/Surge.elf"
+	"${build}/test/tinyos/Blink_mica2.elf"
+	"${build}/test/tinyos/XnpOscopeRF.elf"
+	"${build}/test/tinyos/OscilloscopeRF.elf"
+	"${build}/test/tinyos/HighFrequencySampling.elf"
+	"${build}/test/tinyos/SenseToLeds.elf"
+	"${build}/test/tinyos/XnpRfmToLeds.elf"
+	"${build}/test/tinyos/RadioSenseToLeds_mica2.elf"
+	"${build}/test/tinyos/SecureTOSBase.elf"
       ];
     }
   ];
