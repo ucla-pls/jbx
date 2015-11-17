@@ -31,8 +31,8 @@ cat stderr* > stderr
 
 cat time* | awk '
 BEGIN { FS=","; u = 0; s = 0; m = 0 }
-{u+=$1; s+=$2; if (m < $3) m = $3}
-END {print u, s, m}
+      { u+=$1; s+=$2; if (m < $3) m = $3}
+END   { print u, s, m}
 ' > time 
 
 echo ${env} > env
