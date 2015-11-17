@@ -1,3 +1,5 @@
 result
 test/
 logicblox*.tar.gz
+environment.nix
+\#*

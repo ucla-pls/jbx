@@ -13,7 +13,9 @@ let
   inherit (builtins) getAttr map;
 in rec {
 
-  # mkAnalysis; creates analyese wich is timed and
+  # mkAnalysis; creates analyses which are timed and store all the
+  # information the right places. It also runs the analysis in a
+  # subfolder named sandbox.
   mkAnalysis =
     options @ {
         env  # the environment in wich the analysis is run, this is
@@ -79,5 +81,5 @@ in rec {
        builder = ./runall.sh;
     };
 
-   doop =  import ./doop {inherit pkgs tools; };
+   doop =  import ./doop {inherit pkgs tools mkAnalysis; };
 }
