@@ -1,44 +1,44 @@
-{ pkgs, tools}:
+# analysis:
+# author: Christian Gram Kalhauge
+# description: |
+#  This module contains the analyses, which can be used on
+#  benchmarks. All attributes is either a attribute set of anlyses, a
+#  function that takes a benchmark and returns a derivation (an
+#  analysis), or a function that can be used to create an analysis.
+
+{pkgs, tools}:
 let
-  inherit (pkgs) stdenv time;
+  inherit (pkgs) stdenv time jre;
   inherit (pkgs.lib.strings) concatStringsSep;
+  inherit (builtins) getAttr;
 in rec {
-# Run
-run = {
-  # A descriptive name
-    name ? ""
-  # The command to execute
-  , cmd ? ""
-  # The list of arguments
-  , args ? []
-}: stdenv.mkDerivation {
-   inherit name cmd;
-   cmdargs = args;
-   builder = ./run.sh;
-   inherit time;
-};
-
-java = {
-  # A name
-  name
-  , mainclass
-  , classpath ? []
-  , deps ? []
-  , args ? []
-  , jre ? pkgs.jre7
-}: 
-let
-  classpath_ = concatStringsSep ":" classpath;
-in run {
-  inherit name;
-  cmd = "${jre}/bin/java";
-  args = [ "-cp" classpath_ ] ++ [ mainclass ] ++ args;
-}; 
-
-test = run {
-  name = "SimpleTest";
-  cmd = "echo";
-  args = [ "Hello" "World!" ];
-};
+  # run: is an anlysis which can be specialiced using a set of
+  # inputs. 
+  run =
+    # The first argument, the inputs to the benchmark
+    input @ {
+      name ? "" # Name of the input set.
+      , stdin ? "" # The stdin sent to the process.
+      , args ? [] # A list of arguments. 
+      , ... # Maybe more things...
+      }:
+    # The second argument, the benchmark.
+    benchmark @ {
+      name # The name of the benchmark
+      , build # The derivation, with the jar file
+      , jarfile # The name of the jar file located in ../share/java/
+      , mainclass # The main class
+      , jreversion # the java version used to compile it.
+      , ... # Maybe more things
+    }:
+    stdenv.mkDerivation {
+      inherit (pkgs) time;
+      inherit (benchmark) build jarfile mainclass;
+      inputargs = args;
+      stdin = stdin;
+      jre = getAttr ("jre" + jreversion) pkgs;
+      name = "${benchmark.name}-${input.name}";
+      builder = ./run.sh;
+    };
 
 }

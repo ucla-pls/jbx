@@ -28,12 +28,6 @@ in {
   build = pureBuild;
   jarfile = "avrora-beta-1.7.110.jar";
   mainclass = "avrora.Main";
-  runs = [
-  {
-     name = "sdsd";
-     tags = ["large"];
-     args = [];
-     input = file;
-  }
-  ];
+  jreversion = "7";
+  runs = [];
 }
