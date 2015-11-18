@@ -1,12 +1,14 @@
-{ stdenv, fetchcvs, daCapoSrc, ant, jdk7, cvs}: 
-let 
+pkgs @ { jversion ? "7", stdenv, fetchcvs, ant, cvs, ...}: 
+let
+  jdk = builtins.getAttr "jdk${jversion}" pkgs;
+  jversion_ = jversion;
   # Reference implementation
-  build = stdenv.mkDerivation {
-    name = "dacapo-avrora";
-    src = daCapoSrc;
-    builder = ./builder.sh;
-    buildInputs = [ ant jdk7 cvs];
-  };
+  # build = stdenv.mkDerivation {
+  #   name = "dacapo-avrora";
+  #   src = daCapoSrc;
+  #   builder = ./builder.sh;
+  #   buildInputs = [ ant jdk7 cvs];
+  # };
   # Like the build but without using the daCapoSrc, the pure build is
   # preferable because it is without harness and cache the downloads of
   # 'avrora', and hash checks it.
@@ -19,7 +21,7 @@ let
       module = "avrora";
       sha256 = "0kki6ab9gibyrfbx3dk0liwdp5dz8pzigwf164jfxhwq3w8smfxn";
     };
-    buildInputs = [ ant jdk7 ];
+    buildInputs = [ ant jdk ];
     builder = ./pure-builder.sh;
   };
 # Only allow acces to the pure build, as the other is broken
@@ -28,7 +30,7 @@ in rec {
   build = pureBuild;
   jarfile = "avrora-beta-1.7.110.jar";
   mainclass = "avrora.Main";
-  jreversion = "7";
+  jversion = jversion_;
   inputs = [
     # test taken directly from 
     {

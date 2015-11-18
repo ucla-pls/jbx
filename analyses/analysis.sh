@@ -14,16 +14,13 @@ function analyse {
 
     echo "$@" > "../cmd-$id"
 }
+export -f analyse
 
 mkdir -p $out/sandbox
 
 cd $out/sandbox
 
-if [ -f $analysis ]; then
-    source $analysis
-else # its a string.
-    $(analysis)
-fi
+runHook analysis
 
 cd $out
 

@@ -1,6 +1,6 @@
 { pkgs } :
 let
-  inherit (pkgs) stdenv unzip jdk7 jre7;
+  inherit (pkgs) stdenv unzip;
 in rec {
   daCapoSrc = stdenv.mkDerivation {
     name = "DaCapo";
@@ -18,12 +18,10 @@ in rec {
     dontFixup=true;
   };
 
-  avrora = pkgs.callPackage ./avrora { 
-    inherit daCapoSrc; 
-  };
+  avrora = import ./avrora (pkgs // { jversion = "7"; });
 
   # Warning not equivlient to dacapo, uses newer version.
-  batik = pkgs.callPackage ./batik { };
+  batik = pkgs.callPackage ./batik {};
 
   # Does not work .. no eclipse found
   # eclipse = pkgs.callPackage ./eclipse { };

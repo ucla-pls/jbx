@@ -32,6 +32,20 @@ in rec {
             ) env;
       builder = ./analysis.sh;
     });
+
+  # Compose: Takes a list of analyses, run them and perform post
+  # actions to combine everything
+  compose =
+    analyses:
+    options @ {
+        postProcess ? ""
+      , name
+      , ...
+    }:
+    stdenv.mkDerivation (options // {
+      analyses = analyses;
+      builder = ./compose.sh;
+    });
     
   # run: is an anlysis which can be specialiced using a set of
   # inputs. The run also takes an environment variable. 
@@ -51,15 +65,16 @@ in rec {
       , build # The derivation, with the jar file
       , jarfile # The name of the jar file located in ../share/java/
       , mainclass # The main class
-      , jreversion # the java version used to compile it.
+      , jversion # the java version used to compile it.
       , ... # Maybe more things
-    }: mkAnalysis {
+    }:
+    mkAnalysis {
       name = "${benchmark.name}-${input.name}";
       inherit (benchmark) build jarfile mainclass;
       env = env;
       inputargs = args;
       stdin = stdin;
-      jre = getAttr ("jre" + jreversion) pkgs;
+      jre = getAttr ("jre" + jversion) pkgs;
       analysis = ./run.sh;
     };
 
@@ -74,12 +89,28 @@ in rec {
       , ...
     }:
     let
-      runs = map (i: run env i benchmark) benchmark.inputs;
-    in stdenv.mkDerivation {
-       inherit runs;
+      analyses = map (i: run env i benchmark) benchmark.inputs;
+    in compose analyses {
        name = "${benchmark.name}-all";
-       builder = ./runall.sh;
-    };
+       combine = '' 
+          echo "name,user,kernel,maxm" > time.csv
+          for run in $analyses; do
+	     name=''${run#*"-"}
+	     echo -n "$name,"
+	     cat $run/time
+	  done >> time.csv
+       ''; 
+       };
+   
+   # The batch tool enables you to batch multible benchmarks with one
+   # analysis this is especially usefull for during comparations. This
+   # tool automatically 
+   batch =
+     options:
+     analysis:
+     benchmarks:
+     compose options (map analysis benchmarks);
+
 
    doop =  import ./doop {inherit pkgs tools mkAnalysis; };
 }
