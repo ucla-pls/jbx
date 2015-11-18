@@ -46,6 +46,18 @@ in rec {
       analyses = analyses;
       builder = ./compose.sh;
     });
+
+  # The batch tool enables you to batch multible benchmarks with one
+  # analysis this is especially usefull for during comparations. This
+  # tool automatically 
+  batch =
+    analysis:
+    benchmarks:
+    options:
+    compose (map analysis benchmarks) (
+      { combine = " "} // # Default actions
+      options
+      );
     
   # run: is an anlysis which can be specialiced using a set of
   # inputs. The run also takes an environment variable. 
@@ -102,14 +114,6 @@ in rec {
        ''; 
        };
    
-   # The batch tool enables you to batch multible benchmarks with one
-   # analysis this is especially usefull for during comparations. This
-   # tool automatically 
-   batch =
-     options:
-     analysis:
-     benchmarks:
-     compose options (map analysis benchmarks);
 
 
    doop =  import ./doop {inherit pkgs tools mkAnalysis; };
