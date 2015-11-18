@@ -34,12 +34,17 @@ in rec {
     });
 
   # Compose: Takes a list of analyses, run them and perform post
-  # actions to combine everything
+  # actions to combine everything:
+  # Takes mulitble hooks:
+  #   combine: which is complete control
+  #
+  #   before, foreach, after: before and after is hooked called before
+  #   and after a for loop, where foreach is called foreach iteration
+  #   with the run directory as the `$run` argument.
   compose =
     analyses:
     options @ {
-        postProcess ? ""
-      , name
+        name
       , ...
     }:
     stdenv.mkDerivation (options // {
@@ -52,12 +57,17 @@ in rec {
   # tool automatically 
   batch =
     analysis:
-    benchmarks:
     options:
-    compose (map analysis benchmarks) (
-      { combine = " "} // # Default actions
-      options
-      );
+    benchmarks:
+    rec {
+      all = compose (builtins.attrValues byName) options;
+      byName = builtins.listToAttrs
+        (map (benchmark: {
+	       name = benchmark.name;
+	       value = analysis benchmark;
+	     })
+	     benchmarks);
+      };
     
   # run: is an anlysis which can be specialiced using a set of
   # inputs. The run also takes an environment variable. 
@@ -104,14 +114,15 @@ in rec {
       analyses = map (i: run env i benchmark) benchmark.inputs;
     in compose analyses {
        name = "${benchmark.name}-all";
-       combine = '' 
-          echo "name,user,kernel,maxm" > time.csv
-          for run in $analyses; do
-	     name=''${run#*"-"}
-	     echo -n "$name,"
-	     cat $run/time
-	  done >> time.csv
-       ''; 
+       foreach = ''
+	 name=''${run#*"-"}
+	 cat $run/time | sed "s/^/$name,/" >> time.csv
+	 echo "# START >>> $name" >> stdout
+	 cat $run/stdout >> stdout
+	 echo "# START >>> $name" >> stderr
+	 cat $run/stdout >> stderr
+       '';
+       before = ''echo "name,user,kernel,maxm" > time.csv''; 
        };
    
 

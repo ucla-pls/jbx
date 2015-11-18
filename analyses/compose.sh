@@ -3,4 +3,13 @@ source $stdenv/setup
 mkdir $out
 cd $out
 
-runHook combine
+if [ -z "$combine" ]; then
+    runHook before
+    for run in $analyses; do
+	runHook foreach
+    done
+    runHook after
+else
+    runHook combine
+fi
+
