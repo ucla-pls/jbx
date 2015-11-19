@@ -1,7 +1,7 @@
 source $stdenv/setup
 
 # analyse is a function that logs important information about the
-# execution of an analysis. Should be run on each mayor command in the
+# execution of an analysis. Should be run on each major command in the
 # analysis. The first argument is the identifyier of the command, it
 # is used directly in the filepaths.
 function analyse {
@@ -9,8 +9,8 @@ function analyse {
     shift
     $time/bin/time --format "%U,%S,%M" --output "../time-$id" \
 		   $@ \
-		   1> "../stdout-$id" \
-		   2> "../stderr-$id" || true
+		   1> >($coreutils/bin/tee "../stdout-$id") \
+		   2> >($coreutils/bin/tee "../stderr-$id" >&2) || true
 
     echo "$@" > "../cmd-$id"
 }

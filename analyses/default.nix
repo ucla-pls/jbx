@@ -30,6 +30,7 @@ in rec {
                 "${toString e.cores}x ${e.processor}, " +
 		"${toString e.memorysize}mb ${e.memory}"
             ) env;
+      coreutils = pkgs.coreutils;
       builder = ./analysis.sh;
     });
 
@@ -68,6 +69,10 @@ in rec {
 	     })
 	     benchmarks);
       };
+
+  # jarOf: helper function that finds the absolute path to jar of a
+  # benchmark
+  jarOf = benchmark: "${benchmark.build}/share/java/${benchmark.jarfile}";
     
   # run: is an anlysis which can be specialiced using a set of
   # inputs. The run also takes an environment variable. 
@@ -92,7 +97,8 @@ in rec {
     }:
     mkAnalysis {
       name = "${benchmark.name}-${input.name}";
-      inherit (benchmark) build jarfile mainclass;
+      inherit (benchmark) mainclass;
+      target = jarOf benchmark;
       env = env;
       inputargs = args;
       stdin = stdin;
@@ -120,12 +126,11 @@ in rec {
 	 echo "# START >>> $name" >> stdout
 	 cat $run/stdout >> stdout
 	 echo "# START >>> $name" >> stderr
-	 cat $run/stdout >> stderr
+	 cat $run/stderr >> stderr
        '';
        before = ''echo "name,user,kernel,maxm" > time.csv''; 
        };
    
-
-
    doop =  import ./doop {inherit pkgs tools mkAnalysis; };
+   jchord =  import ./jchord {inherit pkgs tools mkAnalysis jarOf; };
 }
