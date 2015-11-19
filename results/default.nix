@@ -1,18 +1,15 @@
-{ benchmarks, analyses, env}: let
-  working = [
-      benchmarks.dacapo.avrora
-  ];
-in {
+{ benchmarks, analyses, env}:
+{
 
    runAll = analyses.batch (analyses.runAll env) {
       name = "runall-benchmarks";
       before = '' echo "name,user,kernel,maxm" > time.csv '';
       foreach = ''tail -n +2 $run/time.csv >> time.csv''; 
-    } working;
+    } benchmarks.all;
 
   jchord = analyses.batch (analyses.jchord.cipa-0cfa-dlog env) {
     name = "jchord-benchmarks";
-  } working;
+  } benchmarks.all;
 
   doop = let
     analysis = analyses.doop.context-insensitive {} env;

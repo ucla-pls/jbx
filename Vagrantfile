@@ -5,7 +5,7 @@
 Vagrant.configure("2") do |config|
     project = "jbx" 
     # our custom built VM
-    config.vm.box = "chromaticleaves/nixos-14.04-x86_64"
+    config.vm.box = "jimmyyen/nixos-15.09-x86_64"
 
     # creates a uniquely named virtualbox instance using the value of `project`
     config.vm.define project do |v|
