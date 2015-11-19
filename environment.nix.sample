@@ -4,5 +4,6 @@
   processor = "2.9 GHz Intel Core i5";
   cores = 2;
   memory = "1867 MHz DDR3";
+  ppath = "file:///home/user/jbx/proprietray/";
   memorysize = 8192;
 }

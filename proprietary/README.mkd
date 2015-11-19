@@ -1,0 +1,7 @@
+# Proprietary Software
+
+Some of the benchmarks and tools contains some proprietary files.
+The files should be placed in this folder if needed.
+
+Remember to add the absolute path to this folder in your environment
+file.

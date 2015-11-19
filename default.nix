@@ -7,7 +7,7 @@ in {}: rec {
   };
 
   tools = import ./tools {
-    inherit pkgs;
+    inherit pkgs fetchprop;
   };
 
   analyses = import ./analyses {
@@ -19,4 +19,12 @@ in {}: rec {
   };
 
   env = import ./environment.nix;
+
+  # This project contains some proprietary file not 
+  # distributed with this pkg.
+  fetchprop = options: 
+    pkgs.fetchurl (options // {
+      url = env.ppath + options.url;
+    });
+
 }  
