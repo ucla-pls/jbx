@@ -32,6 +32,31 @@ $ curl https://nixos.org/nix/install | sh
 For instructions about how to use nix refer to their homepage
 [https://nixos.org/nix/](https://nixos.org/nix/).
 
+### Vagrant
+
+Alternatively use vagrant. For convinience, if you do not want to install
+nix on your system, or if you are running a mac or a windows computer, a vagrant
+file to create a simple nixos has been provided.
+
+WARNING: The vagrant file is only for development use, as running stuff in
+a vm will impact performance.
+
+First install vagrant ([here](http://www.vagrantup.com/)), then the
+vagrant plugin `vagrant-nixos`.
+```bash
+$ vagrant plugin install vagrant-nixos
+```
+
+Then vagrant up and ssh, which should drop you into a shell in the
+newly installed nixos linux.
+
+```bash
+$ vagrant up
+$ vagrant ssh
+```
+
+The initial setup will take some time.
+
 ### Structure
 
 The structure of the benchmarks is build in several categories

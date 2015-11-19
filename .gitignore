@@ -3,3 +3,4 @@ test/
 logicblox*.tar.gz
 environment.nix
 \#*
+.vagrant
