@@ -15,11 +15,12 @@ rec {
      jre = pkgs.jre7;
      inherit (benchmark) mainclass;
      inherit (tools) logicblox4;
+     inherit (pkgs) python procps;
 
      settings = ''
        chord.main.class=${benchmark.mainclass}
        chord.class.path=${jarOf benchmark}
-       chord.run.analyses=${subanalysis},logicblox-export
+       chord.run.analyses=${subanalysis}
        chord.datalog.engine=logicblox4
        chord.err.file=/dev/stderr
        chord.out.file=/dev/stdout

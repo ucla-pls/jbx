@@ -1,6 +1,6 @@
 let pkgs = import ./nixpkgs {};
 in {}: rec {
-  inherit (pkgs) runCommand jre7;
+  inherit (pkgs) runCommand jre7 python;
 
   benchmarks = import ./benchmarks {
     inherit pkgs;

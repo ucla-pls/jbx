@@ -1,6 +1,7 @@
 result
 test/
-logicblox*.tar.gz
+proprietary/*
 environment.nix
 \#*
 .vagrant
+

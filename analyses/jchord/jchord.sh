@@ -4,14 +4,17 @@ else
     echo "$settings" > chord.properties
 fi
 
-export PATH=$jre/bin:$logicblox4/bin:$PATH
+export LOGICBLOX_HOME=$logicblox4
+export LB_WEBSERVER_HOME=$LOGICBLOX_HOME
 
-# As in the petablox/provision/startlb.sh
-source $logicblox4/etc/profile.d/logicblox.sh
+export PATH=$jre/bin:$logicblox4/bin:$PATH:$python/bin:$procps/bin
+export HOME=`pwd`
 
-cat "$logicblox4/etc/profile.d/logicblox.sh"
-lb-services start
+
+lb services start
 
 analyse "jchord" java -cp $jchord/share/java/chord.jar \
 	-Dchord.work.dir=`pwd` \
 	chord.project.Boot 
+
+lb services stop
