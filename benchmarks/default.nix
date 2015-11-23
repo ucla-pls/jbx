@@ -4,5 +4,6 @@ rec {
 
   all = [
    dacapo.avrora
+   dacapo.batik
   ];
 }

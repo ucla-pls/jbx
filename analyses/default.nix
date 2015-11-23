@@ -102,7 +102,7 @@ in rec {
       env = env;
       inputargs = args;
       stdin = stdin;
-      jre = getAttr ("jre" + jversion) pkgs;
+      jre = getAttr ("jre${jversion}") pkgs;
       analysis = ./run.sh;
     };
 

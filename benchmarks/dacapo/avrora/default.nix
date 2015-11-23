@@ -1,4 +1,5 @@
-pkgs @ { jversion ? "7", stdenv, fetchcvs, ant, cvs, ...}: 
+{ jversion }:
+pkgs @ { stdenv, fetchcvs, ant, cvs, ...}: 
 let
   jdk = builtins.getAttr "jdk${jversion}" pkgs;
   jversion_ = jversion;

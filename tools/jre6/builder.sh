@@ -1,5 +1,6 @@
 source $stdenv/setup
 
+unpack
 set -v 
 mkdir -p $out/bin
 

@@ -6,7 +6,7 @@ rec {
       subanalysis
    }:
    benchmark: 
-   mkAnalysis rec {
+   mkLogicBloxAnalysis rec {
      name = "jchord-${subanalysis}-${benchmark.name}";
      analysis = ./jchord.sh;
      inherit env;
@@ -14,8 +14,6 @@ rec {
      jchord = tools.jchord;
      jre = pkgs.jre7;
      inherit (benchmark) mainclass;
-     inherit (tools) logicblox4;
-     inherit (pkgs) python procps;
 
      settings = ''
        chord.main.class=${benchmark.mainclass}

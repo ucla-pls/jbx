@@ -18,7 +18,7 @@ in rec {
     dontFixup=true;
   };
 
-  avrora = import ./avrora (pkgs // { jversion = "7"; });
+  avrora = import ./avrora { jversion = 7; } pkgs;
 
   # Warning not equivlient to dacapo, uses newer version.
   batik = pkgs.callPackage ./batik {};
