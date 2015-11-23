@@ -18,10 +18,10 @@ in rec {
     dontFixup=true;
   };
 
-  avrora = import ./avrora { jversion = 7; } pkgs;
+  avrora = import ./avrora pkgs;
 
   # Warning not equivlient to dacapo, uses newer version.
-  batik = pkgs.callPackage ./batik {};
+  batik = import ./batik pkgs;
 
   # Does not work .. no eclipse found
   # eclipse = pkgs.callPackage ./eclipse { };

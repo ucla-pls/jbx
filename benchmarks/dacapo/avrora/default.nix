@@ -1,19 +1,11 @@
-{ jversion }:
 pkgs @ { stdenv, fetchcvs, ant, cvs, ...}: 
+jversion:
 let
-  jdk = builtins.getAttr "jdk${jversion}" pkgs;
+  jdk = builtins.getAttr "jdk${toString jversion}" pkgs;
   jversion_ = jversion;
-  # Reference implementation
-  # build = stdenv.mkDerivation {
-  #   name = "dacapo-avrora";
-  #   src = daCapoSrc;
-  #   builder = ./builder.sh;
-  #   buildInputs = [ ant jdk7 cvs];
-  # };
-  # Like the build but without using the daCapoSrc, the pure build is
-  # preferable because it is without harness and cache the downloads of
-  # 'avrora', and hash checks it.
-  pureBuild = stdenv.mkDerivation {
+in rec {
+  name = "avrora_${toString jversion}"; # Remember uniqnes
+  build = stdenv.mkDerivation {
     name = "avrora";
     version = "beta-1.7.110";
     src = fetchcvs {
@@ -22,13 +14,10 @@ let
       module = "avrora";
       sha256 = "0kki6ab9gibyrfbx3dk0liwdp5dz8pzigwf164jfxhwq3w8smfxn";
     };
+    phases = [ "unpackPhase" "buildPhase" "installPhase" ];
     buildInputs = [ ant jdk ];
     builder = ./pure-builder.sh;
   };
-# Only allow acces to the pure build, as the other is broken
-in rec {
-  name = "avrora";
-  build = pureBuild;
   jarfile = "avrora-beta-1.7.110.jar";
   mainclass = "avrora.Main";
   jversion = jversion_;
@@ -37,13 +26,13 @@ in rec {
     {
       name = "small";
       args = [
-        "-seconds=30"
-	"-platform=mica2"
-	"-simulation=sensor-network"
-	"-nodecount=2,1"
-	"-stagger-start=1000000"
-	"${build}/test/tinyos/CntToRfm.elf"
-	"${build}/test/tinyos/RfmToLeds.elf"
+          "-seconds=30"
+          "-platform=mica2"
+          "-simulation=sensor-network"
+          "-nodecount=2,1"
+          "-stagger-start=1000000"
+          "${build}/test/tinyos/CntToRfm.elf"
+          "${build}/test/tinyos/RfmToLeds.elf"
       ];
     }
     {

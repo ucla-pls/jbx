@@ -16,7 +16,8 @@
 , atk
 }:
 stdenv.mkDerivation rec {
-  name = "jdk6";
+  name = "jdk";
+  version = "5u22";
   src = fetchprop {
     url = "jdk-1_5_0_22-linux-amd64.bin";
     md5 = "b62abcaf9ea8617c50fa213bbc88824a";

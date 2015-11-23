@@ -1,6 +1,5 @@
 { benchmarks, analyses, env}:
 {
-
    runAll = analyses.batch (analyses.runAll env) {
       name = "runall-benchmarks";
       before = '' echo "name,user,kernel,maxm" > time.csv '';
