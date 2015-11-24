@@ -8,7 +8,7 @@
 
 {pkgs, tools}:
 let
-  inherit (pkgs) stdenv time jre;
+  inherit (pkgs) stdenv time;
   inherit (pkgs.lib.strings) concatStringsSep;
   inherit (builtins) getAttr map;
 in rec {
@@ -18,7 +18,7 @@ in rec {
   # subfolder named sandbox.
   mkAnalysis =
     options @ {
-        env  # the environment in wich the analysis is run, this is
+        env  # the environment in which the analysis is run, this is
 	     # needed for reliable timing results.
       , name  # The name of the analysis. 
       , analysis  # The file or string needed to be executed
@@ -92,17 +92,18 @@ in rec {
       , build # The derivation, with the jar file
       , jarfile # The name of the jar file located in ../share/java/
       , mainclass # The main class
-      , jversion # the java version used to compile it.
+      , java # the java version used to compile it.
+      , data # evn. some data which we can run stuff on
       , ... # Maybe more things
     }:
     mkAnalysis {
       name = "${benchmark.name}-${input.name}";
-      inherit (benchmark) mainclass;
+      inherit (benchmark) mainclass data;
       target = jarOf benchmark;
       env = env;
       inputargs = args;
       stdin = stdin;
-      jre = getAttr ("jre${jversion}") pkgs;
+      jre = java.jre;
       analysis = ./run.sh;
     };
 

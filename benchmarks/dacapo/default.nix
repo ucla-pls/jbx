@@ -18,14 +18,14 @@ in rec {
     dontFixup=true;
   };
 
-  avrora = import ./avrora pkgs;
+  avrora = pkgs.callBenchmark ./avrora {};
 
   # Warning not equivlient to dacapo, uses newer version.
-  batik = import ./batik pkgs;
+  batik = pkgs.callBenchmark ./batik {};
 
   # Does not work .. no eclipse found
   # eclipse = pkgs.callPackage ./eclipse { };
 
-  fop = pkgs.callPackage ./fop {};
+  # fop = pkgs.callPackage ./fop {};
 
 }

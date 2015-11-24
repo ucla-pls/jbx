@@ -1,3 +1,9 @@
 export CLASSPATH=$target:$CLASSPATH
 
-analyse "run" $jre/bin/java $mainclass $inputargs < ${stdin:-/dev/null}
+args=""
+for i in $inputargs; do
+    arg=`eval "echo $i"`
+    args="$args $arg"
+done
+
+analyse "run" $jre/bin/java $mainclass $args < ${stdin:-/dev/null}
