@@ -19,9 +19,8 @@ in rec {
   };
 
   avrora = pkgs.callBenchmark ./avrora {};
-
-  # Warning not equivlient to dacapo, uses newer version.
-  batik = pkgs.callBenchmark ./batik {};
+  batik = pkgs.callBenchmark ./batik { inherit daCapoSrc; };
+  h2 = pkgs.callBenchmark ./h2 { };
 
   # Does not work .. no eclipse found
   # eclipse = pkgs.callPackage ./eclipse { };

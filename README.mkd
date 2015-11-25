@@ -100,6 +100,13 @@ which produces the jar file in the `$out/share/java/`, `jarfile` - the
 name of jarfile, `mainclass` - the main class, `libs` - libraries
 needed, `runs` - a list of run information.
 
+#### Dacapo
+
+We have tried to keep the version of Dacapo in this repository as
+close to the original as possible, but we have had to make some
+changes, the most prominent is the complete removal of the harness
+form all benchmarks. 
+
 ### Tools
 
 When adding new tools, first check if they exist in the `nixpkgs` and

@@ -94,11 +94,12 @@ in rec {
       , mainclass # The main class
       , java # the java version used to compile it.
       , data # evn. some data which we can run stuff on
+      , libraries
       , ... # Maybe more things
     }:
     mkAnalysis {
       name = "${benchmark.name}-${input.name}";
-      inherit (benchmark) mainclass data;
+      inherit (benchmark) mainclass data libraries build;
       target = jarOf benchmark;
       env = env;
       inputargs = args;

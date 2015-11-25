@@ -18,7 +18,7 @@ in {}: rec {
   inherit tools;
 
   benchmarks = import ./benchmarks {
-    inherit pkgs;
+    inherit pkgs java;
   };
 
   analyses = import ./analyses {
@@ -29,4 +29,7 @@ in {}: rec {
     inherit analyses benchmarks env;
   };
 
+  java = import ./java {
+    inherit pkgs;
+  };
 }  
