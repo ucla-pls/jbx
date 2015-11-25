@@ -7,12 +7,18 @@ source $stdenv/setup
 function analyse {
     id=$1
     shift
-    $time/bin/time --format "%U,%S,%M" --output "../time-$id" \
+    export > "../export-$id"
+    echo "$@" > "../cmd-$id"
+
+    if $time/bin/time --format "%U,%S,%M" --output "../time-$id" \
 		   $@ \
 		   1> >($coreutils/bin/tee "../stdout-$id") \
-		   2> >($coreutils/bin/tee "../stderr-$id" >&2) || true
-
-    echo "$@" > "../cmd-$id"
+           2> >($coreutils/bin/tee "../stderr-$id" >&2)
+    then
+        echo "success" >> "../status-$id"
+    else
+        echo "failed with $?" >> "../status-$id"
+    fi
 }
 export -f analyse
 

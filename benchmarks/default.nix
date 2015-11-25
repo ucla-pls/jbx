@@ -31,14 +31,10 @@ let
         data = if data != null then data else build_; ## if data not set set it 
         libraries = libraries java;
       };
-  pkgs_ = pkgs // { 
-    callBenchmark = path: config: 
-      pkgs.callPackage path (
-        { mkBenchmark = mkBenchmark; } // config
-      );
-    };
+  callBenchmark = path: config: 
+    mkBenchmark (pkgs.callPackage path config);
 in rec {
-  dacapo = import ./dacapo { pkgs = pkgs_; };
+  dacapo = import ./dacapo { inherit pkgs callBenchmark; };
 
   # all = all8 ++ all7 ++ all6 ++ all5;
 
@@ -46,7 +42,7 @@ in rec {
  
   generic = [
     dacapo.avrora 
-    dacapo.batik
+    dacapo.sunflow
   ];
 
   # all8 = map (f: f java8) generic;

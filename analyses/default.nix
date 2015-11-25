@@ -84,6 +84,7 @@ in rec {
       name ? "" # Name of the input set.
       , stdin ? "" # The stdin sent to the process.
       , args ? [] # A list of arguments. 
+      , setup ? "" # A setup hook
       , ... # Maybe more things...
       }:
     # The third argument, the benchmark.
@@ -103,6 +104,7 @@ in rec {
       target = jarOf benchmark;
       env = env;
       inputargs = args;
+      setup = setup;
       stdin = stdin;
       jre = java.jre;
       analysis = ./run.sh;

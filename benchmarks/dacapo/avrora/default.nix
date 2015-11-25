@@ -1,5 +1,5 @@
-{fetchcvs, ant, cvs, mkBenchmark}:
-mkBenchmark {
+{fetchcvs, ant}:
+{
   name = "avrora";
   jarfile = "avrora-beta-1.7.110.jar";
   mainclass = "avrora.Main";

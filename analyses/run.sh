@@ -1,14 +1,15 @@
+source $stdenv/setup
 
 classpath="$target"
 
-for ljar in `find $build/share/java -name *.jar`; do
+for ljar in `find $build/share/java -name '*.jar'`; do
     if [ "$ljar" = "$target" ]; then
         classpath="$classpath:$ljar"
     fi
 done
 
 for l in $libraries; do
-    for ljar in `find $l -name *.jar`; do
+    for ljar in `find $l -name '*.jar'`; do
         classpath="$classpath:$ljar"
     done
 done
@@ -22,5 +23,7 @@ for i in $inputargs; do
 done
 
 echo "$CLASSPATH" >> CLASSPATH
+
+runHook setup
 
 analyse "run" $jre/bin/java $mainclass $args < ${stdin:-/dev/null}
