@@ -24,8 +24,6 @@
       mv resources $out
     '';
   };
-  # data = "${daCapoSrc}/benchmarks/bms/batik/data/batik/";
-  # libraries = java: with java.libs; [ xalan xerces];
   inputs = let 
     setup = ''cp -r $data/resources . '';
     in [
