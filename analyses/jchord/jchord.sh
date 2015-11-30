@@ -1,3 +1,5 @@
+set -v
+
 if [ -f "$settings" ]; then
     cat "$settings" > chord.properties
 else

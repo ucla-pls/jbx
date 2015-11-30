@@ -16,13 +16,15 @@ let
       common-cli = callLib ./common-cli;
       xalan = callLib ./xalan;
       xerces = callLib ./xerces;
+      jaxen = callLib ./jaxen;
     };
     in java;
-
+in rec {
   java5 = mkJava 5;
   java6 = mkJava 6;
   java7 = mkJava 7;
   java8 = mkJava 8;
-in java6
+  all = [ java5 java6 java7 java8 ];
+}
 
 

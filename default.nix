@@ -26,7 +26,8 @@ in {}: rec {
   };
 
   results = import ./results {
-    inherit analyses benchmarks env;
+    inherit analyses benchmarks env java;
+    inherit (pkgs) lib;
   };
 
   java = import ./java {

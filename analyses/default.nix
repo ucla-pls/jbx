@@ -11,8 +11,10 @@ let
   inherit (pkgs) stdenv time;
   inherit (pkgs.lib.strings) concatStringsSep;
   inherit (builtins) getAttr map;
-in rec {
-
+  
+  logicblox = import ./logicblox {inherit mkAnalysis pkgs tools; };
+  inherit (logicblox) mkLogicBloxAnalysis;
+  
   # mkAnalysis; creates analyses which are timed and store all the
   # information the right places. It also runs the analysis in a
   # subfolder named sandbox.
@@ -33,6 +35,8 @@ in rec {
       coreutils = pkgs.coreutils;
       builder = ./analysis.sh;
     });
+
+in rec {
 
   # Compose: Takes a list of analyses, run them and perform post
   # actions to combine everything:
@@ -136,5 +140,5 @@ in rec {
        };
    
    doop =  import ./doop {inherit pkgs tools mkAnalysis; };
-   jchord =  import ./jchord {inherit pkgs tools mkAnalysis jarOf; };
+   jchord =  import ./jchord {inherit pkgs tools mkLogicBloxAnalysis jarOf; };
 }
