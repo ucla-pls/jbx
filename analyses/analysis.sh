@@ -22,6 +22,17 @@ function analyse {
 }
 export -f analyse
 
+# loadClasspath creates CLASSPATH variable from a list of libraries.
+function loadClasspath {
+    for l in $@; do
+        for ljar in `find $l/share/java -name '*.jar'`; do
+            classpath="$classpath${classpath:+':'}$ljar"
+        done
+    done
+    export CLASSPATH="$classpath${classpath:+${CLASSPATH:+':'}}$CLASSPATH"
+}
+export -f loadClasspath
+
 mkdir -p $out/sandbox
 
 cd $out/sandbox

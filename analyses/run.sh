@@ -1,20 +1,6 @@
 source $stdenv/setup
 
-classpath="$target"
-
-for ljar in `find $build/share/java -name '*.jar'`; do
-    if [ "$ljar" = "$target" ]; then
-        classpath="$classpath:$ljar"
-    fi
-done
-
-for l in $libraries; do
-    for ljar in `find $l -name '*.jar'`; do
-        classpath="$classpath:$ljar"
-    done
-done
-
-export CLASSPATH="$classpath:$CLASSPATH"
+loadClasspath $build $libraries
 
 args=""
 for i in $inputargs; do
