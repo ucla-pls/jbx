@@ -9,8 +9,6 @@ let
 in {
   runAll = analyses.batch (analyses.runAll env) {
     name = "runall-benchmarks";
-    before = '' echo "name,user,kernel,maxm" > time.csv '';
-    foreach = ''tail -n +2 $run/time.csv >> time.csv''; 
   } all;
 
   jchord = analyses.batch (analyses.jchord.cipa-0cfa-dlog env) {
