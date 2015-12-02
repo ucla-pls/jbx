@@ -1,7 +1,6 @@
 source $stdenv/setup
 
 function toClasspath {
-    set -v
     local classpath=""
     for l in $@; do
         for ljar in `find $l/share/java -name '*.jar'`; do
