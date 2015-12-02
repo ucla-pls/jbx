@@ -3,6 +3,30 @@
 # contain some libraries which can be used in the contex of the benchmarks.
 { pkgs }:
 let
+  extendsion = {
+    fetchmvn = 
+      options @ {
+        name
+        , version
+        , md5 ? "00000000000000000000000000000000"
+        , group ? name
+        , jar ? "${name}-${version}.jar"
+        , base ? "http://central.maven.org/maven2"
+      }:
+      pkgs.stdenv.mkDerivation {
+        name = name;
+        version = version;
+        src = pkgs.fetchurl {
+          url = "${base}/${group}/${name}/${version}/${jar}";
+          md5 = md5;
+        };
+        phases = [ "installPhase" ];
+        installPhase = ''
+          mkdir -p $out/share/java
+          cp $src $_
+        '';
+      };
+  };
   mkJava = version: let 
     java = {
       id = "J${toString version}";
@@ -11,12 +35,13 @@ let
       jdk = builtins.getAttr "jdk${toString version}" pkgs;
       libs = libs;
     };
-    callLib = path: pkgs.callPackage path {} java;
+    callLib = path: pkgs.lib.callPackageWith (pkgs // extendsion) path {} java;
     libs = {
       common-cli = callLib ./common-cli;
       xalan = callLib ./xalan;
       xerces = callLib ./xerces;
       jaxen = callLib ./jaxen;
+      ant = callLib ./ant;
     };
     in java;
 in rec {

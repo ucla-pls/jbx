@@ -39,6 +39,6 @@ in {
   all = [
     dacapo.avrora 
     dacapo.sunflow
-    # dacapo.pmd
+    dacapo.pmd
   ];
 }
