@@ -1,12 +1,20 @@
 source $stdenv/setup
 
-# loadClasspath creates CLASSPATH variable from a list of libraries.
-function loadClasspath {
+function toClasspath {
+    set -v
+    local classpath=""
     for l in $@; do
         for ljar in `find $l/share/java -name '*.jar'`; do
             classpath="$classpath${classpath:+:}$ljar"
         done
     done
+    echo "$classpath"
+}
+export -f toClasspath
+
+# loadClasspath creates CLASSPATH variable from a list of libraries.
+function loadClasspath {
+    local classpath=`toClasspath $@`
     export CLASSPATH="$classpath${classpath:+${CLASSPATH:+:}}$CLASSPATH"
 }
 export -f loadClasspath

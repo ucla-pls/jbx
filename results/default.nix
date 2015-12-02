@@ -15,6 +15,10 @@ in {
     name = "jchord-benchmarks";
   } (map (f: f java.java7) benchmarks.all);
 
+  datarace = analyses.batch (analyses.jchord.deadlock env) {
+    name = "datarace-benchmarks"; 
+  } (map (f: f java.java7) benchmarks.all);
+
   doop = let
     analysis = analyses.doop.context-insensitive {} env;
   in {

@@ -13,17 +13,15 @@ rec {
 
       jchord = tools.jchord;
       jre = benchmark.java.jre;
-      inherit (benchmark) mainclass;
+      inherit (benchmark) mainclass build libraries;
 
-      settings = ''
-        chord.main.class=${benchmark.mainclass}
-        chord.class.path=${jarOf benchmark}
+      settings = ''chord.main.class=${benchmark.mainclass}
         chord.run.analyses=${subanalysis}
         chord.datalog.engine=logicblox4
         chord.err.file=/dev/stderr
-        chord.out.file=/dev/stdout
-        '';
+        chord.out.file=/dev/stdout'';
     };
 
   cipa-0cfa-dlog = env: base env { subanalysis = "cipa-0cfa-dlog"; };
+  deadlock = env: base env { subanalysis = "deadlock-java"; };
 }

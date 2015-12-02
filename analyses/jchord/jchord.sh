@@ -1,12 +1,13 @@
-set -v
-
 if [ -f "$settings" ]; then
     cat "$settings" > chord.properties
 else
     echo "$settings" > chord.properties
 fi
+path=`toClasspath $build $libraries`
+echo "chord.class.path=$path" >> chord.properties
 export PATH=$jre/bin:$PATH
 
-analyse "jchord" java -cp $jchord/share/java/chord.jar \
-	-Dchord.work.dir=`pwd` \
-	chord.project.Boot 
+loadClasspath $jchord 
+
+analyse "jchord" java -Dchord.work.dir=`pwd` \
+    chord.project.Boot 
