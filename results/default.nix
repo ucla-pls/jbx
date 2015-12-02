@@ -15,7 +15,7 @@ in {
     name = "jchord-benchmarks";
   } (map (f: f java.java7) benchmarks.all);
 
-  datarace = analyses.batch (analyses.jchord.deadlock env) {
+  deadlock = analyses.batch (analyses.jchord.deadlock env) {
     name = "datarace-benchmarks"; 
   } (map (f: f java.java7) benchmarks.all);
 
