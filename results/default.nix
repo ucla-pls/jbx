@@ -11,19 +11,21 @@ in {
     name = "runall-benchmarks";
   } all;
 
-  jchord = analyses.batch (analyses.jchord.cipa-0cfa-dlog env) {
+  controlflow = analyses.batch (analyses.jchord.cipa-0cfa-dlog env) {
     name = "jchord-benchmarks";
   } (map (f: f java.java7) benchmarks.all);
 
   deadlock = analyses.batch (analyses.jchord.deadlock env) {
     name = "datarace-benchmarks"; 
   } (map (f: f java.java7) benchmarks.all);
+  
+  deadlockSm = analyses.batch (analyses.jchord.deadlock env) {
+    name = "datarace-benchmarks"; 
+  } (map (f: f java.java7) benchmarks.small);
 
-  doop = let
-    analysis = analyses.doop.context-insensitive {} env;
-  in {
-    avrora = analysis benchmarks.dacapo.avrora;
-  };
+  deadlockDlogSm = analyses.batch (analyses.jchord.deadlock-dlog env) {
+    name = "datarace-benchmarks"; 
+  } (map (f: f java.java7) benchmarks.small);
 
 }
 

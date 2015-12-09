@@ -1,4 +1,4 @@
-{ pkgs, tools, mkLogicBloxAnalysis, jarOf}:
+{ pkgs, tools, mkLogicBloxAnalysis, mkAnalysis, jarOf}:
 rec { 
   base =
     env:
@@ -29,9 +29,9 @@ chord.out.file=/dev/stdout
     if datalog then 
       mkLogicBloxAnalysis options
     else
-      mkAnalysis options
-
+      mkAnalysis options;
 
   cipa-0cfa-dlog = env: base env { subanalysis = "cipa-0cfa-dlog"; };
-  deadlock = env: base env { subanalysis = "deadlock-java"; };
+  deadlock-dlog = env: base env { subanalysis = "deadlock-java"; };
+  deadlock = env: base env { datalog = false; subanalysis = "deadlock-java"; };
 }

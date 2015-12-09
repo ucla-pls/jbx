@@ -3,7 +3,7 @@ stdenv.mkDerivation {
   name = "jchord";
   version = "2.1.ec123fc";
   src = fetchgit {
-    url = "https://kalhauge@bitbucket.org/pag-lab/jchord.git";
+    url = "https://bitbucket.org/pag-lab/jchord.git";
     branchName = "master";
     rev = "ec123fc7b19e5dbb66cfce6495edad8a7a251459";
     md5 = "aeda5feaa679648fe9af86086f19bf33";

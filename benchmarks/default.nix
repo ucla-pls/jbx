@@ -20,9 +20,9 @@ let
     java: # Given a version of java
       assert filter java.version;
       let 
-        build_ = pkgs.stdenv.mkDerivation (build java // { 
+        build_ = pkgs.stdenv.mkDerivation ({ 
           name = name; 
-        });
+        } // build java);
       in meta // {
         name = name + java.id;
         build = build_;
@@ -35,10 +35,16 @@ let
   callBenchmark = path: config: 
     mkBenchmark (pkgs.callPackage path config);
   dacapo = import ./dacapo { inherit pkgs callBenchmark; };
+  baseline = pkgs.callPackage ./baseline { inherit mkBenchmark; };
+  independent = import ./dacapo { inherit pkgs callBenchmark; };
 in {
   all = [
     dacapo.avrora 
     dacapo.sunflow
     dacapo.pmd
+    baseline.transfer
+  ];
+  small = [
+    baseline.transfer
   ];
 }

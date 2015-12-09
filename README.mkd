@@ -14,12 +14,6 @@ and memory usage.
 
 ## Usage
 
-Remember to download the nixpkgs. This might takes some time.
-
-```bash
-$ git suhmodule init
-```
-
 ### Nix 
 JBX uses nix to manage and compile benchmarks. To get started one would
 have to download and install nix. According to nix, the easiest way to
@@ -62,29 +56,134 @@ The initial setup will take some time.
 The structure of the benchmarks is build in several categories
 
 `benchmarks/`
-: Contains benchmarks that we would like to run code on. 
+:   Contains benchmarks that we would like to run code on. 
 
 `tools/`
-: Contains expressions about how to compile and download the tools used 
-  in the analyses. 
+:   Contains expressions about how to compile and download the tools used 
+    in the analyses. 
 
 `analyses/`
-: Contains all the expressions for running the analyses on benchmarks.
+:   Contains all the expressions for running the analyses on benchmarks.
 
 `results/`
-: Contains expressions about applying the analyses onto the benchmarks.
+:   Contains expressions about applying the analyses onto the benchmarks.
+
+`proprietary/`
+:   Does not contain anything but if proprietary tools is used, add the
+    tars here.
+
+    -   logicblox:
+        To use logicblox3 download `logicblox-3.10.21.tar.gz` and to use
+        logicblox4 download `logicblox-4.2.0.tar.gz` and add them to the
+        `proprietary/` folder.
+
+    -   java: Java 7 and 8 is provided by nixpkg, but to make java 6 and
+        java 5 work you have to download `jdk-1_5_0_22-linux-amd64.bin`
+        and `jdk-6u45-linux-x64.bin` from oracles homepage and place
+        them in the `proprietary/` folder.
+
+### Getting started
+
+To use JBX, first clone this repository recursively and checkout a new
+branch corresponding to your project.
+
+    git clone --recursive https://bitbucket.org/ucla-pls/jbx.git
+    cd jbx
+    git checkout -b yourProject
+
+NOTE: Downloading the dependencies is very important, so if you did not
+use the `--recursive` argument please run:
+
+    git submodules init
+
+Then create a new folder in the results folder corresponding to the name
+of your project. Say you have a deadlock analysis, place it in
+`results/yourProject` and create a `default.nix` in that folder
+which describes which analyses to run on which data, and eventually also
+some processing like graphical representations of the data. 
+
+    mkdir -p results/yourProject/
+    echo "{ analyses, benchmarks, results}: {}" > $_/default.nix
+
+To figure out how to write these expressions, look through other
+projects, or consult the [nix manual](https://nixos.org/nixpkgs/manual/).
+
+Lastly you want to add the expression to the rest of the project. 
+
+    yourProject = callResult ./yourProject {}
+
+You can then get the results of your project by running the command:
+
+    nix-build -A result.yourProject
+
+And the result of running all the analyses and performing all of your
+graphics will now be returned to you in a `result/` folder. 
+
+### Going further -- Contributing
+
+It is often not the case the analyses or benchmarks are already there to
+get the results that you need.
+
+#### Adding Analyses
+
+Analyses is nix functions that given a benchmark will produce a result.
+
+#### Adding Tools
+
+When adding new tools, first check if they exist in the `nixpkgs` and
+before adding them to the project consider adding the tool to the 
+`nixpkgs` repository. This way a lot more people will use the tool and
+give feedback. Alternatively adhered to the standards of the nixpkgs
+repository, and add the nix expression in it's own subfolder. 
+
+#### Adding Benchmarks
+
+If a certain benchmark please feel free to add it to the `benchmark/`
+expression. Benchmarks is ordered after origin, ei. DaCapo benchmarks is
+under `dacapo/`. If your benchmark is not associated with any benchmark
+suite, add it to `independent/` expression. Because we are supporting
+multiple versions of java, we must also use java as a clear dependency
+when compiling our benchmarks. 
+
+A benchmark is jar file (placed relatively in `$out/share/java/`), which
+can be executed given a main class and a set of inputs. To create a
+benchmark you should call `mkBenchmark` with a minimum of:
+
+-   `name`: a project wide unique identifier.
+-   `jarfile`: the name of the running jar file.
+-   `mainclass`: the main class that execute the program.
+-   `build`: which is build source code using a version of java a java library
+    see [#libraries]
+
+Optionally you can add:
+
+-   `inputs`: a list of inputs, the inputs is defined using 
+    -  `name`: the name of the execution
+    -  `setup`: some setup phase before execution. In this phase 
+        is the `$data` and `$build` variables available.
+    -  `args`: a list of arguments. Which can also use the `$data` variable.
+    -  `stdin`: a file containing the stdin of the function. 
+-   `data`: optional other package which points some data. If not set 
+    will this variable point to `$build`.
+-   `filter`: a function that given a Java version 5 through 8, will
+    indicate whether the benchmark run on that version.
+-   `tags`: a list of tags which will be used to organise the benchmarks
+    on call.
+
+Any additional arguments is parsed on to eventual analyses. 
+
+Good examples of working benchmarks would be `dacapo.avrora` or
+`dacapo.sunflow`, which uses the `callBenchmark` shorthand which is
+defined in `benchmarks`. Also `baseline` contains minimal code and
+examples. 
+
+##### Libraries 
+
+#### Comparisons
 
 ## Included 
 
 ### Tools
-
-#### Logicblox
-
-Even though expressions for logicblox is provided, to make them work
-you would have to place the packages in the `tools/logicblox` folder.
-
-To use logicblox3 download `logicblox-3.10.21.tar.gz` and to use
-logicblox4 donwload `logicblox-4.2.0.tar.gz` and add them to the subfolder.
 
 ### Benchmarks 
 
@@ -105,22 +204,14 @@ needed, `runs` - a list of run information.
 We have tried to keep the version of Dacapo in this repository as
 close to the original as possible, but we have had to make some
 changes, the most prominent is the complete removal of the harness
-form all benchmarks. 
-
-### Tools
-
-When adding new tools, first check if they exist in the `nixpkgs` and
-before adding them to the project consider adding the tool to the 
-`nixpkgs` repository. This way alot more people will use the tool and
-give feedback. Alternativly addheerd to the standarts of the nixpkgs
-repository, and add the nix expression in it's own subfolder. 
+from all benchmarks. 
 
 ### Analyses
 
 Analyses are the wrappers around the tools to make them callable from
 nix. An analysis takes only one argument and that is the
 benchmark. The analysis SHOULD as such be self contained, and all
-analyses is consideredt deterministic, If the analyses is not, make
+analyses is considered deterministic, If the analyses is not, make
 sure to run it enough times, to get a representative result. It is
 allowed to create functions that create analyses, by parsing setup
 arguments.
@@ -130,10 +221,7 @@ in a rooted environment.
 
 ### To Do
 
-- Devise a structure of how to store tools, benchmarks and environment
-  variables.
+- Add [Dacabo](http://www.dacapobench.org/) to the benchmarks. 
 
-- Add (Dacabo)[http://www.dacapobench.org/] to the benchmarks. 
-
-- Create a tutorial or toolchain for how to run analyses with
-  sideeffect.
+- Create a tutorial or tool chain for how to run analyses with
+  side effect.

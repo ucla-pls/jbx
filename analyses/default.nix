@@ -80,5 +80,5 @@ in rec {
     
   inherit (import ./run {inherit mkAnalysis compose;}) run runAll composeRun;
   doop =  import ./doop {inherit pkgs tools mkAnalysis; };
-  jchord =  import ./jchord {inherit pkgs tools mkLogicBloxAnalysis jarOf; };
+  jchord =  import ./jchord {inherit pkgs tools mkLogicBloxAnalysis jarOf mkAnalysis; };
 }
