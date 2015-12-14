@@ -131,7 +131,7 @@ get the results that you need.
 #### Adding Analyses
 
 Analyses is nix functions that given a benchmark will produce a result.
-Analyses are ordered by output, ei. deadlock analyses are stored in
+Analyses are ordered by output, e.g. deadlock analyses are stored in
 `analysis.deadlock`. 
 
 #### Adding Tools

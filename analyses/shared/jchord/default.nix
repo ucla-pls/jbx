@@ -1,37 +1,33 @@
-{ pkgs, tools, mkLogicBloxAnalysis, mkAnalysis, jarOf}:
-rec { 
-  base =
-    env:
-    options @ {
-      subanalysis
-      , datalog ? true
-    }:
-    benchmark: 
-    let 
-      options = rec {
-        name = "jchord-${if datalog then "dlog" else "bddbddb"}-${subanalysis}-${benchmark.name}";
-        analysis = ./jchord.sh;
-        inherit env;
+{ lib, jchord, mkLogicBloxAnalysis, mkAnalysis}:
+options @ {
+  subanalyses
+  , name ? lib.concatStringsSep "_" subanalyses
+  , datalog ? true
+  , postprocessing ? ""
+}:
+env:
+benchmark: 
+let 
+  subanalysis = lib.concatStringsSep "," subanalyses;
+  options = {
+    name = "jchord-${if datalog then "dlog" else "bddbddb"}-${name}-${benchmark.name}";
+    analysis = ./jchord.sh;
+    inherit env;
+    
+    jchord = jchord;
+    jre = benchmark.java.jre;
+    inherit (benchmark) mainclass build libraries;
 
-        jchord = tools.jchord;
-        jre = benchmark.java.jre;
-        inherit (benchmark) mainclass build libraries;
-
-        settings = ''
+    settings = ''
 chord.main.class=${benchmark.mainclass}
 chord.run.analyses=${subanalysis}
 ${if datalog then "chord.datalog.engine=logicblox4" else ""}
 chord.err.file=/dev/stderr
 chord.out.file=/dev/stdout
 '';
-      };
-    in 
-    if datalog then 
-      mkLogicBloxAnalysis options
-    else
-      mkAnalysis options;
-
-  cipa-0cfa-dlog = env: base env { subanalysis = "cipa-0cfa-dlog"; };
-  deadlock-dlog = env: base env { subanalysis = "deadlock-java"; };
-  deadlock = env: base env { datalog = false; subanalysis = "deadlock-java"; };
-}
+    inherit postprocessing; 
+  };
+in 
+if datalog 
+  then mkLogicBloxAnalysis options 
+  else mkAnalysis options
