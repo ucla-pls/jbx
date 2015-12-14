@@ -13,7 +13,10 @@ in {
 
   call-graph = analyses.batch (analyses.call-graph.jchord-bddbddb env) {
     name = "call-graph";
-  } (map (f: f java.java7) benchmarks.small);
+    foreach = ''
+      cp $result/cicg.dot ''${results#*-}.dot
+    '';
+  } (map (f: f java.java7) benchmarks.all);
 
 }
 
