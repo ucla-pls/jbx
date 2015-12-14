@@ -2,7 +2,7 @@
 { shared, tools }:
 {
   jchord-logicblox = shared.jchord {
-    logicblox = true;
+    datalog = true;
     name = "call_graph";
     subanalyses = [ 
       "cipa-0cfa-dlog" 
@@ -14,7 +14,7 @@
   };
   
   jchord-bddbddb = shared.jchord {
-    logicblox = false;
+    datalog = false;
     name = "call_graph";
     subanalyses = [ 
       "cipa-0cfa-dlog" 
