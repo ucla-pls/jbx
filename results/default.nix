@@ -14,7 +14,7 @@ in {
   call-graph = analyses.batch (analyses.call-graph.jchord-bddbddb env) {
     name = "call-graph";
     foreach = ''
-      cp $result/cicg.dot ''${results#*-}.dot
+      cp $result/cicg.dot ''${result#*-}.dot
     '';
   } (map (f: f java.java7) benchmarks.all);
 
