@@ -14,6 +14,7 @@
   };
   
   jchord-bddbddb = shared.jchord {
+    logicblox = false;
     name = "call_graph";
     subanalyses = [ 
       "cipa-0cfa-dlog" 
