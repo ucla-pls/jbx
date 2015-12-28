@@ -1,11 +1,10 @@
 # call-graph analyses 
 { shared, tools }:
 {
-  jchord-logicblox = shared.jchord {
+  jchord-cicg-logicblox = shared.jchord {
     datalog = true;
-    name = "call_graph";
+    name = "cicg";
     subanalyses = [ 
-      "cipa-0cfa-dlog" 
       "cicg2dot-java" 
     ];
     postprocessing = ''
@@ -13,11 +12,10 @@
     '';
   };
   
-  jchord-bddbddb = shared.jchord {
+  jchord-cicg-bddbddb = shared.jchord {
     datalog = false;
-    name = "call_graph";
+    name = "cicg";
     subanalyses = [ 
-      "cipa-0cfa-dlog" 
       "cicg2dot-java" 
     ];
     postprocessing = ''
