@@ -1,0 +1,64 @@
+#!/bin/sh
+
+# This is a helper tool for running results, benchmarks and so on using nix.
+# All final commands used will be printed for further reference
+
+# Author: Christian Kalhauge (kalhauge@cs.ucla.edu)
+
+# The first argument is the command.
+
+function evaln() {
+    nix-instantiate --eval --json -E "$1" 
+}
+
+function attr() {
+    if [[ -z "$1" ]]; then
+        echo "(import ./. {})"
+    else
+        echo "(import ./. {}).$1"
+    fi
+}
+
+function attrs() {
+    pointer=`attr $@`
+    evaln "builtins.attrNames $pointer" | sed -e "s/\[\(.*\)\]/\1/" \
+        -e 's/,/ /g' \
+        -e 's/"\([^"]*\)"/\1/g' 
+}
+
+cmd=$1; shift
+case $cmd in
+    "get" )
+        # Gets the results from the results. 
+        if [ "$#" -gt 0 ]; then
+            analysis=$1; shift
+            names=""
+            while [ "$#" -gt 0 ]; do
+                case $1 in
+                    "--list" ) shift
+                        attrs "results.${analysis}.byName"
+                        exit 0
+                        ;;
+                    *)  
+                        names="$names $1"; shift
+                        ;;
+                esac
+            done
+            echo "building: $names"
+            if [ -z "$names" ]; then
+                nix-build -A "results.${analysis}.all" 
+            else
+                nixcmd="nix-build"
+                for name in $names; do
+                    nixcmd="$nixcmd -A results.${analysis}.byName.${name}"
+                done
+                eval "$nixcmd"
+            fi
+        else
+            # list available analyses
+            echo "No analysis given, choose from:"
+            attrs results
+            exit 0
+        fi 
+        ;;
+esac
