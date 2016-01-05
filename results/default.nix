@@ -7,7 +7,7 @@ let
     product (b: j: b j) benchmarks.all java.all
   );
 in {
-  runAll = analyses.batch (analyses.runAll env) {
+  runAll = analyses.batch (analyses.run.runAll env) {
     name = "runall-benchmarks";
   } all;
 
