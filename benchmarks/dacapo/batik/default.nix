@@ -20,7 +20,6 @@ let
 in 
 mkBenchmark { 
   name = "batik";
-  jarfile = "batik-all.jar";
   mainclass = "org.apache.batik.apps.rasterizer.Main";
   build = batik;
   data = "${daCapoSrc}/benchmarks/bms/batik/data/batik/";

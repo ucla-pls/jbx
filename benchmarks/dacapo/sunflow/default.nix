@@ -2,7 +2,6 @@
 { 
   name = "sunflow";
   mainclass = "org.sunflow.Benchmark";
-  jarfile = "sunflow.jar";
   build = java: rec {
     version = "0.07.2";
     src = fetchzip {

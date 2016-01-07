@@ -3,7 +3,6 @@ let
   # mkBenchmark, creates benchmarks using meta data.
   mkBenchmark = meta @ {
       name
-    , jarfile
     , mainclass
     , build # :: Java -> Drv
     # inputs, describes inputs which can run the program

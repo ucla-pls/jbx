@@ -73,12 +73,8 @@ in rec {
 	     })
 	     benchmarks);
       };
-
-  # jarOf: helper function that finds the absolute path to jar of a
-  # benchmark
-  jarOf = benchmark: "${benchmark.build}/share/java/${benchmark.jarfile}";
     
   inherit (import ./run {inherit mkAnalysis compose;}) run runAll composeRun;
   doop =  import ./doop {inherit pkgs tools mkAnalysis; };
-  jchord =  import ./jchord {inherit pkgs tools mkLogicBloxAnalysis jarOf mkAnalysis; };
+  jchord =  import ./jchord {inherit pkgs tools mkLogicBloxAnalysis mkAnalysis; };
 }

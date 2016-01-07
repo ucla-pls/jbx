@@ -151,7 +151,6 @@ can be executed given a main class and a set of inputs. To create a
 benchmark you should call `mkBenchmark` with a minimum of:
 
 -   `name`: a project wide unique identifier.
--   `jarfile`: the name of the running jar file.
 -   `mainclass`: the main class that execute the program.
 -   `build`: which is build source code using a version of java a java library
     see [#libraries]
@@ -189,16 +188,6 @@ examples.
 ### Benchmarks 
 
 ## Developing
-
-### Benchmarks
-
-Benchmarks are all executable java programs.
-
-Benchmarks MUST be described as a set with the following fields,
-`name` - the name of the benchmark, `build` - a nix expression,
-which produces the jar file in the `$out/share/java/`, `jarfile` - the
-name of jarfile, `mainclass` - the main class, `libs` - libraries
-needed, `runs` - a list of run information.
 
 #### Dacapo
 

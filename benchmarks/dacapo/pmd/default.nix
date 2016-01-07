@@ -2,7 +2,6 @@
 { 
   name = "pmd";
   mainclass = "net.sourceforge.pmd.PMD";
-  jarfile = "pmd-4.2.5.jar";
   build = java: rec {
     version = "4.2.5";
     src = fetchzip {

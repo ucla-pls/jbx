@@ -17,7 +17,6 @@ rec {
     benchmark @ {
       name # The name of the benchmark
       , build # The derivation, with the jar file
-      , jarfile # The name of the jar file located in ../share/java/
       , mainclass # The main class
       , java # the java version used to compile it.
       , data # evn. some data which we can run stuff on

@@ -20,7 +20,6 @@ in {
   transfer = mkBenchmark {
     name = "transfer";
     build = baseline;
-    jarfile = "baseline.jar";
     mainclass = "edu.ucla.pls.baseline.Transfer";
     inputs = [
       {name = "basic";}

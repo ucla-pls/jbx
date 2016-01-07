@@ -1,7 +1,6 @@
 {fetchcvs, ant}:
 {
   name = "avrora";
-  jarfile = "avrora-beta-1.7.110.jar";
   mainclass = "avrora.Main";
   build = java: {
     version = "beta-1.7.110";

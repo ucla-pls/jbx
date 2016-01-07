@@ -1,4 +1,4 @@
-{ pkgs, tools, mkLogicBloxAnalysis, mkAnalysis, jarOf}:
+{ pkgs, tools, mkLogicBloxAnalysis, mkAnalysis}:
 rec { 
   base =
     env:
