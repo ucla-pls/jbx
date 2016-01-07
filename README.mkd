@@ -65,6 +65,10 @@ The structure of the benchmarks is build in several categories
 `analyses/`
 :   Contains all the expressions for running the analyses on benchmarks.
 
+`java/`
+:   Contains the different java versions. Java is an important
+    dependency for benchmarks and to fully define java with libraries.
+
 `results/`
 :   Contains expressions about applying the analyses onto the benchmarks.
 
@@ -98,10 +102,10 @@ use the `--recursive` argument please run:
     git submodule update
 
 Then create a new folder in the results folder corresponding to the name
-of your project. Say you have a deadlock analysis, place it in
-`results/yourProject` and create a `default.nix` in that folder
-which describes which analyses to run on which data, and eventually also
-some processing like graphical representations of the data. 
+of your project `results/yourProject` and create a `default.nix` in that
+folder which describes which analyses to run on which data, and
+eventually also some processing like graphical representations of the
+data. 
 
     mkdir -p results/yourProject/
     echo "{ analyses, benchmarks, results}: {}" > $_/default.nix
@@ -120,7 +124,7 @@ You can then get the results of your project by running the command:
 And the result of running all the analyses and performing all of your
 graphics will now be returned to you in a `result/` folder. 
 
-### Going further -- Contributing
+### Going further: Contributing
 
 It is often not the case the analyses or benchmarks are already there to
 get the results that you need.
@@ -128,6 +132,8 @@ get the results that you need.
 #### Adding Analyses
 
 Analyses is nix functions that given a benchmark will produce a result.
+Analyses are ordered by output, e.g. deadlock analyses are stored in
+`analysis.deadlock`. 
 
 #### Adding Tools
 
@@ -178,6 +184,9 @@ defined in `benchmarks`. Also `baseline` contains minimal code and
 examples. 
 
 ##### Libraries 
+
+Many of the benchmarks used will have shared dependencies. They can be
+defined here. 
 
 #### Comparisons
 

@@ -10,8 +10,6 @@ loadClasspath $logicblox4
 
 lb services start >> lb-start
 
-echo "$lbInner"
-
 runHook lbInner
 
 lb services stop >> lb-stop

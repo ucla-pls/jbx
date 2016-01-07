@@ -13,7 +13,9 @@ let
   inherit (builtins) getAttr map;
   
   logicblox = import ./logicblox {inherit mkAnalysis pkgs tools; };
-  inherit (logicblox) mkLogicBloxAnalysis;
+
+  callPackage = pkgs.lib.callPackageWith (pkgs // tools);
+  shared = import ./shared { inherit callPackage mkAnalysis; };
   
   # mkAnalysis; creates analyses which are timed and store all the
   # information the right places. It also runs the analysis in a
@@ -73,8 +75,8 @@ in rec {
 	     })
 	     benchmarks);
       };
-    
-  inherit (import ./run {inherit mkAnalysis compose;}) run runAll composeRun;
-  doop =  import ./doop {inherit pkgs tools mkAnalysis; };
-  jchord =  import ./jchord {inherit pkgs tools mkLogicBloxAnalysis mkAnalysis; };
+
+  run = import ./run {inherit mkAnalysis compose;};
+  call-graph = import ./call-graph { inherit shared tools; };
+ 
 }

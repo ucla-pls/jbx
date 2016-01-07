@@ -1,3 +1,4 @@
+
 if [ -f "$settings" ]; then
     cat "$settings" > chord.properties
 else
@@ -11,3 +12,5 @@ loadClasspath $jchord
 
 analyse "jchord" java -Dchord.work.dir=`pwd` \
     chord.project.Boot 
+
+# runHook postprocessing

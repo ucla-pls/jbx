@@ -14,6 +14,4 @@ else
     runHook combine
 fi
 
-echo $out $results
-
 compose $out $results

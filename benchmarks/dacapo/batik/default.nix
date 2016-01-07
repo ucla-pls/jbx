@@ -1,4 +1,4 @@
-{ stdenv, fetchzip, ant, subversion, daCapoSrc, mkBenchmark}:
+{ stdenv, fetchzip, ant, subversion, daCapoSrc}:
 let 
    batik = java: rec {
     version = "1.7beta1";
@@ -17,8 +17,7 @@ let
       find lib -name '*.jar' -exec mv {} $out/share/java/ \;
     '';
   };
-in 
-mkBenchmark { 
+in { 
   name = "batik";
   mainclass = "org.apache.batik.apps.rasterizer.Main";
   build = batik;

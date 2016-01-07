@@ -12,4 +12,6 @@ rec {
   logicblox = logicblox4;
   doop = pkgs.callPackage ./doop { inherit logicblox3; };
   jchord = pkgs.callPackage ./jchord {};
+  inherit (pkgs.callPackage ./petablox {}) petablox_0_1;
+  petablox = petablox_0_1;
 }
