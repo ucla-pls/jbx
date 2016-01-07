@@ -94,7 +94,8 @@ branch corresponding to your project.
 NOTE: Downloading the dependencies is very important, so if you did not
 use the `--recursive` argument please run:
 
-    git submodules init
+    git submodule init
+    git submodule update
 
 Then create a new folder in the results folder corresponding to the name
 of your project. Say you have a deadlock analysis, place it in
