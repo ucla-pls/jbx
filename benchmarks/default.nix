@@ -42,6 +42,7 @@ in {
     dacapo.avrora 
     dacapo.sunflow
     dacapo.pmd
+    dacapo.batik
     baseline.transfer
   ];
   small = [

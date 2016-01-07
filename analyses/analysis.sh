@@ -22,7 +22,8 @@ runHook analysis
 
 cd $out
 
-cat "$BASE_FOLDER/phases"
 compose $BASE_FOLDER `cat $BASE_FOLDER/phases`
 
 echo ${env} > env
+
+runHook postprocessing
