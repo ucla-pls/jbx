@@ -4,7 +4,7 @@ let
   # product :: (a -> b -> c) -> [a] -> [b] -> [c]
   product = f: as: bs: concatMap (a: map (b: f a b) bs) as;
   all = filter (b: b.isWorking) (
-    product (b: j: b j) benchmarks.all java.all
+    product (b: j: b.withJava j) benchmarks.all java.all
   );
 in {
   runAll = analyses.batch (analyses.run.runAll env) {

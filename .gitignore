@@ -5,4 +5,5 @@ proprietary/*
 environment.nix
 \#*
 .vagrant
+*.pyc
 
