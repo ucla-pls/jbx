@@ -21,6 +21,10 @@ def argparser():
             default="./default.nix",
             help="the nixfile to build from (default: './default.nix')"
             )
+    parser.add_argument("--src-only",
+            action="store_true",
+            help="only evaluate the source src variable",
+            )
     parser.add_argument("-j", "--java", 
             type=int, 
             default=7,
@@ -40,10 +44,14 @@ def argparser():
 def main(arguments):
     args = argparser().parse_args(arguments)
 
+    path = "i.benchmarks.byName.{}.withJava i.java.java{}".format(
+            args.benchmark, args.java)
+    if args.src_only: 
+        path = "({}).build.src".format(path)
     nixutils.build("""
             let i = import {} {{}};
-            in i.benchmarks.byName.{}.withJava i.java.java{}
-        """.format(args.filename, args.benchmark, args.java)
+            in {} 
+        """.format(args.filename, path)
     );
 
 
