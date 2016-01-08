@@ -5,5 +5,6 @@
     htop
     tree
     vim
+    python
   ];
 }
