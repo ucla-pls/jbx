@@ -32,5 +32,26 @@ in {
         "$data/mapWaadt.svg"
       ];
     }
+    { name = "default";
+      args = [ 
+        "-d" "."
+        "-scriptSecurityOff"
+        "$data/mapWaadt.svg"
+        "$data/mapSpain.svg"
+        "$data/sydney.svg"
+        ];
+    }
+    { name = "large";
+      args = [ 
+        "-d" "."
+        "-scriptSecurityOff"
+        "$data/mapWaadt.svg"
+        "$data/mapSpain.svg"
+        "$data/sydney.svg"
+        "$data/asf-logo.svg"
+        "$data/moonPhases.svg"
+        "$data/batik3D.svg"
+      ];
+    }
   ];
 }
