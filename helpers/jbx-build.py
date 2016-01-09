@@ -25,9 +25,12 @@ def argparser():
             action="store_true",
             help="only evaluate the source src variable",
             )
-    parser.add_argument("--debug", 
-            action="store_true",
-            help="start a shell with all the dependencies (see nix-shell)"
+    parser.add_argument("--shell", 
+            action="store_const",
+            help="start a shell with all the dependencies (see nix-shell)",
+            default=nixutils.build,
+            const=nixutils.shell,
+            dest="method"
             )
     parser.add_argument("-j", "--java", 
             type=int, 
@@ -54,7 +57,6 @@ def main(arguments):
         path = "({}).build.src".format(path)
 
     cmd = "let i = import {} {{}}; in {}".format(args.filename, path)
-    args.method = nixutils.shell if args.debug else nixutils.build
     args.method(cmd)
 
 
