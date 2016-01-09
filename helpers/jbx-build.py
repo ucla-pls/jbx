@@ -39,24 +39,16 @@ def argparser():
             help="the java version to build with (default: 7)"
         );
     
-    # action = parser.add_mutually_exclusive_group()
-    # action.add_argument('-i', '--interactive', 
-    #         action='store_const')
-    # action.add_argument('-b', '--build', 
-    #         action='store_const')
-    # action.add_argument('-r', '--run', 
-    #         action='store_const')
     return parser
 
 def main(arguments):
     args = argparser().parse_args(arguments)
 
-    path = "i.benchmarks.byName.{}.withJava i.java.java{}".format(
-            args.benchmark, args.java)
+    path = "i.benchmarks.byName.{0.benchmark}.withJava i.java.java{0.java}".format(args)
     if args.src_only: 
         path = "({}).build.src".format(path)
 
-    cmd = "let i = import {} {{}}; in {}".format(args.filename, path)
+    cmd = "let i = import {0.filename} {{}}; in {1}".format(args, path)
     args.method(cmd)
 
 
