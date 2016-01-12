@@ -43,6 +43,7 @@ let
       jaxen = callLib ./jaxen;
       ant = callLib ./ant;
       lucene = callLib ./lucene;
+      h2 = callLib ./h2;
     };
     in java;
 in rec {

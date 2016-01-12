@@ -42,7 +42,8 @@ let
   independent = import ./dacapo { inherit pkgs callBenchmark; };
 in rec {
   all = [
-    dacapo.avrora 
+    dacapo.avrora
+    dacapo.h2
     dacapo.sunflow
     dacapo.pmd
     dacapo.batik
