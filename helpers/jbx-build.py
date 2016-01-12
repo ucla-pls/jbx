@@ -38,6 +38,10 @@ def argparser():
             metavar="version",
             help="the java version to build with (default: 7)"
         );
+    parser.add_argument("-n", "--dry-run", 
+            action="store_true",
+            help="do not exeucte, but print cmd instead"
+        );
     
     return parser
 
@@ -49,7 +53,7 @@ def main(arguments):
         path = "({}).build.src".format(path)
 
     cmd = "let i = import {0.filename} {{}}; in {1}".format(args, path)
-    args.method(cmd)
+    args.method(cmd, dry_run=args.dry_run);
 
 
 if __name__ == "__main__":
