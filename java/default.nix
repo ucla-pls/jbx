@@ -42,6 +42,7 @@ let
       xerces = callLib ./xerces;
       jaxen = callLib ./jaxen;
       ant = callLib ./ant;
+      h2 = callLib ./h2;
     };
     in java;
 in rec {

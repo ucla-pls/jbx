@@ -20,7 +20,7 @@ in rec {
 
   avrora = callBenchmark ./avrora {};
   batik = callBenchmark ./batik { inherit daCapoSrc; };
-  # h2 = pkgs.callBenchmark ./h2 { };
+  h2 = callBenchmark ./h2 { inherit daCapoSrc; };
   sunflow = callBenchmark ./sunflow {};
   pmd = callBenchmark ./pmd { inherit daCapoSrc; };
 
