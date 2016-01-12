@@ -25,9 +25,12 @@ def argparser():
             action="store_true",
             help="only evaluate the source src variable",
             )
-    parser.add_argument("--debug", 
-            action="store_true",
-            help="start a shell with all the dependencies (see nix-shell)"
+    parser.add_argument("--shell", 
+            action="store_const",
+            help="start a shell with all the dependencies (see nix-shell)",
+            default=nixutils.build,
+            const=nixutils.shell,
+            dest="method"
             )
     parser.add_argument("-j", "--java", 
             type=int, 
@@ -35,27 +38,22 @@ def argparser():
             metavar="version",
             help="the java version to build with (default: 7)"
         );
+    parser.add_argument("-n", "--dry-run", 
+            action="store_true",
+            help="do not exeucte, but print cmd instead"
+        );
     
-    # action = parser.add_mutually_exclusive_group()
-    # action.add_argument('-i', '--interactive', 
-    #         action='store_const')
-    # action.add_argument('-b', '--build', 
-    #         action='store_const')
-    # action.add_argument('-r', '--run', 
-    #         action='store_const')
     return parser
 
 def main(arguments):
     args = argparser().parse_args(arguments)
 
-    path = "i.benchmarks.byName.{}.withJava i.java.java{}".format(
-            args.benchmark, args.java)
+    path = "i.benchmarks.byName.{0.benchmark}.withJava i.java.java{0.java}".format(args)
     if args.src_only: 
         path = "({}).build.src".format(path)
 
-    cmd = "let i = import {} {{}}; in {}".format(args.filename, path)
-    args.method = nixutils.shell if args.debug else nixutils.build
-    args.method(cmd)
+    cmd = "let i = import {0.filename} {{}}; in {1}".format(args, path)
+    args.method(cmd, dry_run=args.dry_run);
 
 
 if __name__ == "__main__":
