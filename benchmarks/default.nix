@@ -47,6 +47,7 @@ in rec {
     dacapo.pmd
     dacapo.batik
     baseline.transfer
+    dacapo.luindex
   ];
   small = [
     baseline.transfer
