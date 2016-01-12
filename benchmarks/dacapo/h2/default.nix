@@ -1,16 +1,20 @@
 { ant, daCapoSrc }:
-{
+rec {
   name = "h2";
   mainclass = "org.dacapo.harness.H2";
   build = java: {
     src = daCapoSrc;
-    buildInputs = [ ant java.jdk ];
+    buildInputs = [ ant java.jdk ] ++ libraries java;
     buildPhase = "
+      cd benchmarks/bms/h2
+      mkdir out
+      javac src/org/dacapo/h2/TPCC.java -sourcepath src -d out
     ";
     installPhase = ''
+
     '';
   };
-  libraries = java: with java.libs; [ h2 ];
+  libraries = java: with java.libs; [ h2 derby ];
   inputs = [
     {
       name = "small";

@@ -14,6 +14,7 @@
 , cairo
 , gdk_pixbuf
 , atk
+, setJavaClassPath
 }:
 stdenv.mkDerivation rec {
   name = "jdk";
@@ -72,6 +73,9 @@ stdenv.mkDerivation rec {
 
     mkdir $jrePath/lib/${architecture}/plugins
     ln -s $jrePath/lib/${architecture}/libnpjp2.so $jrePath/lib/${architecture}/plugins
+
+    mkdir -p $out/nix-support
+    echo -n "${setJavaClassPath}" > $out/nix-support/propagated-native-build-inputs
 
     # http://stackoverflow.com/questions/11808829/jre-1-7-returns-java-lang-noclassdeffounderror-java-lang-object
     packfiles=$(find $out -type f -name "*.pack")

@@ -17,7 +17,7 @@ let
         name = name;
         version = version;
         src = pkgs.fetchurl {
-          url = "${base}/${group}/${name}/${version}/${jar}";
+          url = "${base}/${builtins.replaceStrings ["."] ["/"] group}/${name}/${version}/${jar}";
           md5 = md5;
         };
         phases = [ "installPhase" ];
@@ -43,6 +43,7 @@ let
       jaxen = callLib ./jaxen;
       ant = callLib ./ant;
       h2 = callLib ./h2;
+      derby = callLib ./derby;
     };
     in java;
 in rec {
