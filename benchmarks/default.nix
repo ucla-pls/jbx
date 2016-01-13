@@ -47,8 +47,9 @@ in rec {
     dacapo.sunflow
     dacapo.pmd
     dacapo.batik
-    baseline.transfer
     dacapo.luindex
+    dacapo.lusearch
+    baseline.transfer
   ];
   small = [
     baseline.transfer

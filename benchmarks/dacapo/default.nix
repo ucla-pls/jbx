@@ -24,6 +24,7 @@ in rec {
   sunflow = callBenchmark ./sunflow {};
   pmd = callBenchmark ./pmd { inherit daCapoSrc; };
   luindex = callBenchmark ./luindex { inherit daCapoSrc; };
+  lusearch = callBenchmark ./lusearch { inherit daCapoSrc; };
 
   # Does not work .. no eclipse found
   # eclipse = pkgs.callPackage ./eclipse { };
