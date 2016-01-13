@@ -1,7 +1,7 @@
 { fetchmvn }: java:
 fetchmvn {
-  name = "lucene-core";
+  name = "lucene-demos";
   version = "2.4.1";
   group = "org.apache.lucene";
-  md5 = "261d1aa59865842ecc32b3848b0c6538";
+  md5 = "472e1a9dbced6d1948bf80caebcc7dec"; 
 }

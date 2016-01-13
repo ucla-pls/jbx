@@ -42,7 +42,8 @@ let
       xerces = callLib ./xerces;
       jaxen = callLib ./jaxen;
       ant = callLib ./ant;
-      lucene = callLib ./lucene;
+      lucene-core = callLib ./lucene-core;
+      lucene-demos = callLib ./lucene-demos;
       h2 = callLib ./h2;
       derby = callLib ./derby;
     };
