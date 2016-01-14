@@ -25,10 +25,18 @@ in rec {
   pmd = callBenchmark ./pmd { inherit daCapoSrc; };
   luindex = callBenchmark ./luindex { inherit daCapoSrc; };
   lusearch = callBenchmark ./lusearch { inherit daCapoSrc; };
+  fop = callBenchmark ./fop { inherit daCapoSrc; };
 
   # Does not work .. no eclipse found
   # eclipse = pkgs.callPackage ./eclipse { };
-
-  # fop = pkgs.callPackage ./fop {};
-
+  
+  all = [ avrora
+          batik
+          h2
+          sunflow
+          pmd
+          luindex
+          lusearch
+          fop
+        ];
 }

@@ -1,7 +1,6 @@
-{}: java:
+{stdenv, fetchurl}: java:
 let
-  fetchmvn = 
-  options @ {
+  fetchmvn = options @ {
     name
     , version
     , md5 ? "00000000000000000000000000000000"
@@ -9,18 +8,18 @@ let
     , jar ? "${name}-${version}.jar"
     , base ? "http://central.maven.org/maven2"
     }:
-    pkgs.stdenv.mkDerivation {
-    name = name;
-    version = version;
-    src = pkgs.fetchurl {
-    url = "${base}/${builtins.replaceStrings ["."] ["/"] group}/${name}/${version}/${jar}";
-    md5 = md5;
-    };
-    phases = [ "installPhase" ];
-    installPhase = ''
-    mkdir -p $out/share/java
-    cp $src $_
-    '';
+    stdenv.mkDerivation {
+      name = name;
+      version = version;
+      src = fetchurl {
+        url = "${base}/${builtins.replaceStrings ["."] ["/"] group}/${name}/${version}/${jar}";
+        md5 = md5;
+      };
+      phases = [ "installPhase" ];
+      installPhase = ''
+      mkdir -p $out/share/java
+      cp $src $_
+      '';
     };
 in
 {
@@ -63,7 +62,7 @@ in
     name = "xmlgraphics-commons";
     version = "1.3.1";
     group = "org.apache.xmlgraphics";
-    md5 = "50373bca7c7436d4b9741a3a8e972a3a"; 
+    md5 = "e63589601d939739349a50a029dab120"; 
   };
 
   jaxen = fetchmvn {
@@ -103,5 +102,12 @@ in
     version = "1.2.121";
     group = "com.h2database";
     md5 = "9c7f583cadeeb6f2a940c9502fc9780a";
+  };
+
+  batik-util = fetchmvn {
+    name = "batik-util";
+    version = "1.7";
+    group = "org.apache.xmlgraphics";
+    md5 = "99f99684b6df6200e529575dccce9970";
   };
 }
