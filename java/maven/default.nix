@@ -81,8 +81,16 @@ in
   xalan = fetchmvn {
     name = "xalan";
     version = "2.7.1";
-    md5 = "35367c636ce035102a039a19ca707986";
+    md5 = "d43aad24f2c143b675292ccfef487f9c";
   };
+  
+  xalan-serializer = fetchmvn {
+    name = "serializer";
+    group = "xalan";
+    version = "2.7.1";
+    md5 = "a6b64dfe58229bdd810263fa0cc54cff";
+  };
+
 
   xerces = fetchmvn {
     name = "xerces";

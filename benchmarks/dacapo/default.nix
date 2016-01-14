@@ -26,6 +26,7 @@ in rec {
   luindex = callBenchmark ./luindex { inherit daCapoSrc; };
   lusearch = callBenchmark ./lusearch { inherit daCapoSrc; };
   fop = callBenchmark ./fop { inherit daCapoSrc; };
+  xalan = callBenchmark ./xalan { inherit daCapoSrc; };
 
   # Does not work .. no eclipse found
   # eclipse = pkgs.callPackage ./eclipse { };
@@ -38,5 +39,6 @@ in rec {
           luindex
           lusearch
           fop
+          xalan
         ];
 }
