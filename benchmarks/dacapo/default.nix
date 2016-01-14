@@ -32,7 +32,7 @@ in rec {
   
   all = [ avrora
           batik
-          h2
+          # h2
           sunflow
           pmd
           luindex

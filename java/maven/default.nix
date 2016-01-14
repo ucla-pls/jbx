@@ -30,7 +30,7 @@ in
     md5 = "50373bca7c7436d4b9741a3a8e972a3a"; 
   };
   
-  lucene-demo = fetchmvn {
+  lucene-demos = fetchmvn {
     name = "lucene-demos";
     version = "2.4.1";
     group = "org.apache.lucene";
@@ -75,7 +75,7 @@ in
     name = "derby";
     group = "org.apache.derby";
     version = "10.5.3.0";
-    md5 = "35367c636ce035102a039a19ca707986";
+    md5 = "62528ed70e599cbd624f08e6ccb5d90f";
   };
 
   xalan = fetchmvn {
