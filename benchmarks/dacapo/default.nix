@@ -23,6 +23,7 @@ in rec {
   # h2 = pkgs.callBenchmark ./h2 { };
   sunflow = callBenchmark ./sunflow {};
   pmd = callBenchmark ./pmd { inherit daCapoSrc; };
+  jython = callBenchmark ./jython { inherit daCapoSrc; };
 
   # Does not work .. no eclipse found
   # eclipse = pkgs.callPackage ./eclipse { };

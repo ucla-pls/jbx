@@ -46,6 +46,7 @@ in rec {
     dacapo.sunflow
     dacapo.pmd
     dacapo.batik
+    dacapo.jython
     baseline.transfer
   ];
   small = [
