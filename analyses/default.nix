@@ -26,15 +26,17 @@ let
 	     # needed for reliable timing results.
       , name  # The name of the analysis. 
       , analysis  # The file or string needed to be executed
+      , tools ? [] # Tools used by te analysis 
       , ... # Other environment variables
     }:
     stdenv.mkDerivation (options // {
       utils = utils;
       env = (e: "${e.name}: " +
                 "${toString e.cores}x ${e.processor}, " +
-		            "${toString e.memorysize}mb ${e.memory}"
+		        "${toString e.memorysize}mb ${e.memory}"
             ) env;
       builder = ./analysis.sh;
+      buildInputs = tools;
     });
   utils = pkgs.callPackage ./utils {};
 in rec {

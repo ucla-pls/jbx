@@ -20,7 +20,11 @@ let
     '';
   };
 in {
-  petablox_0_1 = petabloxBldr {
+  petablox-0_1 = petabloxBldr {
     version = "v0.1";
+  };
+  petablox-1_0 = petabloxBldr {
+    version = "v1.0";
+    md5 = "dc7164fac9051bbbac14c8c891c4b8b6";
   };
 }

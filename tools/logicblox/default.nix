@@ -1,6 +1,6 @@
 { stdenv, fetchprop }:
 {
-logicblox3 = stdenv.mkDerivation {
+logicblox-3_10_21 = stdenv.mkDerivation {
   name = "logicblox";
   version = "3.10.21";
   src = fetchprop {
@@ -12,7 +12,7 @@ logicblox3 = stdenv.mkDerivation {
     cp -r logicblox/* $out
   '';
 };
-logicblox4 = stdenv.mkDerivation {
+logicblox-4_2_0 = stdenv.mkDerivation {
   name = "logicblox";
   version = "4.2.0";
   src = fetchprop {

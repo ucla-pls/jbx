@@ -8,10 +8,12 @@ rec {
   jre5 = jdk5;
   jre6 = jdk6; # Not cool but works.
 
-  inherit (pkgs.callPackage ./logicblox {fetchprop = fetchprop;}) logicblox3 logicblox4;
-  logicblox = logicblox4;
-  doop = pkgs.callPackage ./doop { inherit logicblox3; };
+  inherit (pkgs.callPackage ./logicblox {fetchprop = fetchprop;}) logicblox-3_10_21 logicblox-4_2_0;
+  logicblox = logicblox-4_2_0;
+  doop = pkgs.callPackage ./doop { inherit logicblox-3_10_21; };
   jchord = pkgs.callPackage ./jchord {};
-  inherit (pkgs.callPackage ./petablox {}) petablox_0_1;
-  petablox = petablox_0_1;
+  inherit (pkgs.callPackage ./petablox {}) 
+    petablox-0_1
+    petablox-1_0;
+  petablox = petablox-1_0;
 }

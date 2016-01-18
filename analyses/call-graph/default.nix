@@ -12,6 +12,19 @@
     '';
   };
   
+  petablox-cicg = shared.petablox {
+    logicblox = null; # tools.logicblox-4_2_0;
+    petablox = tools.petablox;
+    name = "cicg";
+    subanalyses = [ 
+      "cipa-0cfa-dlog"
+      "cicg2dot-java" 
+    ];
+    postprocessing = ''
+     mv sandbox/petablox_output/cicg.dot .
+    '';
+  };
+  
   jchord-cicg-bddbddb = shared.jchord {
     datalog = false;
     name = "cicg";

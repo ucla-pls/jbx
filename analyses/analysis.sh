@@ -12,6 +12,8 @@ function analyse {
 }
 export -f analyse
 
+# loadTools $tools
+
 mkdir -p $out/sandbox
 export BASE_FOLDER="$out"
 touch $BASE_FOLDER/phases

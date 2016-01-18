@@ -18,6 +18,17 @@ function loadClasspath {
 }
 export -f loadClasspath
 
+function loadTools {
+    local path=""
+    for l in $@; do
+        if [ -d "$l/bin" ]; then
+            path="$path${path:+:}$l/bin"
+        fi
+    done
+    export PATH="$path${path:+${PATH:+:}}$PATH"
+}
+export -f loadTools
+
 HEADER="name,user,kernel,maxm,exitcode"
 
 # joinResults joins a list of base csv files and prints the resulting csv file

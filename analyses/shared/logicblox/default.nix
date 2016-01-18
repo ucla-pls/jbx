@@ -1,14 +1,15 @@
 # The logicblox analyses are made to make it easier to
 # write analyses that uses logicblox.
-{python, procps, logicblox4, mkAnalysis}:
+{python, procps, mkAnalysis}:
 {
-  mkLogicBloxAnalysis = options @ {
-      jre
-      , analysis
+  mkLogicBloxAnalysis = java: logicblox: options @ {
+      analysis
+      , tools ? []
       , ...
     }:
     mkAnalysis (options // {
-      inherit logicblox4 python procps;
+      tools = tools ++ [logicblox python procps java.jre];
+      logicblox = logicblox;
       analysis = ./logicblox.sh;
       lbInner = options.analysis;
     });
