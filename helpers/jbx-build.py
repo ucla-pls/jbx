@@ -25,6 +25,10 @@ def argparser():
             action="store_true",
             help="only evaluate the source src variable",
             )
+    parser.add_argument("--keep-failed", "-K",
+            action="store_true",
+            help="keeps the output even if the build fails.",
+            )
     parser.add_argument("--shell", 
             action="store_const",
             help="start a shell with all the dependencies (see nix-shell)",
@@ -53,7 +57,7 @@ def main(arguments):
         path = "({}).build.src".format(path)
 
     cmd = "let i = import {0.filename} {{}}; in {1}".format(args, path)
-    args.method(cmd, dry_run=args.dry_run);
+    args.method(cmd, dry_run=args.dry_run, keep_failed=args.keep_failed);
 
 
 if __name__ == "__main__":

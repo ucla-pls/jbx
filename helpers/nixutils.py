@@ -1,10 +1,15 @@
 
 import subprocess
 
-def build(string, dry_run=True):
-    return call(["nix-build", "--expr", string], dry_run)
+def build(string, dry_run=True, keep_failed=False):
+    return call(
+            ["nix-build"] +
+                (["--keep_failed"] if keep_failed else []) +
+                ["--expr", string], 
+            dry_run
+    )
 
-def shell(string, dry_run=True):
+def shell(string, dry_run=True, keep_failed=False):
     return call(["nix-shell", "--expr", string], dry_run)
 
 def evaluate(string, dry_run=True):
