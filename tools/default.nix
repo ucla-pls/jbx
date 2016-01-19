@@ -14,6 +14,8 @@ rec {
   jchord = pkgs.callPackage ./jchord {};
   inherit (pkgs.callPackage ./petablox {}) 
     petablox-0_1
-    petablox-1_0;
+    petablox-1_0
+    petablox-test
+  ;
   petablox = petablox-1_0;
 }

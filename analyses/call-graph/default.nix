@@ -13,11 +13,10 @@
   };
   
   petablox-cicg = shared.petablox {
-    logicblox = null; # tools.logicblox-4_2_0;
-    petablox = tools.petablox;
+    logicblox = tools.logicblox-4_2_0;
+    petablox = tools.petablox-test;
     name = "cicg";
     subanalyses = [ 
-      "cipa-0cfa-dlog"
       "cicg2dot-java" 
     ];
     postprocessing = ''
