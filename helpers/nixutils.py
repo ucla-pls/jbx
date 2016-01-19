@@ -4,7 +4,7 @@ import subprocess
 def build(string, dry_run=True, keep_failed=False):
     return call(
             ["nix-build"] +
-                (["--keep_failed"] if keep_failed else []) +
+                (["--keep-failed"] if keep_failed else []) +
                 ["--expr", string], 
             dry_run
     )
