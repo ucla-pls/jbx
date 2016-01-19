@@ -27,18 +27,20 @@ in rec {
   lusearch = callBenchmark ./lusearch { inherit daCapoSrc; };
   fop = callBenchmark ./fop { inherit daCapoSrc; };
   xalan = callBenchmark ./xalan { inherit daCapoSrc; };
+  jython = callBenchmark ./jython { inherit daCapoSrc; };
 
   # Does not work .. no eclipse found
   # eclipse = pkgs.callPackage ./eclipse { };
   
   all = [ avrora
           batik
+          fop
           # h2
-          sunflow
-          pmd
+          jython
           luindex
           lusearch
-          fop
+          pmd
+          sunflow
           xalan
         ];
 }
