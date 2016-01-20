@@ -14,7 +14,7 @@
   
   petablox-cicg = shared.petablox {
     logicblox = tools.logicblox-4_2_0;
-    petablox = tools.petablox-test;
+    petablox = tools.petablox;
     name = "cicg";
     subanalyses = [ 
       "cicg2dot-java" 

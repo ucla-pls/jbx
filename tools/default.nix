@@ -17,5 +17,5 @@ rec {
     petablox-1_0
     petablox-test
   ;
-  petablox = petablox-1_0;
+  petablox = petablox-test;
 }
