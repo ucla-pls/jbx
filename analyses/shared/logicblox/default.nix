@@ -7,6 +7,7 @@
       , tools ? []
       , ...
     }:
+    assert java.version == 7; # Currently logicblox only run on jdk7
     mkAnalysis (options // {
       tools = tools ++ [logicblox python procps java.jre];
       logicblox = logicblox;
