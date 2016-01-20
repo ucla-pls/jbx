@@ -20,17 +20,18 @@ let
     '';
   };
   testPetablox = options@{
-    branchName ? "ucla-develop",
+    rev,  
+    branchName ? "gt-develop",
     md5 ? "ba3d91bd803350a3879d229549042fcd",
-    rev ? "e8a3a643a2d5f34e561b32f75ddcbee4fd4dc242"
+    owner ? "petablox-project"
   }:
   stdenv.mkDerivation { 
     name = "petablox";
     version = "${branchName}-${rev}";
     src = fetchgit {
-      url = "https://github.com/ucla-pls/petablox.git";
+      url = "https://github.com/${owner}/petablox.git";
       inherit branchName md5 rev;
-      deepClone = true;
+      # deepClone = true;
     };
     phases = [ "unpackPhase" "buildPhase" "installPhase" ];
     buildInputs = [ ant jdk7 ];
@@ -48,5 +49,8 @@ in {
     version = "v1.0";
     md5 = "dc7164fac9051bbbac14c8c891c4b8b6";
   };
-  petablox-test = testPetablox {};
+  petablox-test = testPetablox {
+    md5 = "d04713260148c7e7f05e95b039f28d38";
+    rev = "0753f868485d032403e29393382895aeafb440a6";
+  };
 }
