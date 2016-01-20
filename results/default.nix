@@ -16,7 +16,7 @@ in {
     foreach = ''
       cp $result/cicg.dot ''${result#*-}.dot
     '';
-  } (map (f: f.withJava java.java7) benchmarks.all);
+  } (map (f: f.withJava java.java6) benchmarks.all);
 
 }
 
