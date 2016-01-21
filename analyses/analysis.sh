@@ -18,14 +18,20 @@ mkdir -p $out/sandbox
 export BASE_FOLDER="$out"
 touch $BASE_FOLDER/phases
 
+top -b -U $UID -d 10 > $out/tops &
+tpid=$!
+
 cd $out/sandbox
 
 runHook analysis
 
 cd $out
 
+kill $tpid
+
 compose $BASE_FOLDER `cat $BASE_FOLDER/phases`
 
 echo ${env} > env
 
 runHook postprocessing
+

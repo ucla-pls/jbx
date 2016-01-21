@@ -4,6 +4,7 @@
 {
   mkLogicBloxAnalysis = java: logicblox: options @ {
       analysis
+      , keepDatabase ? false
       , tools ? []
       , ...
     }:

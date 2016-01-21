@@ -36,7 +36,7 @@ let
 		        "${toString e.memorysize}mb ${e.memory}"
             ) env;
       builder = ./analysis.sh;
-      buildInputs = tools;
+      buildInputs = [pkgs.procps] ++ tools;
     });
   utils = pkgs.callPackage ./utils {};
 in rec {
