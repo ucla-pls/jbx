@@ -1,0 +1,22 @@
+set terminal pdfcairo
+set output "out.pdf"
+
+set timefmt "%H:%M:%S"
+set xdata time
+
+set format x "%H:%M:%S"
+set timefmt "%H:%M:%S"
+
+set key top left
+
+set yrange [0:100]
+
+N=system("awk 'NR==1 {print NF}' " . filename) + 0
+
+#print filename
+#print N
+
+plot for[i=2:N] \
+    filename u 1:(sum [col=i:N] column(col)) \
+             w filledcurves x1 \
+             title columnheader(i)
