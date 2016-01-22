@@ -29,10 +29,15 @@ t0 = times[0]
 pids = sorted(set(pids));
 
 impact = sorted([(sum(d[t].get(p, 0) for t in times),p) for p in pids], reverse=True)
-pids = map(lambda x: x[1], impact[0:5])
+ps = map(lambda x: x[1], impact[0:5])
 
-table = [["time"] + pids ] + \
-    [[str(t - t0)] + [str(d[t].get(p, 0)) for p in pids] for t in times]
+others = [ p for p in pids if p not in ps ]
+
+table = [["time"] + ps + ["rest"] ] + [
+        [str((t - t0).total_seconds())] + 
+        [str(d[t].get(p, 0)) for p in ps] + 
+        [str(sum(d[t].get(p, 0) for p in others))] 
+    for t in times]
 
 for line in map(" ".join, table):
     print line
