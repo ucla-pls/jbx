@@ -11,7 +11,6 @@ env:
 benchmark: 
 let 
   inputs = benchmark.inputs;
-  subanalysis = lib.concatStringsSep "," subanalyses;
   lbname = if logicblox != null then "lb-" + logicblox.version else "bddbddb";
   extend = "${lbname}-${name}-${benchmark.name}"; 
   options = {
@@ -22,8 +21,10 @@ let
     inherit (benchmark) mainclass build libraries data;
     settings = ''
 petablox.main.class=${benchmark.mainclass}
-petablox.run.analyses=${subanalysis}
-${if logicblox != null then "petablox.datalog.engine=logicblox4" else ""}
+petablox.run.analyses=${lib.concatStringsSep "," subanalyses}
+${if (logicblox != null && builtins.all (a: a != "logicblox-export") subanalyses)
+  then "petablox.datalog.engine=logicblox4" 
+  else "petablox.datalox.engine=bddbddb"}
 petablox.err.file=/dev/stderr
 petablox.out.file=/dev/stdout
 
