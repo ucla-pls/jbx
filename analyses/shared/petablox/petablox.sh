@@ -1,9 +1,5 @@
 
-if [ -f "$settings" ]; then
-    cat "$settings" > petablox.properties
-else
-    echo "$settings" > petablox.properties
-fi
+eval "echo \"$settings\"" > petablox.properties
 path=`toClasspath $build $libraries`
 
 echo "petablox.class.path=$path" >> petablox.properties
