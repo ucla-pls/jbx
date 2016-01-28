@@ -80,5 +80,6 @@ in rec {
 
   run = import ./run {inherit mkAnalysis compose;};
   call-graph = import ./call-graph { inherit shared tools; };
- 
+
+  inherit shared;
 }
