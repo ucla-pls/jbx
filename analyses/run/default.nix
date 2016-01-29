@@ -1,11 +1,11 @@
-{mkAnalysis, compose}:
+{ mkAnalysis, compose }:
 rec {
   # run: is an anlysis which can be specialiced using a set of
   # inputs. The run also takes an environment variable. 
   run =
-    # The first argument, the environment in witch its run. 
+    # The first argument, the environment in which it's run. 
     env: # So far there is no requirements to the environment.
-    # The second argument, the inputs to the benchmark
+    # The second argument, the input to the benchmark
     input @ {
       name ? "" # Name of the input set.
       , stdin ? "" # The stdin sent to the process.
@@ -48,3 +48,5 @@ rec {
       analyses = map (i: run env i benchmark) benchmark.inputs;
     in compose analyses { name = "${benchmark.name}-all"; };
 }
+
+
