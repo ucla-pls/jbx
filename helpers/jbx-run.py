@@ -52,7 +52,7 @@ def main(arguments):
     cmd = """
       with (import {0.filename} {{}});
       let bm = benchmarks.byName.{0.benchmark}.withJava java.java{0.java};
-      in analyses.run.run (import {0.environment}) {{ name="cli"; args={0.fargs}; }} bm
+      in analyses.run.run (import {0.environment}) bm {{ name="cli"; args={0.fargs}; }}
     """.format(args)
     nixutils.build(cmd, dry_run=args.dry_run);
 

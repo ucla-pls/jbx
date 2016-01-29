@@ -5,15 +5,7 @@ rec {
   run =
     # The first argument, the environment in which it's run. 
     env: # So far there is no requirements to the environment.
-    # The second argument, the input to the benchmark
-    input @ {
-      name ? "" # Name of the input set.
-      , stdin ? "" # The stdin sent to the process.
-      , args ? [] # A list of arguments. 
-      , setup ? "" # A setup hook
-      , ... # Maybe more things...
-      }:
-    # The third argument, the benchmark.
+    # The second argument, the benchmark.
     benchmark @ {
       name # The name of the benchmark
       , build # The derivation, with the jar file
@@ -23,6 +15,14 @@ rec {
       , libraries
       , ... # Maybe more things
     }:
+    # The third argument, the input to the benchmark
+    input @ {
+      name ? "" # Name of the input set.
+      , stdin ? "" # The stdin sent to the process.
+      , args ? [] # A list of arguments. 
+      , setup ? "" # A setup hook
+      , ... # Maybe more things...
+      }:
     mkAnalysis {
       name = "${benchmark.name}-${input.name}";
       inherit (benchmark) mainclass data libraries build;
@@ -34,18 +34,17 @@ rec {
       analysis = ./run.sh;
     };
 
-  # runAll is a little tool that runs all the inputs denoted
-  # in the `runs` attribute field. The runAll function therfor only
-  # needs the benchmark suite.
+  # runAll is a analysis that runs all the inputs denoted in the `inputs`
+  # attribute field. The runAll function therfor only needs the benchmark
+  # suite and the environment.
   runAll =
     env: # Passed directly to the run function.
     benchmark @ {
-        name
-      , inputs # The function only cares about the runs list
+      name
+      , inputs # The function only cares about the inputs list
       , ...
     }:
-    let
-      analyses = map (i: run env i benchmark) benchmark.inputs;
+    let analyses = map (run env benchmark) benchmark.inputs;
     in compose analyses { name = "${benchmark.name}-all"; };
 }
 
