@@ -22,7 +22,7 @@ rec {
       , args ? [] # A list of arguments. 
       , setup ? "" # A setup hook
       , ... # Maybe more things...
-      }:
+    }:
     mkAnalysis {
       name = "${benchmark.name}-${input.name}";
       inherit (benchmark) mainclass data libraries build;
@@ -34,9 +34,9 @@ rec {
       analysis = ./run.sh;
     };
 
-  # runAll is a analysis that runs all the inputs denoted in the `inputs`
-  # attribute field. The runAll function therfor only needs the benchmark
-  # suite and the environment.
+  # runAll is an analysis that runs all the inputs denoted in the 
+  # `inputs` attribute field. The runAll function therfor only
+  # needs the benchmark suite and the environment.
   runAll =
     env: # Passed directly to the run function.
     benchmark @ {
