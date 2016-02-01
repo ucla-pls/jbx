@@ -13,9 +13,10 @@
   };
   
   petablox-cicg = shared.petablox {
-    logicblox = tools.logicblox-4_2_0;
+    logicblox = null; # tools.logicblox-4_2_0;
     petablox = tools.petablox;
     name = "cicg";
+    reflection = "external";
     subanalyses = [ 
       "cicg2dot-java" 
     ];

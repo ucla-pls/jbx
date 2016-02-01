@@ -32,7 +32,7 @@ petablox.reflect.kind=${reflection}
 petablox.run.ids=${lib.strings.concatMapStringsSep "," (x: x.name) inputs}
 ${
   lib.strings.concatMapStringsSep "\n" (input: 
-    "petablox.args.${input.name}=${lib.strings.concatStringsSep " " input.args}"
+    ''petablox.args.${input.name}=${lib.strings.concatStringsSep " " input.args}''
   ) inputs 
 }
 '';

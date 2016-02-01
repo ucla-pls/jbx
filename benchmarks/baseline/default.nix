@@ -21,8 +21,6 @@ in {
     name = "transfer";
     build = baseline;
     mainclass = "edu.ucla.pls.baseline.Transfer";
-    inputs = [
-      {name = "basic";}
-    ];
+    inputs = [ ];
   };
 }
