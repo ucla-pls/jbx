@@ -1,3 +1,4 @@
+export | grep /var/empty
 
 eval "echo \"$settings\"" > petablox.properties
 path=`toClasspath $build $libraries`

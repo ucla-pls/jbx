@@ -37,7 +37,7 @@ let
     };
   callBenchmark = path: config: 
     mkBenchmark (pkgs.callPackage path config);
-  dacapo = import ./dacapo { inherit pkgs callBenchmark; };
+  dacapo = import ./dacapo { inherit pkgs mkBenchmark callBenchmark; };
   baseline = pkgs.callPackage ./baseline { inherit mkBenchmark; };
   independent = import ./dacapo { inherit pkgs callBenchmark; };
 in rec {

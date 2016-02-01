@@ -1,4 +1,4 @@
-{ pkgs, callBenchmark} :
+{ pkgs, mkBenchmark, callBenchmark} :
 let
   inherit (pkgs) stdenv unzip;
 in rec {
@@ -28,9 +28,8 @@ in rec {
   fop = callBenchmark ./fop { inherit daCapoSrc; };
   xalan = callBenchmark ./xalan { inherit daCapoSrc; };
   jython = callBenchmark ./jython { inherit daCapoSrc; };
-
-  # Does not work .. no eclipse found
-  # eclipse = pkgs.callPackage ./eclipse { };
+  
+  dacapo-harness = pkgs.callPackage ./all { inherit mkBenchmark; };
   
   all = [ avrora
           batik
@@ -42,5 +41,5 @@ in rec {
           pmd
           sunflow
           xalan
-        ];
+        ] ++ dacapo-harness;
 }

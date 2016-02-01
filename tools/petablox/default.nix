@@ -17,6 +17,7 @@ let
     installPhase = ''
       mkdir -p $out/share/java
       mv petablox.jar $_
+      cp -r lib $_
     '';
   };
   testPetablox = options@{
@@ -39,6 +40,7 @@ let
     installPhase = ''
       mkdir -p $out/share/java
       mv petablox.jar $_
+      cp -r lib $_
     '';
   };
 in {
@@ -49,8 +51,13 @@ in {
     version = "v1.0";
     md5 = "dc7164fac9051bbbac14c8c891c4b8b6";
   };
-  petablox-test = testPetablox {
+  petablox-old = testPetablox {
     md5 = "d04713260148c7e7f05e95b039f28d38";
     rev = "0753f868485d032403e29393382895aeafb440a6";
+  };
+  petablox-test = testPetablox {
+    md5 = "12c8d0e37d6f763d901f72f59b2b5954";
+    rev = "95b357a57cba3f4976a0e6e3350fe052e7db15b0";
+    branchName = "ucla-develop";
   };
 }
