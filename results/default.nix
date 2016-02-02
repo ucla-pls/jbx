@@ -32,6 +32,9 @@ in {
           "luindex"
           "avrora"
           "xalan"
+          "h2"
+          "lusearch"
+          "pmd"
         ]) 
         benchmarks.byName));
 }
