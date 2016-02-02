@@ -38,6 +38,7 @@ function compose {
     echo "$HEADER" > "$folder/base.csv"
     for f in $@; do 
         local name=`basename $f`
+        echo "$f" >> "$folder/compose.txt"
         tail -n +2 "$f/base.csv" >> "$folder/base.csv"
         
         echo "# START >>> $name" >> "$folder/stdout"
@@ -55,15 +56,16 @@ export -f compose
 function record {
     local id=$1
     local folder=$2
-    shift; shift;
+    local timelimit=$3
+    shift; shift; shift;
     mkdir -p "$folder"
 
     export > "$folder/export"
     echo "$@" > "$folder/cmd"
 
     echo "$HEADER" > "$folder/base.csv"
-
-    $time/bin/time \
+   
+    timeout ${timelimit} $time/bin/time \
         --format "$id,%U,%S,%M,%x" \
         --output "$folder/base.csv" \
         --append \
@@ -71,7 +73,12 @@ function record {
         1> >($coreutils/bin/tee "$folder/stdout") \
         2> >($coreutils/bin/tee "$folder/stderr" >&2) || true
 
-    sed -i -e "/Command exited with non-zero status/d" "$folder/base.csv"
+    if grep "$id" "$folder/base.csv" ; then
+        sed -i -e "/Command exited with non-zero status/d" "$folder/base.csv"
+    else
+        echo "$id,N/A,N/A,N/A,N/A" >> "$folder/base.csv"
+    fi
+
 } 
 export -f record
 

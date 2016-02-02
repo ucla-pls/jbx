@@ -7,7 +7,7 @@ source $utils/tools
 # is used directly in the filepaths.
 function analyse {
     local id=$1; shift
-    record "$name-$id" "$BASE_FOLDER/$id" $@
+    record "$name-$id" "$BASE_FOLDER/$id" "${timelimit}" $@
     echo "$BASE_FOLDER/$id" >> "$BASE_FOLDER/phases"
 }
 export -f analyse

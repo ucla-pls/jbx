@@ -26,10 +26,11 @@ let
 	     # needed for reliable timing results.
       , name  # The name of the analysis. 
       , analysis  # The file or string needed to be executed
-      , tools ? [] # Tools used by te analysis 
+      , tools ? [] # Tools used by the analysis 
+      , timelimit ? 10 # Basic time limit
       , ... # Other environment variables
     }:
-    stdenv.mkDerivation (options // {
+    stdenv.mkDerivation ({ inherit tools timelimit; } // options // {
       utils = utils;
       env = (e: "${e.name}: " +
                 "${toString e.cores}x ${e.processor}, " +
