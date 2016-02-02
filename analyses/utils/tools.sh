@@ -64,6 +64,8 @@ function record {
     echo "$@" > "$folder/cmd"
 
     echo "$HEADER" > "$folder/base.csv"
+
+    touch "$folder/stderr" "$folder/stdout"
    
     timeout ${timelimit} $time/bin/time \
         --format "$id,%e,%U,%S,%M,%x" \
@@ -73,11 +75,10 @@ function record {
         1> >($coreutils/bin/tee "$folder/stdout") \
         2> >($coreutils/bin/tee "$folder/stderr" >&2) || true
 
-    if grep "$id" "$folder/base.csv" ; then
-        sed -i -e "/Command exited with non-zero status/d" "$folder/base.csv"
-    else
-        echo "$id,$timeout,N/A,N/A,N/A,N/A" >> "$folder/base.csv"
+    if ! grep "$id" "$folder/base.csv" ; then
+        echo "$id,${timelimit},N/A,N/A,N/A,N/A" >> "$folder/base.csv"
     fi
+    sed -i -e "/Command/d" "$folder/base.csv"
 
 } 
 export -f record

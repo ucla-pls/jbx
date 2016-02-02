@@ -17,13 +17,14 @@ let
   harness-benchmark = options @ {
       name
     , sizes 
-    , java ? [ 6 ]
+    , versions ? [ 6 ]
     }: 
     mkBenchmark {
       name = name + "-harness";
       mainclass = "org.dacapo.harness.TestHarness";
       build = dacapo-all;
       inputs = map (size: { name = size; args = ["-s" size name];}) sizes;
+      filter = java: builtins.elem java.version versions;
     };
 in map harness-benchmark [
   {
@@ -44,7 +45,7 @@ in map harness-benchmark [
   }
   {
     name = "h2";
-    sizes = ["small" "default" "large" "huge"];
+    sizes = ["small" "default" "large"]; # -- also works on "huge"
   }
   {
     name = "jython";
@@ -68,15 +69,15 @@ in map harness-benchmark [
   }
   {
     name = "tomcat";
-    sizes = ["small" "default" "large" "huge"];
+    sizes = ["small" "default" "large"]; # -- also works on "huge"
   }
   {
     name = "tradebeans";
-    sizes = ["small" "default" "large" "huge"];
+    sizes = ["small" "default" "large"]; # -- also works on "huge"
   }
   {
     name = "tradesoap";
-    sizes = ["small" "default" "large" "huge"];
+    sizes = ["small" "default" "large"]; # -- also works on "huge"
   }
   {
     name = "xalan";
