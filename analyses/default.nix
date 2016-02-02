@@ -27,7 +27,7 @@ let
       , name  # The name of the analysis. 
       , analysis  # The file or string needed to be executed
       , tools ? [] # Tools used by the analysis 
-      , timelimit ? 10 # Basic time limit
+      , timelimit ? 3600 # Basic time limit
       , ... # Other environment variables
     }:
     stdenv.mkDerivation ({ inherit tools timelimit; } // options // {
