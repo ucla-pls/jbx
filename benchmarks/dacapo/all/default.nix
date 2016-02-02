@@ -1,6 +1,6 @@
 {fetchurl, unzip, mkBenchmark}:
 let 
-  dacapo-all =  java: {
+  dacapo-all = java: {
     src = fetchurl {
       url = "http://sourceforge.net/projects/dacapobench/files/9.12-bach/dacapo-9.12-bach.jar/download";
       md5 = "3f5c11927268b567bc90629c17ec446b";
@@ -16,13 +16,14 @@ let
   };
   harness-benchmark = options @ {
       name
-    , sizes 
+    , sizes
+    , jar ? "${name}.jar"
     , versions ? [ 6 ]
     }: 
     mkBenchmark {
       name = name + "-harness";
-      mainclass = "org.dacapo.harness.TestHarness";
       build = dacapo-all;
+      mainclass = "org.dacapo.harness.TestHarness";
       inputs = map (size: { name = size; args = ["-s" size name];}) sizes;
       filter = java: builtins.elem java.version versions;
     };
@@ -71,14 +72,17 @@ in map harness-benchmark [
     name = "tomcat";
     sizes = ["small" "default" "large"]; # -- also works on "huge"
   }
-  {
-    name = "tradebeans";
-    sizes = ["small" "default" "large"]; # -- also works on "huge"
-  }
-  {
-    name = "tradesoap";
-    sizes = ["small" "default" "large"]; # -- also works on "huge"
-  }
+  # Do not work with petablox. 
+  # {
+  #   name = "tradebeans";
+  #   jar = "daytrader.jar";
+  #   sizes = ["small" "default" "large"]; # -- also works on "huge"
+  # }
+  # {
+  #   name = "tradesoap";
+  #   jar = "daytrader.jar";
+  #   sizes = ["small" "default" "large"]; # -- also works on "huge"
+  # }
   {
     name = "xalan";
     sizes = ["small" "default" "large"];

@@ -1,4 +1,4 @@
-{ benchmarks, java, analyses, env, lib}:
+{ tools, benchmarks, java, analyses, env, lib}:
 let 
   inherit (lib.lists) concatMap filter;
   # product :: (a -> b -> c) -> [a] -> [b] -> [c]
@@ -18,10 +18,22 @@ in {
     '';
   } (map (f: f.withJava java.java6) benchmarks.all);
 
-  test = analyses.batch (analyses.call-graph.petablox-cipa env) {
+  test = analyses.batch (
+    analyses.shared.petablox {
+      subanalyses = ["cipa-0cfa-dlog"];
+      reflection = "external";
+      petablox = tools.petablox;
+      timelimit = 600;
+      } env) {
     name = "test";
-    foreach = '''';
-  } (map (f: f.withJava java.java6) benchmarks.all);
+  } (map (f: f.withJava java.java6) 
+      (lib.attrsets.attrVals 
+        (map (bm: "${bm}-harness") [
+          "luindex"
+          "avrora"
+          "xalan"
+        ]) 
+        benchmarks.byName));
 }
 
 
