@@ -17,13 +17,13 @@ let
   harness-benchmark = options @ {
       name
     , sizes 
-    , java ? [ 5 6 7 8 ]
+    , java ? [ 6 ]
     }: 
     mkBenchmark {
       name = name + "-harness";
       mainclass = "org.dacapo.harness.TestHarness";
       build = dacapo-all;
-      inputs = map (size: { name = size; args = ["-s" size "avrora"];}) sizes;
+      inputs = map (size: { name = size; args = ["-s" size name];}) sizes;
     };
 in map harness-benchmark [
   {

@@ -18,6 +18,10 @@ in {
     '';
   } (map (f: f.withJava java.java6) benchmarks.all);
 
+  test = analyses.batch (analyses.call-graph.petablox-cipa env) {
+    name = "test";
+    foreach = '''';
+  } (map (f: f.withJava java.java6) benchmarks.all);
 }
 
 
