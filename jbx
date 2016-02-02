@@ -28,9 +28,9 @@ function attrs() {
 
 cmd=$1; shift
 case $cmd in
-    "build" ) python helpers/jbx-build.py $@ ;;
-    "run" ) python helpers/jbx-run.py $@ ;;
-    "petablox" ) python helpers/jbx-petablox.py $@ ;;
+    "build" ) python2.7 helpers/jbx-build.py $@ ;;
+    "run" ) python2.7 helpers/jbx-run.py $@ ;;
+    "petablox" ) python2.7 helpers/jbx-petablox.py $@ ;;
     "get" )
         # Gets the results from the results. 
         if [ "$#" -gt 0 ]; then
