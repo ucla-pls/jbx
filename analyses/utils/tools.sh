@@ -29,7 +29,7 @@ function loadTools {
 }
 export -f loadTools
 
-HEADER="name,user,kernel,maxm,exitcode"
+HEADER="name,real,user,kernel,maxm,exitcode"
 
 # joinResults joins a list of base csv files and prints the resulting csv file
 function compose {
@@ -66,7 +66,7 @@ function record {
     echo "$HEADER" > "$folder/base.csv"
    
     timeout ${timelimit} $time/bin/time \
-        --format "$id,%U,%S,%M,%x" \
+        --format "$id,%e,%U,%S,%M,%x" \
         --output "$folder/base.csv" \
         --append \
         $@ \
@@ -76,7 +76,7 @@ function record {
     if grep "$id" "$folder/base.csv" ; then
         sed -i -e "/Command exited with non-zero status/d" "$folder/base.csv"
     else
-        echo "$id,N/A,N/A,N/A,N/A" >> "$folder/base.csv"
+        echo "$id,$timeout,N/A,N/A,N/A,N/A" >> "$folder/base.csv"
     fi
 
 } 

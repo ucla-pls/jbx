@@ -32,6 +32,7 @@ rec {
       stdin = stdin;
       jre = java.jre;
       analysis = ./run.sh;
+      timelimit = 300; # 5 minutes
     };
 
   # runAll is an analysis that runs all the inputs denoted in the 
