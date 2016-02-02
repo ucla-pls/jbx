@@ -34,7 +34,10 @@ in {
           "xalan"
           "h2"
           "lusearch"
-          "pmd"
+          # "pmd"
+          "batik"
+          "tomcat"
+          "sunflow"
         ]) 
         benchmarks.byName));
 }
