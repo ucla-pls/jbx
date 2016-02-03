@@ -24,7 +24,7 @@ def argparser():
             help="the nixfile to build from (default: './default.nix')"
             )
     parser.add_argument("-r", "--reflect",
-            default="dynamic",
+            default="external",
             help="the reflection kind [none|dynamic|external]"
             )
     parser.add_argument("-p", "--petablox",
@@ -32,8 +32,8 @@ def argparser():
             help="the petablox version, example petablox-test"
             )
     parser.add_argument("--engine", "-e",
-            default = "logicblox",
-            help="sets the engine to use. See the tools/ folder for more. null means dbddbd.",
+            default = "null",
+            help="sets the engine to use. See the tools/ folder for more. null means bddbddb.",
             )
     parser.add_argument("--keep-failed", "-K",
             action="store_true",
@@ -45,9 +45,9 @@ def argparser():
             )
     parser.add_argument("-j", "--java", 
             type=int, 
-            default=7,
+            default=6,
             metavar="version",
-            help="the java version to build with (default: 7)"
+            help="the java version to build with (default: 6)"
         );
     parser.add_argument("-n", "--dry-run", 
             action="store_true",
