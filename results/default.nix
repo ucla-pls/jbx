@@ -1,11 +1,21 @@
 { tools, benchmarks, java, analyses, env, lib}:
 let 
-  inherit (lib.lists) concatMap filter;
-  # product :: (a -> b -> c) -> [a] -> [b] -> [c]
-  product = f: as: bs: concatMap (a: map (b: f a b) bs) as;
-  all = filter (b: b.isWorking) (
-    product (b: j: b.withJava j) benchmarks.all java.all
-  );
+  inherit (analyses.postprocessors) versionize compatablity-table;
+  all = versionize benchmarks.all java.all;
+  dacapo-harness =
+      (lib.attrsets.attrVals 
+        (map (bm: "${bm}-harness") [
+          "luindex"
+          "avrora"
+          "xalan"
+          "h2"
+          "lusearch"
+          # "pmd"
+          "batik"
+          "tomcat"
+          "sunflow"
+          ])
+        benchmarks.byName);
 in {
   runAll = analyses.batch (analyses.run.runAll env) {
     name = "runall-benchmarks";
@@ -18,6 +28,14 @@ in {
     '';
   } (map (f: f.withJava java.java6) benchmarks.all);
 
+  compat-table = 
+    compatablity-table
+      (analyses.run.runAll env)
+      (versionize 
+        [ java.java5 java.java6 java.java7 java.java8 ]
+        [ benchmarks.byName.luindex benchmarks.byName.avrora benchmarks.byName.lusearch ])
+  ;
+
   test = analyses.batch (
     analyses.shared.petablox {
       subanalyses = ["cipa-0cfa-dlog"];
@@ -26,20 +44,7 @@ in {
       timelimit = 600;
       } env) {
     name = "test";
-  } (map (f: f.withJava java.java6) 
-      (lib.attrsets.attrVals 
-        (map (bm: "${bm}-harness") [
-          "luindex"
-          "avrora"
-          "xalan"
-          "h2"
-          "lusearch"
-          # "pmd"
-          "batik"
-          "tomcat"
-          "sunflow"
-        ]) 
-        benchmarks.byName));
+  } (map (f: f.withJava java.java6) dacapo-harness);
 }
 
 

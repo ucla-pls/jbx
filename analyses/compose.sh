@@ -4,6 +4,7 @@ source $utils/tools
 mkdir $out
 cd $out
 
+compose $out $results
 
 if [ -z "$combine" ]; then
     runHook before
@@ -15,4 +16,3 @@ else
     runHook combine
 fi
 
-compose $out $results

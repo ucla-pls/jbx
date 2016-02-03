@@ -80,7 +80,9 @@ in rec {
       };
 
   run = import ./run {inherit mkAnalysis compose;};
-  call-graph = import ./call-graph { inherit shared tools; };
+  call-graph = import ./call-graph { inherit shared tools;};
+
+  postprocessors = pkgs.callPackage ./postprocessors { inherit batch;};
 
   inherit shared;
 }

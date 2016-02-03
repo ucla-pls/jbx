@@ -46,7 +46,22 @@ rec {
       , ...
     }:
     let analyses = map (run env benchmark) benchmark.inputs;
-    in compose analyses { name = "${benchmark.name}-all"; };
+    in compose analyses { 
+      name = "${benchmark.name}-all"; 
+      combine = ''
+        awk 'BEGIN { FS=","; OFS=","; S = 0 ; R = 0; C = 0} 
+          { if (NR > 1) {
+            S = $2 + S; 
+            if ($6 == 0) 
+              R = R + 1; 
+            C += 1;
+            }
+          }
+          END {
+            printf "${benchmark.name}-runall,%s,%s/%s\n", S, R, C
+          }' <$out/base.csv >$out/result.csv
+      '';
+    };
 }
 
 
