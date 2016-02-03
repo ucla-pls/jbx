@@ -201,21 +201,21 @@ Current results for running
 benchmarks. All benchmarks are run with the harness.
 
 |            | Java 5 | Java 6                                                        | Java 7 | Java 8 |
-| :---       | :---:  | :---:                                                         | :---:  |  :---: |
+| :---       | :---:  | :---:                                                         | :---:  | :---:  |
 | avrora     |        | ✓                                                             |        |        |
-| batik      |        | timeout(2h)                                                   | ✗      | ✗      |
+| batik      |        | ✓                                                             | ✗      | ✗      |
 | eclipse    |        | [#11](https://github.com/petablox-project/petablox/issues/11) |        | ✗      |
 | fop        |        | [#13](https://github.com/petablox-project/petablox/issues/13) | (✗)    | (✗)    |
-| h2         |        | ✓                                                             |        |        | 
-| jython     |        | [#9](https://github.com/petablox-project/petablox/issues/9)   |        |        | 
-| luindex    |        | ✓                                                             |        |        | 
-| lusearch   |        | ✓                                                             |        |        | 
-| pmd        |        | [#9](https://github.com/petablox-project/petablox/issues/9)   |        |        | 
-| sunflow    |        | ✓                                                             |        |        | 
-| tomcat     |        | timeout(2h)                                                   |        |        | 
-| tradebeans |        | [#13](https://github.com/petablox-project/petablox/issues/13) |        |        | 
-| tradesoap  |        | [#13](https://github.com/petablox-project/petablox/issues/13) |        |        | 
-| xalan      | ✗      | ✓                                                             |        | ✗      | 
+| h2         |        | ✓                                                             |        |        |
+| jython     |        | [#9](https://github.com/petablox-project/petablox/issues/9)   |        |        |
+| luindex    |        | ✓                                                             |        |        |
+| lusearch   |        | ✓                                                             |        |        |
+| pmd        |        | [#9](https://github.com/petablox-project/petablox/issues/9)   |        |        |
+| sunflow    |        | ✓                                                             |        |        |
+| tomcat     |        | ✓                                                             |        |        |
+| tradebeans |        | [#13](https://github.com/petablox-project/petablox/issues/13) |        |        |
+| tradesoap  |        | [#13](https://github.com/petablox-project/petablox/issues/13) |        |        |
+| xalan      | ✗      | ✓                                                             |        | ✗      |
 
 ## Developing
 
