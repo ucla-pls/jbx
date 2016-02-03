@@ -28,6 +28,7 @@ ${if (logicblox != null && builtins.all (a: a != "logicblox-export") subanalyses
   else "petablox.datalox.engine=bddbddb"}
 petablox.err.file=/dev/stderr
 petablox.out.file=/dev/stdout
+petablox.max.heap=128g
 
 petablox.reflect.kind=${reflection}
 petablox.run.ids=${lib.strings.concatMapStringsSep "," (x: x.name) inputs}
