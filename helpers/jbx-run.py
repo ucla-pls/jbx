@@ -37,6 +37,10 @@ def argparser():
             action="store_true",
             help="do not exeucte, but print cmd instead"
             )
+    parser.add_argument("-i", "--input", 
+            default=None,
+            help="name of the imput to run"
+            )
     parser.add_argument("arg", 
             nargs="*",
             help="a list of arguments parsed directly to the benchmark"
@@ -49,10 +53,14 @@ def main(arguments):
 
     args.fargs = "[{}]".format(' '.join(map('"{}"'.format, args.arg)))
     
+    if not args.input:
+        args.input_obj = '{{ name="cli"; args={0.args}; }}'.format(args)
+    else:
+        args.input_obj = '(builtins.elemAt (builtins.filter (i: i.name == "{0.input}") bm.inputs) 0)'.format(args)
     cmd = """
       with (import {0.filename} {{}});
       let bm = benchmarks.byName.{0.benchmark}.withJava java.java{0.java};
-      in analyses.run.run (import {0.environment}) bm {{ name="cli"; args={0.fargs}; }}
+      in analyses.run.run (import {0.environment}) bm {0.input_obj}
     """.format(args)
     nixutils.build(cmd, dry_run=args.dry_run);
 
