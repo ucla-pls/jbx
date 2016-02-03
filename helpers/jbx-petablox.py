@@ -15,7 +15,7 @@ def argparser():
         formatter_class=argparse.RawDescriptionHelpFormatter
         )
 
-    parser.add_argument("benchmark", help="the benchmark that should be analysed");
+    parser.add_argument("benchmark", nargs="+", help="the benchmark that should be analysed");
     parser.add_argument("--analysis", "-a",
             action="append",
             help="the analyses to run example: 'cipa-0cfa'")
@@ -53,24 +53,38 @@ def argparser():
             action="store_true",
             help="do not exeucte, but print cmd instead"
         );
+    parser.add_argument("-t", "--timelimit",
+            type=int,
+            default=8200,
+            help="Numbers of seconds the test are allowed to run"
+        );
     
     return parser
 
+def to_strarray(array):
+    return "[{}]".format(" ".join(map("\"{}\"".format, array)))
+
 def main(arguments):
     args = argparser().parse_args(arguments)
-    args.analyses = "[{}]".format(" ".join(map("\"{}\"".format,args.analysis)))
+    args.analyses = to_strarray(args.analysis)
     args.correctedEngine = ( "tools.{}".format(args.engine) 
                                 if args.engine != "null" 
                                 else "null" );
+    args.bms = to_strarray(args.benchmark);
     cmd = """
       with (import {0.filename} {{}});
-      let bm = benchmarks.byName.{0.benchmark}.withJava java.java{0.java};
-      in analyses.shared.petablox {{ 
-        subanalyses = {0.analyses}; 
-        petablox = tools.{0.petablox};
-        logicblox = {0.correctedEngine};
-        reflection = "{0.reflect}";
-      }} (import {0.environment}) bm
+      let 
+        bms = map (bm: benchmarks.byName.${{bm}}.withJava java.java{0.java}) 
+            {0.bms};
+      in map (bm: 
+        analyses.shared.petablox {{ 
+            subanalyses = {0.analyses}; 
+            petablox = tools.{0.petablox};
+            logicblox = {0.correctedEngine};
+            reflection = "{0.reflect}";
+            timelimit = {0.timelimit};
+        }} (import {0.environment}) bm) 
+        bms
     """.format(args)
 
     nixutils.build(cmd, dry_run=args.dry_run, keep_failed=args.keep_failed);
