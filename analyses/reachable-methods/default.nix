@@ -34,8 +34,9 @@
     subanalyses = [ 
       "cipa-0cfa-dlog" 
     ];
+    tools = [ python ];
     postprocessing = ''
-      sed -nf ${./petablox.sed} sandbox/petablox_output/methods.txt > methods.txt
+      python2.7 ${./petablox-parse.py} sandbox/petablox_output/methods.txt > methods.txt
     '';
   };
 

@@ -6,6 +6,7 @@ options @ {
   , reflection ? "dynamic" # "none" or "external"
   , name ? lib.concatStringsSep "_" subanalyses
   , postprocessing ? ""
+  , tools ? []
   , timelimit ? 3600
 }:
 env:
@@ -18,7 +19,7 @@ let
     name = "petablox-${extend}";
     analysis = ./petablox.sh;
     inherit env timelimit;
-    tools = [ petablox benchmark.java.jre ];
+    tools = [ petablox benchmark.java.jre ] ++ tools;
     inherit (benchmark) mainclass build libraries data;
     settings = ''
 petablox.main.class=${benchmark.mainclass}
