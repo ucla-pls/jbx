@@ -10,7 +10,7 @@ let
     installPhase = ''
     jar -xf $src
     mkdir -p $out/share/java
-    find . -name "*.jar" -exec cp {} $out/share/java \;
+    # find . -name "*.jar" -exec cp {} $out/share/java \;
     cp $src $out/share/java/dacapo-9.12-bach.jar
     '';
   };
@@ -18,7 +18,7 @@ let
       name
     , sizes
     , jar ? "${name}.jar"
-    , versions ? [ 6 ]
+    , versions ? [ 5 6 7 8]
     }: 
     mkBenchmark {
       name = name + "-harness";
@@ -72,17 +72,16 @@ in map harness-benchmark [
     name = "tomcat";
     sizes = ["small" "default" "large"]; # -- also works on "huge"
   }
-  # Do not work with petablox. 
-  # {
-  #   name = "tradebeans";
-  #   jar = "daytrader.jar";
-  #   sizes = ["small" "default" "large"]; # -- also works on "huge"
-  # }
-  # {
-  #   name = "tradesoap";
-  #   jar = "daytrader.jar";
-  #   sizes = ["small" "default" "large"]; # -- also works on "huge"
-  # }
+  {
+    name = "tradebeans";
+    jar = "daytrader.jar";
+    sizes = ["small" "default" "large"]; # -- also works on "huge"
+  }
+  {
+    name = "tradesoap";
+    jar = "daytrader.jar";
+    sizes = ["small" "default" "large"]; # -- also works on "huge"
+  }
   {
     name = "xalan";
     sizes = ["small" "default" "large"];

@@ -5,15 +5,20 @@ let
   dacapo-harness =
       (lib.attrsets.attrVals 
         (map (bm: "${bm}-harness") [
-          "luindex"
           "avrora"
-          "xalan"
-          "h2"
-          "lusearch"
-          # "pmd"
           "batik"
-          "tomcat"
+          "eclipse"
+          "fop"
+          "h2"
+          "jython"
+          "luindex"
+          "lusearch"
+          "pmd"
           "sunflow"
+          "tomcat"
+          "tradebeans"
+          "tradesoap"
+          "xalan"
           ])
         benchmarks.byName);
 in {
@@ -32,8 +37,8 @@ in {
     compatablity-table
       (analyses.run.runAll env)
       (versionize 
-        [ java.java5 java.java6 java.java7 java.java8 ]
-        [ benchmarks.byName.luindex benchmarks.byName.avrora benchmarks.byName.lusearch ])
+        [java.java5 java.java6 java.java7 java.java8 ]
+        dacapo-harness )
   ;
 
   test = analyses.batch (
