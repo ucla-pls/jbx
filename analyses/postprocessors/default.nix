@@ -1,4 +1,4 @@
-{ python, lib, batch, eject}:
+{ python, lib, batch, eject, compose}:
 let inherit (lib.lists) concatMap filter;
 in rec {
 
@@ -25,6 +25,29 @@ in rec {
       column -s',' -t table.csv
       '';
     } versions;
+
+  # Overview runs a set of analyses against each other to check if they perform 
+  # as expected. Also produces an difference report. 
+  overview = {
+    resultfile,
+    name, 
+    analyses ? [],
+    }: 
+    env:
+    benchmark:
+    let 
+      results = map (analysis: analysis env benchmark) analyses; 
+    in compose results {
+      inherit name; 
+      buildInputs = [ python eject ];
+      combine = ''
+        python2.7 ${./overview.py} "${resultfile}" ${
+          builtins.concatStringsSep " " 
+            (map (r: "${r.sign}${r.name}=${r}") results)
+        } > table.csv
+        column -s',' -t table.csv
+      '';
+    };
 
 }
 

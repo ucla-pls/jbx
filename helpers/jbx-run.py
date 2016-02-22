@@ -19,6 +19,10 @@ def argparser():
     parser.add_argument("benchmark",
             help="the benchmark that should be run",
             )
+    parser.add_argument("-a", "--analysis",
+            default="run.run",
+            help="the dynamic analysis to run"
+            )
     parser.add_argument("-f", "--filename",
             default="./default.nix",
             help="the nixfile to build from (default: './default.nix')"
@@ -60,7 +64,7 @@ def main(arguments):
     cmd = """
       with (import {0.filename} {{}});
       let bm = benchmarks.byName.{0.benchmark}.withJava java.java{0.java};
-      in analyses.run.run (import {0.environment}) bm {0.input_obj}
+      in analyses.{0.analysis} (import {0.environment}) bm {0.input_obj}
     """.format(args)
     nixutils.build(cmd, dry_run=args.dry_run);
 
