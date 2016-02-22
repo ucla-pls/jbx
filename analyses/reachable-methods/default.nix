@@ -1,13 +1,15 @@
-{ shared, tools, emma, mkAnalysis, python}:
-{
+{ shared, compose, tools, emma, mkAnalysis, python, postprocessors}:
+let emma_ = emma; in
+rec {
   
   # Emma, dynammic reachable methods
-  emma = env: benchmark: mkAnalysis {
+  emma = env: benchmark: input: mkAnalysis {
     inherit env;
-    name = "reachable-methods-emma-${benchmark.name}";
-    tools = [ emma benchmark.java.jdk python];
-    emma = emma;
-    inputargs = (builtins.elemAt benchmark.inputs 0).args;
+    name = "reachable-methods-emma-${benchmark.name}-${input.name}";
+    tools = [ emma_ benchmark.java.jdk python];
+    emma = emma_;
+    timelimit = 420; # 7 minutes
+    inputargs = input.args;
     inherit (benchmark) mainclass build libraries data;
     analysis = ''
       source $utils/tools
@@ -25,10 +27,19 @@
     '';
   };
 
+  emma-all = env: benchmark: 
+    let analyses = map (emma env benchmark) benchmark.inputs;
+    in compose analyses { 
+      sign = "-";
+      name = "reachable-methods-emma-${benchmark.name}";
+      foreach = ''cat $result/methods.txt >> methods.txt'';
+    };
+
   # Petablox with the external refelction handeling
   petablox-external = shared.petablox {
     logicblox = null; # tools.logicblox-4_2_0;
     petablox = tools.petablox;
+    sign = "+";
     name = "reachable-methods";
     reflection = "external";
     subanalyses = [ 
@@ -40,7 +51,11 @@
     '';
   };
 
-
+  overview = postprocessors.overview { 
+    analyses = [ petablox-external emma-all];
+    name = "reachable-methods";
+    resultfile = "methods.txt";
+  };
 }
 
 

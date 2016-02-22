@@ -81,8 +81,12 @@ in rec {
 
   run = import ./run {inherit mkAnalysis compose;};
   call-graph = import ./call-graph { inherit shared tools;};
-  postprocessors = pkgs.callPackage ./postprocessors { inherit batch;};
-  reachable-methods = pkgs.callPackage ./reachable-methods { inherit shared tools mkAnalysis;};
+  postprocessors = pkgs.callPackage ./postprocessors { 
+    inherit batch compose;
+  };
+  reachable-methods = pkgs.callPackage ./reachable-methods { 
+    inherit shared tools mkAnalysis compose postprocessors;
+  };
 
   inherit shared;
 }
