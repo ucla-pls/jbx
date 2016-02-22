@@ -79,13 +79,20 @@ in rec {
 	     benchmarks);
       };
 
-  run = import ./run {inherit mkAnalysis compose;};
-  call-graph = import ./call-graph { inherit shared tools;};
+  run = import ./run {
+    inherit mkAnalysis compose;
+  };
+  call-graph = import ./call-graph { 
+    inherit shared tools;
+  };
   postprocessors = pkgs.callPackage ./postprocessors { 
     inherit batch compose;
   };
   reachable-methods = pkgs.callPackage ./reachable-methods { 
     inherit shared tools mkAnalysis compose postprocessors;
+  };
+  deadlock = pkgs.callPackage ./deadlock { 
+    inherit shared tools;
   };
 
   inherit shared;
