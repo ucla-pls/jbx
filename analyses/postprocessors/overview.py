@@ -19,6 +19,7 @@ from collections import namedtuple
 
 Timer = namedtuple("Timer", "name real user kernel maxm exitcode")
 Result = namedtuple("Result", "times elements")
+Stats = namedtuple("Stats", "name elements ucover udist ocover odist time") 
 
 Timer.__add__ = lambda self, other: Timer(
         os.path.commonprefix([self.name, other.name]),
@@ -65,10 +66,10 @@ class AnalysisResult(object):
                             (?P<folder>.*)
                           """, re.VERBOSE).match
     
-    def __init__(self, analysis, folder, result = None):
+    def __init__(self, analysis, folder, result):
         self.analysis = analysis
         self._folder = folder
-        self._result = result or analysis.read_result(folder) 
+        self._result = result
 
         self._time = sum(
            self._result.times[1:], 
@@ -86,24 +87,25 @@ class AnalysisResult(object):
             dicts["sign"],
             resultname
         )
-        return cls(analysis, dicts["folder"])
+        return cls(analysis, dicts["folder"], analysis.read_result(dicts["folder"]))
 
     def stats(self, underaprx, overaprx):
         hits = len(underaprx & self._result.elements)
         notmisses = len(self._result.elements & overaprx)
         elements = len(self._result.elements)
-        return "{:.2f}/{:.2f} {} {:.2f}/{:.2f} ({})".format(
+        return Stats(
+            self.analysis.name,
+            elements,
             # Did the analysis hit everything in the
             # underapproximation
-            hits / len(underaprx), 
+            hits / len(underaprx) if underaprx else "N/A",
             # Did we not hit everything in the underapproximation
-            hits / elements, 
-            elements,
+            hits / elements if elements else "N/A", 
             # Were it more precise than the overaproximation 
-            notmisses / len(overaprx),
+            notmisses / len(overaprx) if overaprx else "N/A",
             # Did the analysis hit anything not in the
             # overapproximation
-            notmisses / elements, 
+            notmisses / elements if elements else "N/A", 
             self._time.real
         )
 
@@ -141,12 +143,10 @@ def main():
     )
    
     fieldnames = ["name", "stats"]
-    writer = csv.DictWriter(sys.stdout, fieldnames=fieldnames)
+    writer = csv.DictWriter(sys.stdout, fieldnames=Stats._fields)
+    writer.writeheader()
     for result in results:
-        writer.writerow({
-            "name": result.analysis.name, 
-            "stats": result.stats(under, over)
-            })
+        writer.writerow(result.stats(under, over)._asdict())
 
 if __name__ == "__main__":
     main()

@@ -92,7 +92,7 @@ in rec {
     inherit shared tools mkAnalysis compose postprocessors;
   };
   deadlock = pkgs.callPackage ./deadlock { 
-    inherit shared tools;
+    inherit shared tools postprocessors;
   };
 
   inherit shared;

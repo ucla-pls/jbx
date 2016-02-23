@@ -49,6 +49,19 @@ in rec {
       '';
     };
 
+  # joincsv takse a csv files for all involved benchmarks and joins them 
+  # into one.
+  total = 
+    name:
+    overviews: 
+    compose overviews {
+      inherit name;
+      buildInputs = [ python eject ];
+      combine = ''
+        python2.7 ${./total.py} $results > table.csv
+        column -s',' -t table.csv
+      '';
+    };
 }
 
 

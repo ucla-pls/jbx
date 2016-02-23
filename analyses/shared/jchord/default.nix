@@ -1,5 +1,5 @@
 { lib, mkAnalysis}:
-options @ {
+options_ @ {
   subanalyses
   , jchord 
   , name ? lib.concatStringsSep "_" subanalyses
@@ -7,18 +7,19 @@ options @ {
   , postprocessing ? ""
   , tools ? []
   , timelimit ? 3600
+  , ...
 }:
 env:
 benchmark: 
 let 
   subanalysis = lib.concatStringsSep "," subanalyses;
   inputs = benchmark.inputs;
-  options = {
+  options = options_ // {
     name = "jchord-${name}-${benchmark.name}";
     analysis = ./jchord.sh;
     inherit env timelimit;
     tools = [ jchord benchmark.java.jre ] ++ tools;
-    inherit (benchmark) mainclass build libraries;
+    inherit (benchmark) mainclass build libraries data;
 
     settings = ''
 chord.main.class=${benchmark.mainclass}
