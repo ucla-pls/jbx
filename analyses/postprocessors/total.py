@@ -4,14 +4,11 @@
 import csv
 import sys
 
-def readFile(filename):
-    try:
-        with open(filename) as f:
-            reader = csv.DictReader(f);
-
-        return (reader.fieldnames(), list(reader))
-    except:
-        return ([], [])
+def readFile(folder):
+    filename = os.path.join(folder, "table.csv")
+    with open(filename) as f:
+        reader = csv.DictReader(f);
+        return (reader.fieldnames, list(reader))
    
 
 data = map(readFile, sys.argv[1:]);
@@ -22,7 +19,7 @@ for d in data:
     for name in d[0]:
         if not name in fieldnames:
             fieldnames.append(name)
-    records.extend(d[0]) 
+    records.extend(d[1]) 
 
 writer = csv.DictWriter(sys.stdout, fieldnames)
 writer.writeheader()
