@@ -50,6 +50,14 @@ in {
       } env) {
     name = "test";
   } (map (f: f.withJava java.java6) dacapo-harness);
+  
+  reachable-methods = analyses.postprocessors.total 
+    "reachable-methods"
+    (map (f: analyses.deadlock.overview env (f.withJava java.java6)) dacapo-harness);
+
+  deadlocks = analyses.postprocessors.total 
+    "deadlocks"
+    (map (f: analyses.deadlock.overview env (f.withJava java.java6)) dacapo-harness);
 }
 
 

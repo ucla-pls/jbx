@@ -1,16 +1,7 @@
-
-if [ -f "$settings" ]; then
-    cat "$settings" > chord.properties
-else
-    echo "$settings" > chord.properties
-fi
+eval "echo \"$settings\"" > chord.properties
 path=`toClasspath $build $libraries`
-echo "chord.class.path=$path" >> chord.properties
-export PATH=$jre/bin:$PATH
 
-loadClasspath $jchord 
+echo "chord.class.path=$path" >> chord.properties
 
 analyse "jchord" java -Dchord.work.dir=`pwd` \
     chord.project.Boot 
-
-# runHook postprocessing
