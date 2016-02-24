@@ -7,7 +7,8 @@ import sys
 import os
 
 d = sys.argv[1]
-tree = ET.parse(os.path.join(d, "deadlocklist.xml"))
+try: tree = ET.parse(os.path.join(d, "deadlocklist.xml"))
+except: sys.exit()
 
 Deadlock = namedtuple("Deadlock", "threads locations")
 Location = namedtuple("Location", "context lock method object");

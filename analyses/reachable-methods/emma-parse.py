@@ -5,7 +5,9 @@ import sys
 import xml.etree.ElementTree as ET
 import re
 
-tree = ET.parse(sys.argv[1]);
+try:
+    tree = ET.parse(sys.argv[1]);
+except e: sys.exit();
 root = tree.getroot()
 
 expr = re.compile("(?P<name>\S+) (?P<param>\\(.*?\\)): (?P<rtype>.*)"); #: (?P<name>\S+) (?P<param>\\(.*?\\))");
