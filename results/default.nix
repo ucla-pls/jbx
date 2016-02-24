@@ -53,7 +53,7 @@ in {
   
   reachable-methods = analyses.postprocessors.total 
     "reachable-methods"
-    (map (f: analyses.deadlock.overview env (f.withJava java.java6)) dacapo-harness);
+    (map (f: analyses.reachable-methods.overview env (f.withJava java.java6)) dacapo-harness);
 
   deadlocks = analyses.postprocessors.total 
     "deadlocks"
