@@ -5,10 +5,13 @@ import csv
 import sys
 
 def readFile(filename):
-    with open(filename) as f:
-        reader = csv.DictReader(f);
-       
+    try:
+        with open(filename) as f:
+            reader = csv.DictReader(f);
+
         return (reader.fieldnames(), list(reader))
+    except:
+        return ([], [])
    
 
 data = map(readFile, sys.argv[1:]);
