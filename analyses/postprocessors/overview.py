@@ -89,6 +89,9 @@ class AnalysisResult(object):
         )
         return cls(analysis, dicts["folder"], analysis.read_result(dicts["folder"]))
 
+    def errors(self, underaprx, overaprx):
+        return (underaprx - self._result.elements, self._result.elements - overaprx)
+
     def stats(self, underaprx, overaprx):
         hits = len(underaprx & self._result.elements)
         notmisses = len(self._result.elements & overaprx)
@@ -107,7 +110,7 @@ class AnalysisResult(object):
             # overapproximation
             notmisses / elements if elements else "N/A", 
             self._time.real
-        )
+        ) 
 
     def overapproximation(self): 
         return self.analysis.overapproximation()
@@ -130,11 +133,10 @@ class AnalysisResult(object):
         else: return set()
 
 def main(): 
-    results = map(
-        lambda arg: 
-            AnalysisResult.parse(sys.argv[1], arg),
-        sys.argv[2:]
-    );
+    resultfile = sys.argv[1]
+    errorfolder = sys.argv[2]
+    analyses = sys.argv[3:]
+    results = map(lambda arg: AnalysisResult.parse(resultfile, arg), analyses)
     over = AnalysisResult.overapproximate(
         filter(AnalysisResult.overapproximation, results)
     )
@@ -145,8 +147,15 @@ def main():
     fieldnames = ["name", "stats"]
     writer = csv.DictWriter(sys.stdout, fieldnames=Stats._fields)
     writer.writeheader()
+    os.mkdir(errorfolder)
     for result in results:
         writer.writerow(result.stats(under, over)._asdict())
+        unsound, missing  = result.errors(under, over)
+        with open(os.path.join(errorfolder, result.analysis.name + ".txt"), "w") as f:
+            for line in sorted(unsound):
+                f.write("- " + line + "\n")
+            for line in sorted(missing):
+                f.write("+ " + line + "\n")
 
 if __name__ == "__main__":
     main()

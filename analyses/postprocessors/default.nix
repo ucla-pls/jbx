@@ -41,7 +41,7 @@ in rec {
       inherit name; 
       buildInputs = [ python eject ];
       combine = ''
-        python2.7 ${./overview.py} "${resultfile}" ${
+        python2.7 ${./overview.py} "${resultfile}" errors ${
           builtins.concatStringsSep " " 
             (map (r: "${r.sign}${r.name}=${r}") results)
         } > table.csv

@@ -1,5 +1,5 @@
 { lib, mkLogicBloxAnalysis, mkAnalysis}:
-options @ {
+options_ @ {
   subanalyses
   , petablox
   , logicblox ? null
@@ -8,6 +8,7 @@ options @ {
   , postprocessing ? ""
   , tools ? []
   , timelimit ? 3600
+  , ...
 }:
 env:
 benchmark: 
@@ -15,7 +16,7 @@ let
   inputs = benchmark.inputs;
   lbname = if logicblox != null then "lb-" + logicblox.version else "bddbddb";
   extend = "${lbname}-${name}-${benchmark.name}"; 
-  options = {
+  options = options_ // {
     name = "petablox-${extend}";
     analysis = ./petablox.sh;
     inherit env timelimit;
