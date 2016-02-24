@@ -3,6 +3,7 @@
 
 import csv
 import sys
+import os
 
 def readFile(folder):
     filename = os.path.join(folder, "table.csv")
