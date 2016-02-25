@@ -25,5 +25,9 @@ for t in tree.findall("deadlock"):
     ts = tuple(t.attrib["T{}id".format(i)] for i in [1,2])
     deadlocks.add(Deadlock(ts, tuple(locations)))
 
+locations = set()
 for deadlock in deadlocks:
-    print(deadlock)
+    locations.add(tuple(sorted(map(lambda l: l.lock, deadlock))))
+
+for location in locations:
+    print(location);
