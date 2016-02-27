@@ -31,6 +31,9 @@ Timer.__add__ = lambda self, other: Timer(
     )
 
 def timer (name, real, user, kernel, maxm, exitcode):
+    if exitcode == "N/A":
+        return Timer(name, float(real), 
+          float('nan'), float('nan'), float('nan'), 1)
     return Timer(
         name, float(real), float(user), float(kernel), 
         int(maxm), int(exitcode)
@@ -110,7 +113,7 @@ class AnalysisResult(object):
             # overapproximation
             notmisses / elements if elements else "N/A", 
             self._time.real,
-            reduce(lambda a, b: a + 1 if b != 0 else a, _result.times, 0)
+            reduce(lambda a, b: a + 1 if b.exitcode != 0 else a, self._result.times, 0)
         ) 
 
     def overapproximation(self): 
