@@ -19,7 +19,7 @@ from collections import namedtuple
 
 Timer = namedtuple("Timer", "name real user kernel maxm exitcode")
 Result = namedtuple("Result", "times elements")
-Stats = namedtuple("Stats", "name elements ucover udist ocover odist time") 
+Stats = namedtuple("Stats", "name elements ucover udist ocover odist time exitcode") 
 
 Timer.__add__ = lambda self, other: Timer(
         os.path.commonprefix([self.name, other.name]),
@@ -27,7 +27,7 @@ Timer.__add__ = lambda self, other: Timer(
         self.user + other.user,
         self.kernel + other.kernel,
         max(self.maxm, other.maxm),
-        min(self.exitcode, other.exitcode)
+        max(self.exitcode, other.exitcode)
     )
 
 def timer (name, real, user, kernel, maxm, exitcode):
@@ -109,7 +109,8 @@ class AnalysisResult(object):
             # Did the analysis hit anything not in the
             # overapproximation
             notmisses / elements if elements else "N/A", 
-            self._time.real
+            self._time.real,
+            reduce(lambda a, b: a + 1 if b != 0 else a, _result.times, 0)
         ) 
 
     def overapproximation(self): 
@@ -144,7 +145,6 @@ def main():
         filter(AnalysisResult.underapproximation, results)
     )
    
-    fieldnames = ["name", "stats"]
     writer = csv.DictWriter(sys.stdout, fieldnames=Stats._fields)
     writer.writeheader()
     os.mkdir(errorfolder)
