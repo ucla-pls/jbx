@@ -18,7 +18,6 @@ rec {
       clp=`toClasspath $build $libraries`
       args=`evalArgs $inputargs`
       runHook setup
-      echo "$args"
 
       analyse "emma" java -cp $emma/lib/jars/emma.jar:$emma/lib/jars/emma_ant.jar emmarun\
           -r xml -Dreport.depth=method -cp $clp $mainclass $args
