@@ -1,29 +1,29 @@
-{ pkgs, fetchprop }:
+{ fetchprop, callPackage}:
 rec { 
-  openjdk6 = pkgs.callPackage ./openjdk6 {};
+  openjdk6 = callPackage ./openjdk6 {};
   
-  jdk6 = pkgs.callPackage ./jdk6 { fetchprop = fetchprop;};
-  jdk5 = pkgs.callPackage ./jdk5 { fetchprop = fetchprop;};
+  jdk6 = callPackage ./jdk6 { fetchprop = fetchprop;};
+  jdk5 = callPackage ./jdk5 { fetchprop = fetchprop;};
   
   jre5 = jdk5;
   jre6 = jdk6; # Not cool but works.
 
-  inherit (pkgs.callPackage ./logicblox {fetchprop = fetchprop;}) 
+  inherit (callPackage ./logicblox {fetchprop = fetchprop;}) 
     logicblox-3_10_21 
     logicblox-4_2_0
     logicblox-4_3_6_3
   ;
   logicblox = logicblox-4_3_6_3;
 
-  doop = pkgs.callPackage ./doop { inherit logicblox-3_10_21; };
+  doop = callPackage ./doop { inherit logicblox-3_10_21; };
   
-  inherit (pkgs.callPackage ./jchord {}) 
+  inherit (callPackage ./jchord {}) 
     jchord-head
     jchord-2_0
   ;
   jchord = jchord-head;
   
-  inherit (pkgs.callPackage ./petablox {}) 
+  inherit (callPackage ./petablox {}) 
     petablox-0_1
     petablox-1_0
     petablox-test

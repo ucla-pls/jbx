@@ -16,7 +16,6 @@ def argparser():
         formatter_class=argparse.RawDescriptionHelpFormatter
         )
 
-    parser.add_argument("benchmark", help="the benchmark that should be build");
     parser.add_argument("-f", "--filename",
             default="./default.nix",
             help="the nixfile to build from (default: './default.nix')"
@@ -47,6 +46,8 @@ def argparser():
             help="do not exeucte, but print cmd instead"
         );
     
+    nixutils.add_benchmark_selection(parser);
+    
     return parser
 
 def main(arguments):
@@ -56,7 +57,7 @@ def main(arguments):
     if args.src_only: 
         path = "({}).build.src".format(path)
 
-    cmd = "let i = import {0.filename} {{}}; in {1}".format(args, path)
+    cmd = "let i = import {0} {{}}; in {1}".format(args.filename, path)
     args.method(cmd, dry_run=args.dry_run, keep_failed=args.keep_failed);
 
 

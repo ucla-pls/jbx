@@ -1,6 +1,9 @@
 
 import subprocess
 
+def add_benchmark_selection(parser):
+    parser.add_argument("benchmark", help="the benchmark that should be build");
+
 def build(string, dry_run=True, keep_failed=False):
     return call(
             ["nix-build"] +

@@ -1,26 +1,25 @@
-let gpkgs = import ./nixpkgs {};
+let nixpkgs = import ./nixpkgs {};
     env = import ./environment.nix;
 
     # This project contains some proprietary file not 
     # distributed with this pkg.
     fetchprop = options: 
-      gpkgs.fetchurl (options // {
+      pkgs.fetchurl (options // {
         url = env.ppath + options.url;
       });
-    
-    tools = import ./tools { pkgs = gpkgs; inherit fetchprop; };
+
+    tools = nixpkgs.callPackage ./tools { inherit fetchprop; };
     
     # Update the packages with our tools
-    pkgs = gpkgs // tools; 
+    pkgs = nixpkgs // tools // { inherit utils; 
+      callPackage = pkgs.lib.callPackageWith pkgs;
+    }; 
+    
+    utils = pkgs.callPackage ./utils {};
+
 in {}: rec {
-  inherit (pkgs) runCommand jre7 jre6 jre5 python;
-
   inherit tools;
-
-  benchmarks = import ./benchmarks {
-    inherit pkgs java;
-  };
-
+  benchmarks = pkgs.callPackage ./benchmarks {};
   analyses = import ./analyses {
     inherit pkgs tools;
   };
