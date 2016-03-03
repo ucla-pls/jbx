@@ -2,7 +2,7 @@
 # author: Christian Kalhauge <kalhauge@cs.ucla.edu>
 # description: |
 #   This module contains all the utilities needed to build jbx.
-{lib, stdenv, callPackage}:
+{lib, stdenv, callPackage, procps, time, coreutils}:
 rec {
   # Type: Benchmark 
   #   A benchmark is a description of a java program, which is buildable 
@@ -21,7 +21,7 @@ rec {
     , tags ? []
     # filter enables us to filter on java versions
     , filter ? jv: true
-    , data ? build # a data repository, for tests
+    , data ? null # a data repository, for tests
     , ...
     }: 
     let self = meta // { 
@@ -38,7 +38,8 @@ rec {
     template // rec {
       inherit java;
       name = template.name + java.id;
-      inherit (template) filter tags inputs data;
+      inherit (template) filter tags inputs;
+      data = if template.data != null then data else build;
       build = stdenv.mkDerivation ({inherit name;} // template.build java);
       libraries = template.libraries java;
     };
@@ -48,8 +49,138 @@ rec {
     path: 
     config: 
     mkBenchmarkTemplate (callPackage path config);
+    
+  envToString = env: 
+    "${env.name}: " +
+    "${toString env.cores}x ${env.processor}, " +
+    "${toString env.memorysize}mb ${env.memory}";
+
+  # Type: Result
+  # The Result is a derivation, filled with the contents of an analysis run on
+  # a benchmark. A complete result will contain a number of files:
+  # 
+  # The results files, these must be present, even if they are empty. They should
+  # contain one result per line. The format and defintion of results is left up to
+  # the analysis category:
+  #   may  -- contains all the overapproximated results. 
+  #   must -- contains all the underapproximated results.
+  # 
+  # The error file, if this file is present the analysis faced an error.
+  #   error -- Contains a short description of the error.
+  #
+  # The phase files, these files contains information about the individually
+  # executed phases of the algorithm.
+  #   phases    -- A list of phases executed 
+  #   <phasename>/
+  #      stats.csv -- Equvilent to the stats.csv file, but only for this phase
+  #      cmd       -- The command that was executed
+  #      export    -- The environment under which it was executed 
+  #      stderr    -- The stderr of the phase 
+  #      stdout    -- The stdout of the phase 
+  #   stderr    -- The stderr of the entire computation.
+  #   stdout    -- The stdout of the entire computation.
+  #
+  # The performance files, these files logs performace of the analysis.
+  #   stats.csv       -- Contain the name of a subphase, the computation time, kernel
+  #                      time, user time, max memory used and the exit code of the
+  #                      result. The fist line of the file is the header.
+  #   pids            -- Maps proces ids to process names.
+  #   snapshots.csv   -- This file contains snapshots of the cpu and memory ussage of
+  #                      the pids. Each row contains, time since start, pid,
+  #                      memory usage, and CPU ussage.
+  #
+  # The axiliary files,
+  #   env    -- The environment under which the computation were done. A string version
+  #             of the environment.nix file.
+  mkResult = stdenv.mkDerivation;
+
+  # Type: Analysis = Benchmark -> Env -> Result
+  mkAnalysis = 
+    options @ { 
+        name
+      , analysis
+      , tools ? []
+      , timelimit ? 3600
+      , ...
+    }:
+    benchmark:
+    env: 
+    mkResult (options // { 
+      inherit timelimit;
+      name = name + "+" + benchmark.name;
+      env = envToString env;
+      inherit (benchmark) mainclass build libraries data;
+      builder = ./analysis.sh;
+      buildInputs = [procps] ++ tools;
+    });
  
-  # Type: Analysis : Benchmark -> Env -> Result
+  # Type: DynamicAnalysis : Benchmark -> Env -> Result
+
+  # mkDynamicAnalysis : Options -> Benchmark -> Env -> Input -> Result 
+  # mkDynamicAnalysis is a function that creates an result using an input.
+  mkDynamicAnalysis = 
+    options @ { 
+        name
+      , tools ? []
+      , timelimit ? 3600
+      , ...
+    }:
+    benchmark:
+    env: 
+    input:
+    let input_ = { setup = ""; args = []; stdin = ""; } // input;
+    in mkResult (options // { 
+      inherit time coreutils;
+      env = envToString env;
+      inherit timelimit;
+      inherit (input_) setup stdin;
+      inherit (benchmark) build libraries data;
+      inputargs = input_.args;
+      name = name + "+" + benchmark.name + "." + input.name;
+      tools = ./tools.sh;
+      builder = ./analysis.sh;
+      buildInputs = [procps] ++ tools;
+    });
+
+  # onAllInputs : DynamicAnalysis -> Options -> Analyis
+  # This function changes a DynamicAnalysis to an Analysis, by running
+  # the analsis on all inputs. 
+  onAllInputs = 
+    analysis:
+    options:
+    benchmark:
+    env:
+    let results = map (analysis benchmark env) benchmark.inputs;
+    in compose results (options // {
+      name = (lib.strings.splitString "$" analysis.name)[0];
+    });
+
+  # compose: [Result] -> Options -> Result
+  # Takes a list of results, run them and perform post actions to combine
+  # everything:
+  compose =
+    results:
+    mkResult {
+      results = results;
+      builder = ./compose.sh;
+    };
+
+  # The batch tool enables you to batch multible benchmarks with one
+  # analysis this is especially usefull for during comparations. This
+  # tool automatically 
+  # batch =
+  #   analysis:
+  #   options:
+  #   benchmarks:
+  #   rec {
+  #     all = compose (builtins.attrValues byName) options;
+  #     byName = builtins.listToAttrs
+  #       (map (benchmark: {
+	#        name = benchmark.name;
+	#        value = analysis benchmark;
+	#      })
+	#      benchmarks);
+  #     };
 
   # >> Utilities 
   # This section contains small functions that might be nice to have

@@ -20,9 +20,7 @@ let nixpkgs = import ./nixpkgs {};
 in {}: rec {
   inherit tools utils;
   benchmarks = pkgs.callPackage ./benchmarks {};
-  analyses = import ./analyses {
-    inherit pkgs tools;
-  };
+  analyses = pkgs.callPackage ./analyses {};
 
   results = import ./results {
     inherit analyses benchmarks env java tools;

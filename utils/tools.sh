@@ -18,28 +18,16 @@ function loadClasspath {
 }
 export -f loadClasspath
 
-function loadTools {
-    local path=""
-    for l in $@; do
-        if [ -d "$l/bin" ]; then
-            path="$path${path:+:}$l/bin"
-        fi
-    done
-    export PATH="$path${path:+${PATH:+:}}$PATH"
-}
-export -f loadTools
-
 HEADER="name,real,user,kernel,maxm,exitcode"
 
-# joinResults joins a list of base csv files and prints the resulting csv file
 function compose {
     local folder=$1; shift
     mkdir -p "$folder"
-    echo "$HEADER" > "$folder/base.csv"
+    echo "$HEADER" > "$folder/times.csv"
     for f in $@; do 
         local name=`basename $f`
         echo "$f" >> "$folder/compose.txt"
-        tail -n +2 "$f/base.csv" >> "$folder/base.csv"
+        tail -n +2 "$f/times.csv" >> "$folder/times.csv"
         
         echo "# START >>> $name" >> "$folder/stdout"
         cat "$f/stdout" >> "$folder/stdout"
@@ -63,22 +51,22 @@ function record {
     export > "$folder/export"
     echo "$@" > "$folder/cmd"
 
-    echo "$HEADER" > "$folder/base.csv"
+    echo "$HEADER" > "$folder/times.csv"
 
     touch "$folder/stderr" "$folder/stdout"
    
     timeout ${timelimit} $time/bin/time \
         --format "$id,%e,%U,%S,%M,%x" \
-        --output "$folder/base.csv" \
+        --output "$folder/times.csv" \
         --append \
         $@ \
         1> >($coreutils/bin/tee "$folder/stdout") \
         2> >($coreutils/bin/tee "$folder/stderr" >&2) || true
 
-    if ! grep "$id" "$folder/base.csv" ; then
-        echo "$id,${timelimit},N/A,N/A,N/A,N/A" >> "$folder/base.csv"
+    if ! grep "$id" "$folder/times.csv" ; then
+        echo "$id,${timelimit},N/A,N/A,N/A,N/A" >> "$folder/times.csv"
     fi
-    sed -i -e "/Command/d" "$folder/base.csv"
+    sed -i -e "/Command/d" "$folder/times.csv"
 
 } 
 export -f record
