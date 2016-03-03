@@ -50,14 +50,24 @@ def argparser():
     
     return parser
 
+CMD = """
+let jbx = import {0.filename} {{}}; 
+    inherit (jbx.utils) withJava;
+    java = jbx.java.java{0.java};
+    fetch = (b: {1} );
+in map fetch (map (withJava java) {2})
+"""
 def main(arguments):
     args = argparser().parse_args(arguments)
 
-    path = "i.benchmarks.byName.{0.benchmark}.withJava i.java.java{0.java}".format(args)
+    benchmark_expr = args.get_benchmarks_expr(args);
+    
     if args.src_only: 
-        path = "({}).build.src".format(path)
-
-    cmd = "let i = import {0} {{}}; in {1}".format(args.filename, path)
+        foreach = "b.build.src"
+    else:
+        foreach = "b.build"
+    
+    cmd = CMD.format(args, foreach, benchmark_expr)
     args.method(cmd, dry_run=args.dry_run, keep_failed=args.keep_failed);
 
 

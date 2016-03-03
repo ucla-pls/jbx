@@ -18,7 +18,7 @@ let nixpkgs = import ./nixpkgs {};
     utils = pkgs.callPackage ./utils {};
 
 in {}: rec {
-  inherit tools;
+  inherit tools utils;
   benchmarks = pkgs.callPackage ./benchmarks {};
   analyses = import ./analyses {
     inherit pkgs tools;

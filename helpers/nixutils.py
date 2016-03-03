@@ -2,7 +2,19 @@
 import subprocess
 
 def add_benchmark_selection(parser):
-    parser.add_argument("benchmark", help="the benchmark that should be build");
+    def get_benchmarks_expr(args):
+        if (args.only): 
+            return "[{}]".format(" ".join(map ("jbx.benchmarks.byName.{0}".format, args.only)))
+        elif (args.tag):
+            return "jbx.benchmarks.byTag.{0}".format(args.tag)
+        else:
+            return "jbx.benchmarks.all"
+
+    group = parser.add_mutually_exclusive_group(required=True);
+    group.add_argument("--only", metavar="Benchmark", nargs="*", help="a select number of benchmarks");
+    group.add_argument("--all", action="store_true", help="all benchmarks");
+    group.add_argument("--tag", help="all benchmarks with tag");
+    parser.set_defaults(get_benchmarks_expr=get_benchmarks_expr); 
 
 def build(string, dry_run=True, keep_failed=False):
     return call(

@@ -26,14 +26,14 @@ rec {
     }: 
     let self = meta // { 
       inherit inputs libraries tags filter data; 
-      withJava = withJava self;
+      withJava = java: withJava java self;
     }; in self;
 
   # Type: Java -> BenchmarkTemplate -> Benchmark
   # Takes a benchmark template and java version to produce a benchmark
   withJava = 
-    template: 
     java:
+    template: 
     assert template.filter java;
     template // rec {
       inherit java;

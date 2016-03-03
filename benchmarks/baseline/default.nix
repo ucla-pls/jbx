@@ -12,7 +12,7 @@ let
     buildInputs = [ ant java.jdk ];
     buildPhase = ''ant jar'';
     installPhase = ''
-      utils -p $out/share/java/
+      mkdir -p $out/share/java/
       mv build/baseline.jar $_
     '';
   };
