@@ -59,11 +59,11 @@ rec {
   # The Result is a derivation, filled with the contents of an analysis run on
   # a benchmark. A complete result will contain a number of files:
   # 
-  # The results files, these must be present, even if they are empty. They should
-  # contain one result per line. The format and defintion of results is left up to
-  # the analysis category:
-  #   may  -- contains all the overapproximated results. 
-  #   must -- contains all the underapproximated results.
+  # The results files. They should contain one result per line. The format and
+  # defintion of results is left up to the analysis category. If the the file
+  # does not exist, it is assumed that the analysis does not have a bound:
+  #   may     -- contains all the overapproximated results. 
+  #   must    -- contains all the underapproximated results.
   # 
   # The error file, if this file is present the analysis faced an error.
   #   error -- Contains a short description of the error.
@@ -151,8 +151,9 @@ rec {
     benchmark:
     env:
     let results = map (analysis benchmark env) benchmark.inputs;
+        basename = (builtins.elemAt results 0).name;
     in compose results (options // {
-      name = (lib.strings.splitString "$" analysis.name)[0];
+      name = builtins.elemAt (lib.strings.splitString "." basename) 0;
     });
 
   # compose: [Result] -> Options -> Result
@@ -160,10 +161,14 @@ rec {
   # everything:
   compose =
     results:
-    mkResult {
+    options @ { name }: # Needs atleast a name
+    mkResult (options // {
       results = results;
       builder = ./compose.sh;
-    };
+      tools   = ./tools.sh;
+      overview = ./overview.py;
+      inherit time coreutils python;
+    });
 
   # The batch tool enables you to batch multible benchmarks with one
   # analysis this is especially usefull for during comparations. This

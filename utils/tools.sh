@@ -54,20 +54,20 @@ function record {
     echo "$HEADER" > "$folder/times.csv"
 
     touch "$folder/stderr" "$folder/stdout"
-   
+  
+    export RETVAL="0";
     timeout ${timelimit} $time/bin/time \
         --format "$id,%e,%U,%S,%M,%x" \
         --output "$folder/times.csv" \
         --append \
         $@ \
         1> >($coreutils/bin/tee "$folder/stdout") \
-        2> >($coreutils/bin/tee "$folder/stderr" >&2) || true
-
-    if ! grep "$id" "$folder/times.csv" ; then
+        2> >($coreutils/bin/tee "$folder/stderr" >&2) || export RETVAL="$?"
+    
+    if ! grep "$id" "$folder/times.csv" > /dev/null; then
         echo "$id,${timelimit},N/A,N/A,N/A,N/A" >> "$folder/times.csv"
     fi
     sed -i -e "/Command/d" "$folder/times.csv"
-
 } 
 export -f record
 
