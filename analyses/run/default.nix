@@ -18,5 +18,3 @@ in rec {
   # needs the benchmark suite and the environment.
   runAll = onAllInputs run {};
 }
-
-

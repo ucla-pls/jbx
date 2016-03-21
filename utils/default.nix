@@ -166,9 +166,11 @@ rec {
       results = results;
       builder = ./compose.sh;
       tools   = ./tools.sh;
-      overview = ./overview.py;
-      inherit time coreutils python;
+      inherit time coreutils;
     });
+
+  # Type Study
+  # A collection of results, which is analysed.
 
   # The batch tool enables you to batch multible benchmarks with one
   # analysis this is especially usefull for during comparations. This

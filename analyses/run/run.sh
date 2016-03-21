@@ -11,7 +11,7 @@ analyse "run" java $mainclass $args < ${stdin:-/dev/null}
 # Export results
 touch ../may ../must
 if [[ $RETVAL -eq 0 ]]; then
-    printf "$mainclass $args\t$(md5sum ${stdin:-/dev/null})" > ../may
+    printf "$mainclass $args\t$(md5sum ${stdin:-/dev/null})\n" > ../must
 else
     echo "Program failed with $RETVAL" > ../error
 fi

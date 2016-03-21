@@ -6,20 +6,23 @@ cd $out
 
 compose $out $results
 
+touch must
 for f in $results; do 
-    if [ -e "$/may" ]; then
-        if [ ! -e may ]; then
-            sort -u "$f/may" > may
+    # May analyses has to be pressent in all analyses.
+    if [ -e "$f/may" ]; then
+        if [ ! -e may ]; then 
+            cp "$f/may" may
         else
-            comm -12 <(sort -u "$f/may") may > tmp
+            comm -12 "$f/may" may > tmp
             mv -f tmp may
         fi
     fi
-done | sort -m > may
-
-for f in $results; do 
-    sort -u "$f/must"
-done | sort -mu > must
+    # The Must analysis just have to be there
+    if [ -e "$f/must" ]; then
+        sort -m "$f/must" must | uniq > tmp
+        mv -f tmp must
+    fi
+done 
 
 for f in $results; do 
     if [ -e "$f/error" ]; then 
