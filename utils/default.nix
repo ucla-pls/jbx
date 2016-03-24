@@ -107,9 +107,11 @@ rec {
     env: 
     mkResult (options // { 
       inherit timelimit;
+      inherit time coreutils;
       name = name + "+" + benchmark.name;
       env = envToString env;
       inherit (benchmark) mainclass build libraries data;
+      utils = ./tools.sh;
       builder = ./analysis.sh;
       buildInputs = [procps] ++ tools;
     });
@@ -134,12 +136,12 @@ rec {
       env = envToString env;
       inherit timelimit;
       inherit (input_) setup stdin;
-      inherit (benchmark) build libraries data;
+      inherit (benchmark) build libraries data mainclass;
       inputargs = input_.args;
       name = name + "+" + benchmark.name + "." + input.name;
-      tools = ./tools.sh;
+      utils = ./tools.sh;
       builder = ./analysis.sh;
-      buildInputs = [procps] ++ tools;
+      buildInputs = [procps] ++ tools ++ [ benchmark.java.jre ];
     });
 
   # onAllInputs : DynamicAnalysis -> Options -> Analyis
@@ -168,6 +170,25 @@ rec {
       tools   = ./tools.sh;
       inherit time coreutils;
     });
+
+  # postprocess: Options -> Result -> Result
+  # postprocess is a transparrent overlay that enables the analysis 
+  # to do extra processing after the first run.
+  # postprocess = 
+  #   options @ {
+  #     name, # The extendsion
+  #     ...
+  #   }:
+  #   result: 
+  #   mkResult ({
+  #   } // options)
+
+  # liftpp : Analysis -> (Result -> Result) -> Analysis 
+  #liftpp = 
+  #  analysis:
+  #  postprocess:
+
+  #  mkAnalysis 
 
   # Type Study
   # A collection of results, which is analysed.

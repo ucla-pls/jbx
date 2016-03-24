@@ -7,7 +7,7 @@ import re
 
 try:
     tree = ET.parse(sys.argv[1]);
-except e: sys.exit();
+except: sys.exit();
 root = tree.getroot()
 
 expr = re.compile("(?P<name>\S+) (?P<param>\\(.*?\\)): (?P<rtype>.*)"); #: (?P<name>\S+) (?P<param>\\(.*?\\))");

@@ -11,23 +11,23 @@ let nixpkgs = import ./nixpkgs {};
     tools = nixpkgs.callPackage ./tools { inherit fetchprop; };
     
     # Update the packages with our tools
-    pkgs = nixpkgs // tools // { inherit utils; 
+    pkgs = nixpkgs // tools // { 
+      inherit utils; 
       callPackage = pkgs.lib.callPackageWith pkgs;
+      java = java;
     }; 
     
     utils = pkgs.callPackage ./utils {};
+    java = import ./java { inherit pkgs; };
 
 in {}: rec {
-  inherit tools utils;
+  inherit tools utils java ;
   benchmarks = pkgs.callPackage ./benchmarks {};
   analyses = pkgs.callPackage ./analyses {};
 
   results = import ./results {
-    inherit analyses benchmarks env java tools;
+    inherit analyses benchmarks env tools;
     inherit (pkgs) lib;
   };
 
-  java = import ./java {
-    inherit pkgs;
-  };
 }  

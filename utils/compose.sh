@@ -6,7 +6,6 @@ cd $out
 
 compose $out $results
 
-touch must
 for f in $results; do 
     # May analyses has to be pressent in all analyses.
     if [ -e "$f/may" ]; then
@@ -19,8 +18,12 @@ for f in $results; do
     fi
     # The Must analysis just have to be there
     if [ -e "$f/must" ]; then
-        sort -m "$f/must" must | uniq > tmp
-        mv -f tmp must
+        if [ ! -e must ]; then 
+            cp "$f/must" must
+        else
+            sort -m "$f/must" must | uniq > tmp
+            mv -f tmp must
+        fi
     fi
 done 
 

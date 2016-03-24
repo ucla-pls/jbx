@@ -1,5 +1,3 @@
-source $stdenv/setup
-
 export LOGICBLOX_HOME=$logicblox
 export LB_WEBSERVER_HOME=$LOGICBLOX_HOME
 
