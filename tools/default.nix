@@ -12,8 +12,9 @@ rec {
     logicblox-3_10_21 
     logicblox-4_2_0
     logicblox-4_3_6_3
+    logicblox-4_3_8_2
   ;
-  logicblox = logicblox-4_3_6_3;
+  logicblox = logicblox-4_3_8_2;
 
   doop = callPackage ./doop { inherit logicblox-3_10_21; };
   

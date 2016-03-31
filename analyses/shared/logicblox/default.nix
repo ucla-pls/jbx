@@ -1,7 +1,8 @@
 # The logicblox analyses are made to make it easier to
 # write analyses that uses logicblox.
-{python, procps, mkAnalysis}:
-{
+{python, procps, utils}:
+let inherit (utils) mkAnalysis;
+in {
   mkLogicBloxAnalysis = options @ {
       analysis
       , logicblox

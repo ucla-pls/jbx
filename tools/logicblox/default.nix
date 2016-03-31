@@ -43,4 +43,8 @@ in {
     version = "4.3.6.3";
     md5 = "2c2e66ab6209698a6d8e23bca38daa32";
   };
+  logicblox-4_3_8_2 = lb4 {
+    version = "4.3.8.2";
+    md5 = "3dc6dca11008a8fbbffc3a0d650a2161";
+  };
 }

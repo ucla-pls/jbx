@@ -17,7 +17,7 @@ let
   extend = "${lbname}-${name}"; 
   lbuse = logicblox != null 
     && builtins.all (a: a != "logicblox-export") subanalyses;
-  engine = if lbuse then "logicblox" else "bddbddb";
+  engine = if lbuse then "logicblox4" else "bddbddb";
   options_ = options // {
     name = "petablox-${extend}";
     analysis = ''
