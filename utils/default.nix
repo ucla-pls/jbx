@@ -111,7 +111,7 @@ rec {
       name = name + "+" + benchmark.name;
       env = envToString env;
       inherit (benchmark) mainclass build libraries data;
-      utils = ./tools.sh;
+      utils = ./utils.sh;
       builder = ./analysis.sh;
       buildInputs = [procps] ++ tools;
     });
@@ -139,7 +139,7 @@ rec {
       inherit (benchmark) build libraries data mainclass;
       inputargs = input_.args;
       name = name + "+" + benchmark.name + "." + input.name;
-      utils = ./tools.sh;
+      utils = ./utils.sh;
       builder = ./analysis.sh;
       buildInputs = [procps] ++ tools ++ [ benchmark.java.jre ];
     });
@@ -167,7 +167,7 @@ rec {
     mkResult (options // {
       results = results;
       builder = ./compose.sh;
-      tools   = ./tools.sh;
+      utils   = ./utils.sh;
       inherit time coreutils;
     });
 

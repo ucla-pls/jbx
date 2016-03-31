@@ -1,5 +1,5 @@
 source $stdenv/setup
-source $tools
+source $utils
 
 mkdir $out
 cd $out
