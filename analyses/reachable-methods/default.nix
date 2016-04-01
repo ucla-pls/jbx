@@ -1,4 +1,4 @@
-{ shared, utils, petablox, emma, python}:
+{ shared, utils, petablox, emma, python, logicblox-4_3_6_3}:
 let 
   emma_ = emma; 
   inherit (utils) mkDynamicAnalysis onAllInputs;
@@ -23,7 +23,8 @@ in rec {
   # Petablox with the external reflection handeling
   petabloxExternal = shared.petablox {
     petablox = petablox;
-    name = "reachable-methods";
+    # logicblox = logicblox-4_3_6_3;
+    name = "external";
     reflection = "external";
     subanalyses = [ "cipa-0cfa-dlog" ];
     tools = [ python ];
@@ -31,12 +32,26 @@ in rec {
       python2.7 ${./petablox-parse.py} $sandbox/petablox_output/methods.txt > $out/may
     '';
   };
+  
+  # Petablox with the dynamic reflection handeling
+  petabloxDynamic = shared.petablox {
+    petablox = petablox;
+    # logicblox = logicblox-4_3_6_3;
+    name = "dynamic";
+    reflection = "dynamic";
+    subanalyses = [ "cipa-0cfa-dlog" ];
+    tools = [ python ];
+    postprocess = ''
+      python2.7 ${./petablox-parse.py} $sandbox/petablox_output/methods.txt > $out/may
+    '';
+  };
 
-  # overview = postprocessors.overview { 
-  #   analyses = [ petablox-external emma-all];
-  #   name = "reachable-methods";
-  #   resultfile = "methods.txt";
-  # };
+  overview = utils.overview "reachable-methods" [ 
+    petabloxExternal 
+    petabloxDynamic
+    emmaAll
+  ];
+
 }
 
 

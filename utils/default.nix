@@ -2,7 +2,7 @@
 # author: Christian Kalhauge <kalhauge@cs.ucla.edu>
 # description: |
 #   This module contains all the utilities needed to build jbx.
-{lib, stdenv, callPackage, procps, time, coreutils}:
+{lib, stdenv, callPackage, procps, time, coreutils, python, eject}:
 rec {
   # Type: Benchmark 
   #   A benchmark is a description of a java program, which is buildable 
@@ -158,6 +158,15 @@ rec {
       name = builtins.elemAt (lib.strings.splitString "." basename) 0;
     });
 
+  # analyse: Env -> Benchmark -> Analysis -> Result
+  # Analyse calls the analysis with reverse arguments
+  analyse = 
+    env:
+    benchmark: 
+    analysis:
+    analysis benchmark env;
+
+
   # compose: [Result] -> Options -> Result
   # Takes a list of results, run them and perform post actions to combine
   # everything:
@@ -210,14 +219,63 @@ rec {
 	#      benchmarks);
   #     };
 
+  # mkStatistics: Options -> [Result] -> Statistics
+  mkStatistics = 
+    options @ { 
+        name  
+      , collect
+      , foreach ? ""
+      , tools ? []
+      , ...
+    }:
+    results:
+    stdenv.mkDerivation (options // {
+      inherit results;
+      buildInputs = [procps] ++ tools;
+      builder = ./statistics.sh;
+    }); 
+
+  # liftS: Options -> [Analysis] -> Benchmark -> Env -> Statistics
+  liftS = 
+    options:
+      liftL (mkStatistics options);
+
+  # overview: Options -> Benchmark -> Env -> Statistics
+  # Overview creates a single table containing data about.
+  overview = 
+    name:
+      liftS {
+        inherit name coreutils;
+        tools = [ python coreutils eject];
+        collect = "python ${./overview.py} $results | tee overview.csv | column -ts','";
+      };
+
   # >> Utilities 
   # This section contains small functions that might be nice to have
   
+  # lift: (Result -> a) -> Analysis -> Benchmark -> Env -> a
+  lift = 
+    f:
+    analysis:
+    benchmark: 
+    env: 
+      f (analysis benchmark env);
+  
+  # liftL: ([Result] -> a) -> [Analysis] -> Benchmark -> Env -> a
+  liftL = 
+    f:
+    analyses:
+    benchmark: 
+    env: 
+      f (builtins.map (analyse env benchmark) analyses);
+  
   # Groups a list of benchmarks by name
-  byName = bms:  builtins.listToAttrs (map (b: { name = b.name; value = b; }) bms);
+  byName = 
+    bms: builtins.listToAttrs (map (b: { name = b.name; value = b; }) bms);
   
   # Groups a list of benchmarks by tags
-  byTag = bms:
+  byTag = 
+    bms:
     let byTagList = map (b: map (t: {name = t; value = b; }) b.tags) bms;
     in builtins.foldl' 
       (attrset: e: updateDefault attrset e.name [] (l: l ++ [e.value]))
