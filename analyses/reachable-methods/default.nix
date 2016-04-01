@@ -23,7 +23,7 @@ in rec {
   # Petablox with the external reflection handeling
   petabloxExternal = shared.petablox {
     petablox = petablox;
-    # logicblox = logicblox-4_3_6_3;
+    logicblox = logicblox-4_3_6_3;
     name = "external";
     reflection = "external";
     subanalyses = [ "cipa-0cfa-dlog" ];

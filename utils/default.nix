@@ -237,11 +237,13 @@ in rec {
   mkStatistics = 
     options @ { 
         name  
-      , collect
+      , before ? ""
+      , collect ? ""
       , foreach ? ""
       , tools ? []
       , ...
     }:
+    assert collect != "" || foreach != "";
     results:
     stdenv.mkDerivation (options // {
       inherit results;
@@ -256,8 +258,8 @@ in rec {
   overview = 
     name:
     mkStatistics {
-      inherit name coreutils;
-      tools = [ python coreutils eject];
+      inherit name;
+      tools = [ python eject];
       collect = "python ${./overview.py} $results | tee overview.csv | column -ts','";
     };
   
@@ -267,8 +269,8 @@ in rec {
   usage = 
     name:
     mkStatistics {
-      inherit name coreutils;
-      tools = [ python coreutils eject];
+      inherit name;
+      tools = [ python eject];
       collect = "python ${./usage.py} $results | tee usage.csv | column -ts','";
     };
 
