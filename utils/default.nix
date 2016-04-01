@@ -3,7 +3,8 @@
 # description: |
 #   This module contains all the utilities needed to build jbx.
 {lib, stdenv, callPackage, procps, time, coreutils, python, eject}:
-rec {
+let inherit (lib.lists) concatMap filter;
+in rec {
   # Type: Benchmark 
   #   A benchmark is a description of a java program, which is buildable 
   #   and runnable. Benchmarks are parammeterized by the java version used.
@@ -24,10 +25,10 @@ rec {
     , data ? null # a data repository, for tests
     , ...
     }: 
-    let self = meta // { 
-      inherit inputs libraries tags filter data; 
-      withJava = java: withJava java self;
-    }; in self;
+      let self = meta // { 
+        inherit inputs libraries tags filter data; 
+        withJava = java: withJava java self;
+      }; in self;
 
   # Type: Java -> BenchmarkTemplate -> Benchmark
   # Takes a benchmark template and java version to produce a benchmark
@@ -154,9 +155,9 @@ rec {
     env:
     let results = map (analysis benchmark env) benchmark.inputs;
         basename = (builtins.elemAt results 0).name;
-    in compose results (options // {
+    in compose (options // {
       name = builtins.elemAt (lib.strings.splitString "." basename) 0;
-    });
+    }) results;
 
   # analyse: Env -> Benchmark -> Analysis -> Result
   # Analyse calls the analysis with reverse arguments
@@ -167,12 +168,12 @@ rec {
     analysis benchmark env;
 
 
-  # compose: [Result] -> Options -> Result
+  # compose: Options -> [Result] -> Result
   # Takes a list of results, run them and perform post actions to combine
   # everything:
   compose =
-    results:
     options @ { name }: # Needs atleast a name
+    results:
     mkResult (options // {
       results = results;
       builder = ./compose.sh;
@@ -183,17 +184,30 @@ rec {
   # postprocess: Options -> Result -> Result
   # postprocess is a transparrent overlay that enables the analysis 
   # to do extra processing after the first run.
-  # postprocess = 
-  #   options @ {
-  #     name, # The extendsion
-  #     ...
-  #   }:
-  #   result: 
-  #   mkResult ({
-  #   } // options)
+  postprocess = 
+    options @ {
+      name, # The extendsion
+      postprocss, 
+      tools ? [],
+      ...
+    }:
+    result: 
+    mkResult (options // {
+      inherit result;
+      inherit time coreutils;
+      buildInputs = [procps] ++ tools;
+      builder = ''
+        source $stdenv/setup
+        mkdir $out
+        cp -r $result $out
+        export sandbox=sandbox
+        cd $out
+        runHook postprocss
+      '';
+    });
 
-  # liftpp : Analysis -> (Result -> Result) -> Analysis 
-  #liftpp = 
+  # liftpp : (Result -> Result) -> Analysis -> Analysis 
+  # liftpp = 
   #  analysis:
   #  postprocess:
 
@@ -235,23 +249,50 @@ rec {
       builder = ./statistics.sh;
     }); 
 
-  # liftS: Options -> [Analysis] -> Benchmark -> Env -> Statistics
-  liftS = 
-    options:
-      liftL (mkStatistics options);
-
-  # overview: Options -> Benchmark -> Env -> Statistics
-  # Overview creates a single table containing data about.
+  # overview: Name -> [Result] -> Statistics
+  # Overview creates a single table containing data about the success of the
+  # execution.
+  # TODO this might not fit in here.
   overview = 
     name:
-      liftS {
-        inherit name coreutils;
-        tools = [ python coreutils eject];
-        collect = "python ${./overview.py} $results | tee overview.csv | column -ts','";
-      };
+    mkStatistics {
+      inherit name coreutils;
+      tools = [ python coreutils eject];
+      collect = "python ${./overview.py} $results | tee overview.csv | column -ts','";
+    };
+  
+  # usage: Name -> [Result] -> Statistics
+  # Overview creates a single table containing data about the .
+  # TODO this might not fit in here.
+  usage = 
+    name:
+    mkStatistics {
+      inherit name coreutils;
+      tools = [ python coreutils eject];
+      collect = "python ${./usage.py} $results | tee usage.csv | column -ts','";
+    };
+
+  # versionize: [Java] -> [BenchmarkTemplate] -> [Benchmark]
+  versionize = 
+    javas: 
+    benchmarks: 
+    #filter (b: b == null ) (
+        product (b: j: b.withJava j) 
+          benchmarks javas
+          ;#  );
+    
+  # product :: (a -> b -> c) -> [a] -> [b] -> [c]
+  product = f: as: bs: concatMap (a: map (b: f a b) bs) as;
 
   # >> Utilities 
   # This section contains small functions that might be nice to have
+
+  # onAll: Analyis -> [Benchmark] -> Env -> [Results]
+  onAll =
+    analysis:
+    benchmarks:
+    env:
+      builtins.map (b: analysis b env) benchmarks;
   
   # lift: (Result -> a) -> Analysis -> Benchmark -> Env -> a
   lift = 

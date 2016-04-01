@@ -46,12 +46,10 @@ in rec {
     '';
   };
 
-  overview = utils.overview "reachable-methods" [ 
+  overview = utils.liftL (utils.overview "reachable-methods") [ 
     petabloxExternal 
     petabloxDynamic
     emmaAll
   ];
 
 }
-
-

@@ -24,10 +24,6 @@ in {}: rec {
   inherit tools utils java ;
   benchmarks = pkgs.callPackage ./benchmarks {};
   analyses = pkgs.callPackage ./analyses {};
-
-  results = import ./results {
-    inherit analyses benchmarks env tools;
-    inherit (pkgs) lib;
-  };
+  results = pkgs.callPackage ./results { inherit benchmarks analyses env;};
 
 }  
