@@ -29,7 +29,7 @@ def argparser():
             )
     parser.add_argument("-E", "--environment",
             default="./environment.nix",
-            help="the nixfile to build from (default: './default.nix')"
+            help="the nixfile to build from (default: './environment.nix')"
             )
     parser.add_argument("-j", "--java", 
             type=int, 
@@ -43,7 +43,7 @@ def argparser():
             )
     parser.add_argument("-i", "--input", 
             default=None,
-            help="name of the imput to run"
+            help="name of the input to run"
             )
     parser.add_argument("arg", 
             nargs="*",
@@ -57,14 +57,16 @@ def main(arguments):
 
     args.fargs = "[{}]".format(' '.join(map('"{}"'.format, args.arg)))
     
-    if not args.input:
-        args.input_obj = '{{ name="cli"; args={0.args}; }}'.format(args)
-    else:
+    if args.input:
         args.input_obj = '(builtins.elemAt (builtins.filter (i: i.name == "{0.input}") bm.inputs) 0)'.format(args)
+    elif args.args: 
+        args.input_obj = '{{ name="cli"; args={0.args}; }}'.format(args)
+    else: raise "Eigther input or args sould be set"
     cmd = """
       with (import {0.filename} {{}});
-      let bm = benchmarks.byName.{0.benchmark}.withJava java.java{0.java};
-      in analyses.{0.analysis} (import {0.environment}) bm {0.input_obj}
+      let bm  = benchmarks.byName.{0.benchmark}.withJava java.java{0.java};
+          env = (import {0.environment});
+      in analyses.{0.analysis} bm env {0.input_obj}
     """.format(args)
     nixutils.build(cmd, dry_run=args.dry_run);
 

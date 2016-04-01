@@ -1,7 +1,6 @@
-{ pkgs, mkBenchmark, callBenchmark} :
-let
-  inherit (pkgs) stdenv unzip;
-in rec {
+{ callPackage, stdenv, unzip, utils} :
+let 
+  inherit (utils) callBenchmark;
   daCapoSrc = stdenv.mkDerivation {
     name = "DaCapo";
     version = "9.12";
@@ -17,19 +16,20 @@ in rec {
     '';
     dontFixup=true;
   };
-
+  withSrc = { inherit daCapoSrc; };
+in rec {
   avrora = callBenchmark ./avrora {};
-  batik = callBenchmark ./batik { inherit daCapoSrc; };
-  h2 = callBenchmark ./h2 { inherit daCapoSrc; };
+  batik = callBenchmark ./batik withSrc;
+  h2 = callBenchmark ./h2 withSrc;
   sunflow = callBenchmark ./sunflow {};
-  pmd = callBenchmark ./pmd { inherit daCapoSrc; };
-  luindex = callBenchmark ./luindex { inherit daCapoSrc; };
-  lusearch = callBenchmark ./lusearch { inherit daCapoSrc; };
-  fop = callBenchmark ./fop { inherit daCapoSrc; };
-  xalan = callBenchmark ./xalan { inherit daCapoSrc; };
-  jython = callBenchmark ./jython { inherit daCapoSrc; };
+  pmd = callBenchmark ./pmd withSrc;
+  luindex = callBenchmark ./luindex withSrc;
+  lusearch = callBenchmark ./lusearch withSrc;
+  fop = callBenchmark ./fop withSrc;
+  xalan = callBenchmark ./xalan withSrc;
+  jython = callBenchmark ./jython withSrc;
   
-  dacapo-harness = pkgs.callPackage ./all { inherit mkBenchmark; };
+  dacapo-harness = callPackage ./all {};
   
   all = [ avrora
           batik

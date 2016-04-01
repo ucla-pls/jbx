@@ -5,11 +5,11 @@ export LB_WEBSERVER_HOME=$LOGICBLOX_HOME
 
 export HOME=`pwd`
 
-lb services start >> lb-start
+lb services start | tee lb_start
 
 runHook lbInner
 
-lb services stop >> lb-stop
+lb services stop | tee  lb_stop
 
 du -h lb_deployment > lb_stats
 

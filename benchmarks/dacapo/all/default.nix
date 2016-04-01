@@ -1,4 +1,4 @@
-{fetchurl, unzip, mkBenchmark}:
+{fetchurl, unzip, utils}:
 let 
   dacapo-all = java: {
     src = fetchurl {
@@ -19,10 +19,12 @@ let
     , sizes
     , jar ? "${name}.jar"
     , versions ? [ 5 6 7 8]
+    , tags ? []
     }: 
-    mkBenchmark {
+    utils.mkBenchmarkTemplate {
       name = name + "-harness";
       build = dacapo-all;
+      tags = tags ++ ["reflection"];
       mainclass = "org.dacapo.harness.TestHarness";
       inputs = map (size: { name = size; args = ["-s" size name];}) sizes;
       filter = java: builtins.elem java.version versions;

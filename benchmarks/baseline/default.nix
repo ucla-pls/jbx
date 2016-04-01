@@ -1,4 +1,4 @@
-{ stdenv, fetchgit, mkBenchmark, ant}:
+{ fetchgit, utils, ant}:
 let 
   baseline = java: {
     name = "baseline";
@@ -16,11 +16,14 @@ let
       mv build/baseline.jar $_
     '';
   };
-in {
-  transfer = mkBenchmark {
+in rec {
+  transfer = utils.mkBenchmarkTemplate {
     name = "transfer";
     build = baseline;
     mainclass = "edu.ucla.pls.baseline.Transfer";
     inputs = [ ];
   };
+  all = [
+    transfer
+  ];
 }

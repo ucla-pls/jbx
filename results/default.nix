@@ -1,6 +1,6 @@
-{ tools, benchmarks, java, analyses, env, lib}:
+{ benchmarks, analyses, java, utils, env, lib}:
 let 
-  inherit (analyses.postprocessors) versionize compatablity-table;
+  inherit (utils) versionize usage onAll;
   all = versionize benchmarks.all java.all;
   dacapo-harness =
       (lib.attrsets.attrVals 
@@ -21,43 +21,15 @@ let
           "xalan"
           ])
         benchmarks.byName);
-in {
-  runAll = analyses.batch (analyses.run.runAll env) {
-    name = "runall-benchmarks";
-  } all;
+in rec {
+  reachable-methods = 
+    onAll 
+      analyses.reachable-methods.emmaAll
+      (versionize [java.java6] dacapo-harness)
+      env;
 
-  call-graph = analyses.batch (analyses.call-graph.petablox-cicg env) {
-    name = "call-graph";
-    foreach = ''
-      cp $result/cicg.dot ''${result#*-}.dot
-    '';
-  } (map (f: f.withJava java.java6) benchmarks.all);
-
-  compat-table = 
-    compatablity-table
-      (analyses.run.runAll env)
-      (versionize 
-        [java.java5 java.java6 java.java7 java.java8 ]
-        dacapo-harness )
-  ;
-
-  test = analyses.batch (
-    analyses.shared.petablox {
-      subanalyses = ["cipa-0cfa-dlog"];
-      reflection = "external";
-      petablox = tools.petablox;
-      timelimit = 600;
-      } env) {
-    name = "test";
-  } (map (f: f.withJava java.java6) dacapo-harness);
-  
-  reachable-methods = analyses.postprocessors.total 
-    "reachable-methods"
-    (map (f: analyses.reachable-methods.overview env (f.withJava java.java6)) dacapo-harness);
-
-  deadlocks = analyses.postprocessors.total 
-    "deadlocks"
-    (map (f: analyses.deadlock.overview env (f.withJava java.java6)) dacapo-harness);
+  reachable-methods-usage = 
+    utils.usage "reacable-method-usage" reachable-methods;
 }
 
 

@@ -16,7 +16,6 @@ def argparser():
         formatter_class=argparse.RawDescriptionHelpFormatter
         )
 
-    parser.add_argument("benchmark", help="the benchmark that should be build");
     parser.add_argument("-f", "--filename",
             default="./default.nix",
             help="the nixfile to build from (default: './default.nix')"
@@ -47,16 +46,28 @@ def argparser():
             help="do not exeucte, but print cmd instead"
         );
     
+    nixutils.add_benchmark_selection(parser);
+    
     return parser
 
+CMD = """
+let jbx = import {0.filename} {{}}; 
+    inherit (jbx.utils) withJava;
+    java = jbx.java.java{0.java};
+    fetch = (b: {1} );
+in map fetch (map (withJava java) {2})
+"""
 def main(arguments):
     args = argparser().parse_args(arguments)
 
-    path = "i.benchmarks.byName.{0.benchmark}.withJava i.java.java{0.java}".format(args)
+    benchmark_expr = args.get_benchmarks_expr(args);
+    
     if args.src_only: 
-        path = "({}).build.src".format(path)
-
-    cmd = "let i = import {0.filename} {{}}; in {1}".format(args, path)
+        foreach = "b.build.src"
+    else:
+        foreach = "b.build"
+    
+    cmd = CMD.format(args, foreach, benchmark_expr)
     args.method(cmd, dry_run=args.dry_run, keep_failed=args.keep_failed);
 
 

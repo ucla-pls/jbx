@@ -1,4 +1,4 @@
-# The porpose of this module is to create the java versions used in the
+# The purpose of this module is to create the java versions used in the
 # benchmarks. Besides a version of jdk and jre, the java collections will also
 # contain some libraries which can be used in the contex of the benchmarks.
 { pkgs }:
@@ -11,8 +11,7 @@ let
       jdk = builtins.getAttr "jdk${toString version}" pkgs;
       libs = libs;
     };
-    callLib = path: pkgs.lib.callPackageWith pkgs path {} java;
-    libs = callLib ./maven;
+    libs = pkgs.callPackage ./maven {} pkgs; 
     in java;
 in rec {
   java5 = mkJava 5;
