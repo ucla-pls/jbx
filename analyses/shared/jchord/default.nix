@@ -1,43 +1,40 @@
-{ lib, mkAnalysis}:
-options_ @ {
+{ lib, utils }:
+options @ {
   subanalyses
   , jchord 
-  , name ? lib.concatStringsSep "_" subanalyses
   , reflection ? "dynamic" # "static", "static_cast" or "none"
-  , postprocessing ? ""
+  , name ? lib.concatStringsSep "_" subanalyses
   , tools ? []
   , timelimit ? 3600
   , ...
 }:
-env:
 benchmark: 
 let 
+  inherit (lib.strings) concatStringsSep concatMapStringsSep;
+  inherit (benchmark) inputs;
   subanalysis = lib.concatStringsSep "," subanalyses;
-  inputs = benchmark.inputs;
-  options = options_ // {
-    name = "jchord-${name}-${benchmark.name}";
-    analysis = ./jchord.sh;
-    inherit env timelimit;
+  options_ = options // {
+    name = "jchord-${name}";
+    analysis = ''
+      eval "echo \"$settings\"" > chord.properties
+      analyse "jchord" java -Dchord.work.dir=`pwd` chord.project.Boot 
+    '';
+    inherit timelimit;
     tools = [ jchord benchmark.java.jre ] ++ tools;
-    inherit (benchmark) mainclass build libraries data;
-
-    settings = ''
-chord.main.class=${benchmark.mainclass}
-chord.run.analyses=${subanalysis}
-chord.err.file=/dev/stderr
-chord.out.file=/dev/stdout
-
-chord.jvmargs="-ea -Xmx40960m"
-chord.runtime.jvmargs="-ea -Xmx40960m"
-
-chord.reflect.kind=${reflection}
-chord.run.ids=${lib.strings.concatMapStringsSep "," (x: x.name) inputs}
-${
-  lib.strings.concatMapStringsSep "\n" (input: 
-    ''chord.args.${input.name}=${lib.strings.concatStringsSep " " input.args}''
-  ) inputs 
-}
-'';
-    inherit postprocessing; 
+    settings = ppsettings ( [
+      { name = "main.class";     value = benchmark.mainclass;                        }
+      { name = "run.analyses";   value = concatStringsSep "," subanalyses;           }
+      { name = "err.file";       value = "/dev/stderr";                              }
+      { name = "out.file";       value = "/dev/stdout";                              }
+      { name = "jvmargs";        value = "-ea -Xmx40960m";                           }
+      { name = "class.path";     value = "$classpath";                               }
+      { name = "reflect.kind";   value = reflection;                                 }
+      { name = "run.ids";        value = concatMapStringsSep "," (x: x.name) inputs; }
+      ] ++ builtins.map (input: {
+        name = "args.${input.name}"; 
+        value = concatStringsSep " " input.args; 
+      }) inputs 
+    );
   };
-in mkAnalysis options
+  ppsettings = concatMapStringsSep "\n" (o: "chord.${o.name}=${o.value}");
+in utils.mkAnalysis options_ benchmark

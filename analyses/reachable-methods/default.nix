@@ -23,7 +23,6 @@ in rec {
   # Petablox with the external reflection handeling
   petabloxExternal = shared.petablox {
     petablox = petablox;
-    logicblox = logicblox-4_3_6_3;
     name = "external";
     reflection = "external";
     subanalyses = [ "cipa-0cfa-dlog" ];
@@ -36,7 +35,6 @@ in rec {
   # Petablox with the dynamic reflection handeling
   petabloxDynamic = shared.petablox {
     petablox = petablox;
-    # logicblox = logicblox-4_3_6_3;
     name = "dynamic";
     reflection = "dynamic";
     subanalyses = [ "cipa-0cfa-dlog" ];

@@ -11,14 +11,12 @@ rec {
   run = callPackage ./run {};
   shared = callPackage ./shared {};
   reachable-methods = callPackage ./reachable-methods { inherit shared; };
+  deadlock = callPackage ./deadlock { inherit shared; };
   # call-graph = import ./call-graph { 
   #   inherit shared tools;
   # };
   # postprocessors = pkgs.callPackage ./postprocessors { 
   #   inherit batch compose;
-  # };
-  # deadlock = pkgs.callPackage ./deadlock { 
-  #   inherit shared tools postprocessors;
   # };
 
   # inherit shared;

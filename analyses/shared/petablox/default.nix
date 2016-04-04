@@ -24,7 +24,8 @@ let
       eval "echo \"$settings\"" > petablox.properties
       analyse "petablox" java -Dpetablox.work.dir=`pwd` petablox.project.Boot 
     '';
-    tools = [ petablox java.java7.jre ] ++ tools;
+    tools = [ petablox benchmark.java.jre ] ++ tools;
+    inherit timelimit;
     settings = ppsettings ( [
       { name = "datalog.engine"; value = engine;                                     }
       { name = "main.class";     value = benchmark.mainclass;                        }

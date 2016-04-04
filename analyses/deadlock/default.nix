@@ -1,20 +1,27 @@
-{shared, tools, python, postprocessors}:
-rec {
+{shared, jchord-2_0, petablox, utils, python}:
+let 
+  jchord_ = jchord-2_0;
+  petablox_ = petablox;
+in rec {
   jchord = shared.jchord {
     name = "deadlock";
-    jchord = tools.jchord-2_0;
+    jchord = jchord_;
     subanalyses = ["deadlock-java"];
     reflection = "dynamic";
     tools = [ python ];
-    sign = "+";
-    postprocessing = ''
-      python2.7 ${./jchord-parse.py} sandbox/chord_output > deadlocks.txt
+    postprocess = ''
+      python2.7 ${./jchord-parse.py} $sandbox/chord_output > $out/may
     '';
   };
-  overview = postprocessors.overview { 
-    analyses = [ jchord ];
+  petablox = shared.petablox {
     name = "deadlock";
-    resultfile = "deadlocks.txt";
+    petablox = petablox_;
+    subanalyses = ["cipa-0cfa-dlog" "deadlock-java"];
+    reflection = "external";
   };
+  
+  overview = 
+    utils.liftL (utils.overview "deadlock") 
+      [ jchord ];
 }
 
