@@ -25,10 +25,10 @@ in rec {
     , data ? null # a data repository, for tests
     , ...
     }: 
-      let self = meta // { 
-        inherit inputs libraries tags filter data; 
-        withJava = java: withJava java self;
-      }; in self;
+    let self = meta // { 
+      inherit inputs libraries tags filter data; 
+      withJava = java: withJava java self;
+    }; in self;
 
   # Type: Java -> BenchmarkTemplate -> Benchmark
   # Takes a benchmark template and java version to produce a benchmark
@@ -167,6 +167,21 @@ in rec {
     analysis:
     analysis benchmark env;
 
+  # mkTransform : Options -> BenchmarkTemplate -> BenchmarkTemplate
+  # A transform moves a benchmark from one scope to another.
+  mkTransform = 
+    options @ {
+      name
+      , transform # is a function from java. 
+    }:
+    benchTemplate:
+    let self = benchTemplate 
+      // (transform benchTemplate) 
+      // { 
+        name = name + name; 
+        withJava = java: withJava java self;
+      };
+    in self;
 
   # compose: Options -> [Result] -> Result
   # Takes a list of results, run them and perform post actions to combine
