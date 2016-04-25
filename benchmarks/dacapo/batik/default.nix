@@ -23,6 +23,7 @@ in {
   build = batik;
   data = "${daCapoSrc}/benchmarks/bms/batik/data/batik/";
   # libraries = java: with java.libs; [ xalan xerces];
+  tags = [];
   filter = java: builtins.elem java.version [5 6];
   inputs = [
     { name = "small";

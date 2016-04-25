@@ -1,17 +1,20 @@
-{ stdenv, fetchzip, ant, daCapoSrc, lib}:
+{ stdenv, fetchurl, ant, daCapoSrc, lib, unzip}:
 { 
   name = "pmd";
   mainclass = "net.sourceforge.pmd.PMD";
+  tags = [ "reflection-free" ];
   build = java: rec {
     version = "4.2.5";
-    src = fetchzip {
+    src = fetchurl {
       # Same file different mirror
-      url = ''http://skylineservers.dl.sourceforge.net/project/pmd/pmd/4.2.5/pmd-src-4.2.5.zip'';
-      md5 = "de56d016ee0e901a743a7d57cc4df991";
+      url = ''https://sourceforge.net/projects/pmd/files/pmd/4.2.5/pmd-src-4.2.5.zip/download'';
+      md5 = "b0abacaeba8c51edf91c2eb7f62c2abb"; #"de56d016ee0e901a743a7d57cc4df991";
     };
-    phases = [ "unpackPhase" "buildPhase" "installPhase" ];
-    buildInputs = [ ant java.jdk ];
+    phases = [ "buildPhase" "installPhase" ];
+    buildInputs = [ ant unzip java.jdk ];
     buildPhase = ''
+      unzip $src
+      cd pmd-4.2.5
       ant jar
     '';
     inherit daCapoSrc;

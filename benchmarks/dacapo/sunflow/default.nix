@@ -1,17 +1,21 @@
-{ stdenv, fetchzip, ant}:
+{ stdenv, fetchurl, ant, unzip }:
 { 
   name = "sunflow";
   mainclass = "org.sunflow.Benchmark";
+  tags = [ "reflection-free" ];
   build = java: rec {
     version = "0.07.2";
-    src = fetchzip {
+    src = fetchurl {
       # Original mirror down... Same file
-      url = ''http://skylineservers.dl.sourceforge.net/project/sunflow/sunflow-src/v0.07.2/sunflow-src-v0.07.2.zip'';
-      md5 = "352e6c1e618b6eb7cd90ca3de55ba148";
+      url = ''http://prdownloads.sourceforge.net/sunflow/sunflow-src-v0.07.2.zip?download'';
+      md5 = "aaaa162cf76cfdbc29381406c08671a9";
     };
-    phases = [ "unpackPhase" "buildPhase" "installPhase" ];
-    buildInputs = [ ant java.jdk ];
+    phases = [ "buildPhase" "installPhase" ];
+    tags = [ "reflection-free" ];
+    buildInputs = [ ant java.jdk unzip ];
     buildPhase = ''
+      unzip $src
+      cd sunflow
       ant jars
     '';
     installPhase = ''

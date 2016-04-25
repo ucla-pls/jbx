@@ -40,7 +40,7 @@ in rec {
       inherit java;
       name = template.name + java.id;
       inherit (template) filter tags inputs;
-      data = if template.data != null then data else build;
+      data = if template.data != null then template.data else build;
       build = stdenv.mkDerivation ({inherit name;} // template.build java);
       libraries = template.libraries java;
     };
@@ -186,25 +186,27 @@ in rec {
   # to do extra processing after the first run.
   postprocess = 
     options @ {
-      name, # The extendsion
-      postprocss, 
+      postprocess,  # The extendsion
+      name ? "pp",
       tools ? [],
       ...
     }:
     result: 
     mkResult (options // {
       inherit result;
+      name = result.name + "-" + name;
       inherit time coreutils;
       buildInputs = [procps] ++ tools;
-      builder = ''
-        source $stdenv/setup
-        mkdir $out
-        cp -r $result $out
-        export sandbox=sandbox
-        cd $out
-        runHook postprocss
-      '';
+      builder = ./postprocess.sh;
     });
+
+  # after : Analysis -> Options -> Analysis
+  # perform postprocessing after an analysis has run
+  after =
+    analysis:
+    options:
+      lift (postprocess ({ name = "after"; } // options)) analysis;
+
 
   # liftpp : (Result -> Result) -> Analysis -> Analysis 
   # liftpp = 

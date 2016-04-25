@@ -3,11 +3,12 @@ let
   jchord_ = jchord-2_0;
   petablox_ = petablox;
 in rec {
-  jchord = shared.jchord {
+  jchord = utils.after (shared.jchord {
     name = "deadlock";
     jchord = jchord_;
     subanalyses = ["deadlock-java"];
     reflection = "dynamic";
+  }) { 
     tools = [ python ];
     postprocess = ''
       python2.7 ${./jchord-parse.py} $sandbox/chord_output > $out/may

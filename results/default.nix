@@ -22,6 +22,27 @@ let
           ])
         benchmarks.byName);
 in rec {
+  deadlocks = 
+    onAll
+      analyses.deadlock.jchord
+      (versionize [java.java6] benchmarks.byTag.reflection-free)
+      env;
+
+  deadlocks-table = 
+    mkStatistics {
+      tools = [eject];
+      name = "deadlocks-table";
+      setup = ''echo "name,count" >> table.csv'';
+      foreach = '' 
+        v=`wc -l $result/may | cut -f1 -sd' '`
+        name=''${result#*-}
+        echo "$name,$v" >> table.csv
+      '';
+      collect = ''
+        column -ts, table.csv
+      '';
+    } deadlocks;
+
   reachable-methods = 
     onAll 
       analyses.reachable-methods.petabloxExternal
@@ -29,9 +50,6 @@ in rec {
       env;
 
   database-usage = 
-    database-space-use reachable-methods;
-
-  database-space-use = 
     mkStatistics {
       tools = [eject]; 
       name = "database-useage";
@@ -44,5 +62,5 @@ in rec {
       collect = ''
         column -ts, usage.csv
       '';
-    };
+    } reachable-methods;
 }

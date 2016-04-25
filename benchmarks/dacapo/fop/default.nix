@@ -11,6 +11,7 @@ rec {
     };
     buildInputs = [ ant java.jdk ];
     buildPhase = "ant";
+    tags = [ "reflection-free" ];
     installPhase = ''
       mkdir -p $out/share/java
       mv build/*.jar $_

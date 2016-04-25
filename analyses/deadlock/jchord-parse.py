@@ -16,18 +16,16 @@ Location = namedtuple("Location", "context lock method object");
 deadlocks = set()
 for t in tree.findall("deadlock"):
     locations = []
+    L = C = M = O = None
     for i in range(1,4):
         C = t.attrib["C{}id".format(i)];
         L = t.attrib["L{}id".format(i)];
         M = t.attrib["M{}id".format(i)];
         O = t.attrib["O{}id".format(i)];
         locations.append(Location(C, L, M, O))
-    ts = tuple(t.attrib["T{}id".format(i)] for i in [1,2])
-    deadlocks.add(Deadlock(ts, tuple(locations)))
+    ts = 0 # sorted(tuple(t.attrib["T{}id".format(i)] for i in [1,2]))
+    deadlocks.add(Deadlock(ts, tuple(sorted(locations))))
 
-locations = set()
-for deadlock in deadlocks:
-    locations.add(tuple(sorted(map(lambda l: l.lock, deadlock))))
-
-for location in locations:
-    print(location);
+strs = map(str, set(deadlocks))
+for s in sorted(strs): 
+    print s

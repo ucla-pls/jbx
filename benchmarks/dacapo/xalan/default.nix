@@ -2,6 +2,7 @@
 rec {
   name = "xalan";
   mainclass = "Main";
+  tags = [ "reflection-free" ];
   build = java: {
     version = ".";
     src = daCapoSrc;
