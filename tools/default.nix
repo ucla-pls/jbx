@@ -30,4 +30,5 @@ rec {
     petablox-test
   ;
   petablox = petablox-test;
-}
+} 
+// (callPackage ./muse {})
