@@ -1,5 +1,5 @@
 let nixpkgs = import ./nixpkgs {};
-    env = import ./environment.nix;
+    env = import ../environment.nix;
 
     # This project contains some proprietary file not 
     # distributed with this pkg.

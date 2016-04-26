@@ -23,12 +23,12 @@ def argparser():
             help="the benchmark that should be run",
             )
     parser.add_argument("-f", "--filename",
-            default="./default.nix",
-            help="the nixfile to build from (default: './default.nix')"
+            default="./src/default.nix",
+            help="the nixfile to build from (default: './src/default.nix')"
             )
     parser.add_argument("-E", "--environment",
             default="./environment.nix",
-            help="the nixfile to build from (default: './default.nix')"
+            help="the nixfile to build from (default: './environment')"
             )
     parser.add_argument("-j", "--java", 
             type=int, 
