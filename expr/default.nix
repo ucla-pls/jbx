@@ -26,6 +26,6 @@ in {}:
     inherit tools utils java;
     benchmarks = pkgs.callPackage ./benchmarks {};
     analyses = pkgs.callPackage ./analyses {};
-    results = pkgs.callPackage ./results { inherit benchmarks analyses env;};
+    targets = pkgs.callPackage ./targets { inherit benchmarks analyses env;};
     transformers = pkgs.callPackage ./tranformers {};
   }  
