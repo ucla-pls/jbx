@@ -30,5 +30,9 @@ rec {
     petablox-test
   ;
   petablox = petablox-test;
+
+  inherit (callPackage ./randoop {})
+    randoop-2_1_4
+  ; 
+  randoop = randoop-2_1_4;
 } 
-// (callPackage ./muse {})
