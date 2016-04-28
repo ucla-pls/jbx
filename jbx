@@ -26,12 +26,15 @@ function attrs() {
         -e 's/"\([^"]*\)"/\1/g' 
 }
 
+DIR=`dirname "$(readlink -f "$0")"`
+helpers="$DIR/scripts"
+
 cmd=$1; shift
 case $cmd in
-    "build" ) python2.7 helpers/jbx-build.py $@ ;;
-    "run" ) python2.7 helpers/jbx-run.py $@ ;;
-    "petablox" ) python2.7 helpers/jbx-petablox.py $@ ;;
-    "analyse" ) python2.7 helpers/jbx-analyse.py $@ ;;
+    "build" ) python2.7 $helpers/jbx-build.py $@ ;;
+    "run" ) python2.7 $helpers/jbx-run.py $@ ;;
+    "petablox" ) python2.7 $helpers/jbx-petablox.py $@ ;;
+    "analyse" ) python2.7 $helpers/jbx-analyse.py $@ ;;
     "get" )
         # Gets the results from the results. 
         if [ "$#" -gt 0 ]; then

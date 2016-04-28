@@ -7,17 +7,10 @@
 #  analysis), or a function that can be used to create an analysis.
 
 {callPackage, utils}:
-rec {
-  run = callPackage ./run {};
+let 
   shared = callPackage ./shared {};
+in {
+  run = callPackage ./run {};
   reachable-methods = callPackage ./reachable-methods { inherit shared; };
   deadlock = callPackage ./deadlock { inherit shared; };
-  # call-graph = import ./call-graph { 
-  #   inherit shared tools;
-  # };
-  # postprocessors = pkgs.callPackage ./postprocessors { 
-  #   inherit batch compose;
-  # };
-
-  # inherit shared;
 }
