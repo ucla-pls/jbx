@@ -2,13 +2,17 @@ import subprocess
 
 import json
 
-def build(string, dry_run=True, keep_failed=False, **kwargs):
-    return call(
-            ["nix-build"] +
-                (["--keep-failed"] if keep_failed else []) +
-                ["--expr", string], 
-            dry_run
+def build(string, dry_run=True, keep_failed=False, debug=False, **kwargs):
+    cmd = ( ["nix-build"] +
+        (["--show-trace"] if debug else []) +
+        (["--keep-failed"] if keep_failed else []) +
+        ["--expr", string]
     )
+    if debug:
+        call(cmd, True)
+        call(cmd)
+    else:
+        call(cmd, dry_run)
 
 def shell(string, dry_run=True, **kwargs):
     return call(["nix-shell", "--expr", string], dry_run)

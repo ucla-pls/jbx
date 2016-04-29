@@ -11,12 +11,12 @@ rec {
     };
     buildInputs = [ ant java.jdk ];
     buildPhase = "ant";
-    tags = [ "reflection-free" ];
     installPhase = ''
       mkdir -p $out/share/java
       mv build/*.jar $_
     '';
   };
+  tags = [ "reflection-free" ];
   data = daCapoSrc;
   libraries = java: with java.libs; [ xmlgraphics-commons batik-util ];
   inputs = let SCRATCH = "$data/benchmarks/bms/fop/data"; in [

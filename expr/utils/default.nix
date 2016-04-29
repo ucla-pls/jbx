@@ -159,6 +159,16 @@ in rec {
       name = builtins.elemAt (lib.strings.splitString "." basename) 0;
     }) results;
 
+
+  # analyseInput : DynamicAnalysis -> Benchmark -> Env -> Key -> Result
+  analyseInput =
+    analysis:
+    benchmark:
+    env:
+    key:
+    let input = (builtins.elemAt (builtins.filter (i: i.name == key) benchmark.inputs) 0);
+    in analysis benchmark env input;
+
   # analyse: Env -> Benchmark -> Analysis -> Result
   # Analyse calls the analysis with reverse arguments
   analyse = 
@@ -167,19 +177,17 @@ in rec {
     analysis:
     analysis benchmark env;
 
-  # mkTransform : Options -> BenchmarkTemplate -> BenchmarkTemplate
-  # A transform moves a benchmark from one scope to another.
-  mkTransform = 
+  # mkTransformer : Options -> BenchmarkTemplate -> BenchmarkTemplate
+  # A transformer moves a benchmark from one scope to another.
+  mkTransformer = 
     options @ {
       name
       , transform # is a function from java. 
     }:
     benchTemplate:
-    let self = benchTemplate 
-      // (transform benchTemplate) 
-      // { 
-        name = name + name; 
-        withJava = java: withJava java self;
+    let self = benchTemplate // (transform benchTemplate) // { 
+      name = benchTemplate.name + "_" + options.name; 
+      withJava = java: withJava java self;
       };
     in self;
 

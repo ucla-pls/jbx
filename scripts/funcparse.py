@@ -20,7 +20,10 @@ def parse_args(func, args = None):
     return partially_resolve(func, vars(pargs))
 
 def collect(specs):
-    no_position_args = len(specs.args) - len(specs.defaults)
+    no_position_args = ( 
+        len(specs.args) - 
+        (len(specs.defaults) if specs.defaults else 0)
+    )
 
     for i, name in enumerate(specs.args):
         annotation = specs.annotations[name]
@@ -53,13 +56,12 @@ def partially_resolve(func, options):
     args = []
     kwargs = {}
     for annotation, name, default in collect(specs):
-        result = annotation.postaction(options[name], options)
+        result = annotation.postaction(options.get(name,None), options)
         if default is None:
             args.append(result) 
         else:
             kwargs[name] = result
 
-    print(args, kwargs)
     return functools.partial(func,
         *args,
         **kwargs
@@ -69,11 +71,33 @@ all_underscores = re.compile('_')
 def clean_name(name):
     return all_underscores.sub('-', name)
 
-class SubCommands:
 
-    def __init__(self, *commands, help=None):
-        self.commands = { cmd.__name__ : cmd for cmd in commands }
+def format_help(help, default): 
+    if default is None: 
+        return help
+    else:
+        return "{help} (default: {default})".format(
+            help = help,
+            default = default
+        )
+
+class CLIArgument: 
+
+    def __init__(self, default=None, help=None, action=lambda x:x, type=None):
+        self.default = default
+        self.action = action
         self.help = help
+        self.type = type
+
+    def postaction(self, value, options):
+        return self.action(value)
+
+class SubCommands(CLIArgument):
+
+    def __init__(self, *commands, **kwargs):
+        self.commands = { cmd.__name__ : cmd for cmd in commands }
+        super(SubCommands, self).__init__(**kwargs)
+        
 
     def postaction(self, value, options): 
         return partially_resolve(
@@ -84,7 +108,7 @@ class SubCommands:
     def parse(self, parser, name, default):
         subparsers = parser.add_subparsers(
             title = "Sub-commands",
-            help = self.help,
+            help = format_help(self.help, default),
             dest = name,
         )
 
@@ -96,52 +120,84 @@ class SubCommands:
             funcparser(subparser, command)
 
 
-class Arg:
+class Arg (CLIArgument):
     """An argument.
     """
 
-    def __init__(self, short, help, type = None):
+    def __init__(self, short, **kwargs):
         self.short = short
-        self.help = help
-        self.type = type
-
-    def postaction(self, value, options):
-        return value
+        super(Arg, self).__init__(**kwargs)
 
     def parse(self, parser, name, default):
-        type_ = self.type or type(default)
-       
+        type_ = self.type or (default is not None and type(default)) or str
         options = {}
         if type_ is bool:
             options["action"] = "store_false" if default else "store_true"
         else:
             options["type"] = type_
 
-        names = [ "--" + name ]
+        names = [ "--" + clean_name(name) ]
         if self.short: 
             names += [ self.short ]
 
         parser.add_argument(
             *names,
-            help = "{help} (default: {default})".format(
-                help = self.help,
-                default = default
-            ),
+            help = format_help(self.help, default),
             default = default,
             **options
         )
 
-class Enum: 
+class OneOf:
 
-    def __init__(self, enum, help):
+    def __init__(self, **kwargs):
+        self.options = kwargs
+    
+    def postaction(self, value, options):
+        for name, cmd in self.options.items():
+            if name in options and not options[name] is None:
+                return cmd.postaction(options[name], options)
+        return value
+
+    def parse(self, parser, name, default):
+        grp = parser.add_mutually_exclusive_group(required = default is None)
+        for ename, sub in self.options.items():
+            sub.parse(grp, ename, None);
+        if not default is None:
+            defaults = {} 
+            defaults[name] = default
+            parser.set_defaults(**defaults)
+
+class ListOf (CLIArgument):
+
+    def __init__(self, short, **kwargs):
+        self.short = short
+        super(ListOf, self).__init__(**kwargs)
+
+    def parse(self, parser, name, default):
+        type_ = self.type or (default and type(default)) or str
+        
+        names = [ "--" + clean_name(name) ]
+        if self.short: 
+            names += [ self.short ]
+
+        parser.add_argument( 
+            *names,
+            action = "append",
+            help = format_help(self.help, default),
+            type=type_
+        )
+
+class Enum (CLIArgument): 
+
+    def __init__(self, enum, **kwargs):
         self.enum = enum
-        self.help = help
+        super(Enum, self).__init__(**kwargs)
 
     def postaction(self, value, options):
         return value
 
     def parse(self, parser, name, default):
-        if default:
+        if not default is None:
             grp = parser.add_mutually_exclusive_group()
             for ename in self.enum:
                 grp.add_argument(
@@ -158,9 +214,7 @@ class Enum:
             parser.add_argument(name,
                 choices = self.enum,
                 default = default,
-                help = "{help} (default: {default})".format(
-                    help = self.help,
-                    default = default
-                )
+                help =  format_help(self.help, default)
             )
+
 

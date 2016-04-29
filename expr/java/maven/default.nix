@@ -118,4 +118,17 @@ in
     group = "org.apache.xmlgraphics";
     md5 = "99f99684b6df6200e529575dccce9970";
   };
+
+  hamcrest-core = fetchmvn {
+    name = "hamcrest-core";
+    version = "1.3";
+    group = "org.hamcrest";
+    md5 = "6393363b47ddcbba82321110c3e07519";
+  };
+
+  junit = fetchmvn {
+    name = "junit";
+    version = "4.12";
+    md5 = "5b38c40c97fbd0adee29f91e60405584";
+  };
 }
