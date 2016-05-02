@@ -35,4 +35,8 @@ rec {
     randoop-2_1_4
   ; 
   randoop = randoop-2_1_4;
+
+  inherit (callPackage ./graphgen {})
+    graphgen
+  ;
 } 

@@ -133,8 +133,8 @@ in
 def run(
     input : Arg("-i", help = "the input to the dynamic analysis"),
     benchmarks : benchmarkSelector,
+    transformer: transformerSelector = None,
     analysis : Arg("-a", help = "the dynamic analyisis to run") = "run.run",
-    transformer: transformerSelector = "b: b",
     **opts
     ):
     """ run an dynamic analysis """
@@ -142,6 +142,38 @@ def run(
     cmd = RUN_CMD.format(
         benchmarks = benchmarks,
         input = input,
+        transformer = transformer,
+        analysis = analysis,
+        **opts
+    )
+    nixutils.build(cmd, **opts)
+
+ANALYSE_CMD = """
+let
+  jbx = import {filename} {{}};
+  env = import {environment};
+  inherit (jbx.utils) withJava analyseInput;
+  java = jbx.java.java{java};
+  lib = jbx.pkgs.lib;
+in 
+  map (b: jbx.analyses.{analysis} b env ) (
+    map (withJava java) (
+      map ({transformer}) (
+        {benchmarks}
+      )
+    )
+  )
+"""
+def analyse(
+    benchmarks : benchmarkSelector,
+    transformer: transformerSelector = None,
+    analysis : Arg("-a", help = "the analysis to run") = "run.runAll",
+    **opts
+    ):
+    """ run an dynamic analysis """
+
+    cmd = ANALYSE_CMD.format(
+        benchmarks = benchmarks,
         transformer = transformer,
         analysis = analysis,
         **opts
@@ -161,7 +193,7 @@ def tool(
 
 def main(
         command : SubCommands(
-            build, list, run, tool,
+            build, list, run, tool, analyse,
             help = "available sub-commands"        
             ),
         java : Arg("-j",
@@ -186,6 +218,7 @@ def main(
     """Jbx is a collection of tools that helps you writing nix scripts
     for working with jbx.
     """
+    print(command)
     return command(
         java = java, 
         keep_failed = keep_failed, 

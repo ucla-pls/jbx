@@ -19,8 +19,11 @@
                 ls -l stuff/*
                 find stuff -name "*.class" | \
                   sed -e 's/stuff\///' -e 's/\.class//' -e 's/\//./g' -e 's/\$.*$//'\
-                  > classes.txt
-                java randoop.main.Main gentests --classlist=classes.txt --timelimit=60
+                  | sort | uniq > classes.txt
+                java -ea randoop.main.Main gentests \
+                  --classlist=classes.txt --timelimit=60 \
+                  --junit-reflection-allowed=false \
+                  --silently-ignore-bad-class-names=true
                 javac *.java
                 mv *.class stuff
                 cd stuff; jar vcf randoop-tests.jar .
