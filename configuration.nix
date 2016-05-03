@@ -6,6 +6,8 @@
     tree
     vim
     git
+    ant
+    jdk7
     python
     python3
   ];
