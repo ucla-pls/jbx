@@ -5,6 +5,8 @@
     htop
     tree
     vim
+    git
+    python
     python3
   ];
 }
