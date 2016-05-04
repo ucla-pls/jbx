@@ -25,9 +25,9 @@ BM_TEMPLATE = """{{ fetchgit, utils, ant }}:
   name = "{name}";
   mainclass = "{main}";
   build = java: {{
-    version = "{version}";
     src = fetchgit {{
       url = "{url}";
+      rev = "{rev}";
       md5 = "{md5}";
     }};
     phases = [ "unpackPhase" "buildPhase" "installPhase" ];
@@ -61,7 +61,7 @@ in rec {{
 CALLBM_TEMPLATE = "{name} = callBenchmark ./{name} {{}};"
 
 def add(url, build_cmd="ant", **kwargs):
-    dtemp, md5, version = get_repo(url)
+    dtemp, md5, revision = get_repo(url)
 
     m = re.search('.*github.com/.*/(.*)\.git', url)
     repo_name = m.group(1)
@@ -78,7 +78,7 @@ def add(url, build_cmd="ant", **kwargs):
             tag=repo_name,
             name=name,
             main=main,
-            version=version,
+            rev=revision,
             url=url,
             md5=md5,
             build_path=build_path,
@@ -96,10 +96,11 @@ def get_repo(url):
     dtemp = tempfile.mkdtemp()
     call(["git", "clone", url, dtemp])
 
-    # Get the version
+    # Get the revision
+    os.chdir(dtemp)
     proc = Popen(["git", "log", "-n", "1", "--format=%H"], stdout=PIPE)
     log, _ = proc.communicate()
-    version = log[0:6]
+    revision = log.strip()
 
     # Remove .git*
     shutil.rmtree(path.join(dtemp, ".git"))
@@ -107,7 +108,7 @@ def get_repo(url):
         os.remove(f)
 
     md5 = nixutils.hash(dtemp).strip()
-    return dtemp, md5.decode("utf-8"), version.decode("utf-8")
+    return dtemp, md5.decode("utf-8"), revision.decode("utf-8")
 
 def find_bms(dir):
     dirs = []

@@ -161,7 +161,7 @@ class OneOf:
     def parse(self, parser, name, default):
         grp = parser.add_mutually_exclusive_group(required = default is None)
         for ename, sub in self.options.items():
-            sub.parse(grp, ename, []);
+            sub.parse(grp, ename, "");
         if not default is None:
             defaults = {} 
             defaults[name] = default
