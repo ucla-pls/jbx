@@ -193,7 +193,7 @@ def tool(
     nixutils.build(cmd, **opts)
 
 def add(
-    repo : Arg(None, help = "the url of the repo to add"),
+    repo : Arg("-r", help = "the url of the repo to add"),
     **opts
     ):
     addbm.add(repo, **opts)

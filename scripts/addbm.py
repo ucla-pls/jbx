@@ -5,9 +5,10 @@ This script enables adding of benchmarks from online repositories.
 """
 
 import ast
-import json
+import glob
 import os
 import os.path as path
+import re
 import shutil
 from subprocess import call, Popen, PIPE
 import tempfile
@@ -18,9 +19,9 @@ JBX_HOME = path.dirname(path.dirname(__file__))
 AUTOGEN = path.join(JBX_HOME, "expr", "benchmarks", "auto-generated")
 DLJC = path.join(path.dirname(__file__), 'dljc', 'dljc')
 
-BM_TEMPLATE = """
-{{ fetchgit, utils, ant }}:
+BM_TEMPLATE = """{{ fetchgit, utils, ant }}:
 {{
+  tags = [ "{tag}" ];
   name = "{name}";
   mainclass = "{main}";
   build = java: {{
@@ -31,18 +32,23 @@ BM_TEMPLATE = """
     }};
     phases = [ "unpackPhase" "buildPhase" "installPhase" ];
     buildInputs = [ ant java.jdk ];
-    buildPhase = "ant";
+    buildPhase = ''
+      cd {build_path}
+      {build_cmd}
+      cd {rel_dest}
+      jar vcf {name}.jar .
+    '';
     installPhase = ''
       mkdir -p $out/share/java/
-      {createJars}
-      {mvJars}
+      mv {name}.jar $_
     '';
   }};
 }}
 """
 
-AUTOGEN_TEMPLATE = """
-{{ utils }}:
+MV_CP_TEMPLATE = "mv {cp}/*.class $out/share/java/"
+
+AUTOGEN_TEMPLATE = """{{ utils }}:
 let
   inherit (utils) callBenchmark;
 in rec {{
@@ -57,23 +63,30 @@ CALLBM_TEMPLATE = "{name} = callBenchmark ./{name} {{}};"
 def add(url, build_cmd="ant", **kwargs):
     dtemp, md5, version = get_repo(url)
 
+    m = re.search('.*github.com/.*/(.*)\.git', url)
+    repo_name = m.group(1)
+
     dirs = find_bms(dtemp)
 
     for bm in dirs:
         cp = watch_build(bm, build_cmd)
+        rel_cp = [rel_path(p, dtemp) for p in cp][0]
         name = path.basename(bm)
         main = get_mainclass(bm)
+        build_path = rel_path(bm, dtemp)
         expr = BM_TEMPLATE.format(
+            tag=repo_name,
             name=name,
             main=main,
             version=version,
             url=url,
             md5=md5,
-            createJars='',
-            mvJars=''
+            build_path=build_path,
+            build_cmd=build_cmd,
+            rel_dest=rel_path(rel_cp, build_path)
         )
         store_expr(name, expr)
-
+        
     refresh_autogen()
 
     # Remove tmp folder
@@ -88,7 +101,11 @@ def get_repo(url):
     log, _ = proc.communicate()
     version = log[0:6]
 
+    # Remove .git*
     shutil.rmtree(path.join(dtemp, ".git"))
+    for f in glob.glob(dtemp + "/.git*"):
+        os.remove(f)
+
     md5 = nixutils.hash(dtemp).strip()
     return dtemp, md5.decode("utf-8"), version.decode("utf-8")
 
@@ -141,3 +158,7 @@ def refresh_autogen():
     f.write(expr)
     f.close()
     
+def rel_path(full, pre):
+    parts = full.split("/")
+    d = path.basename(pre)
+    return "/".join(parts[parts.index(d)+1:])
