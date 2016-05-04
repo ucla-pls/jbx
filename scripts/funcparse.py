@@ -1,5 +1,5 @@
-
 from inspect import getfullargspec
+
 import argparse
 import functools
 import re
@@ -42,10 +42,9 @@ def funcparser(parser, func):
 
     if specs.varargs:
         parser.add_argument(
-            dest='_varargs',
+            dest='*' + func.__name__,
             metavar=specs.varargs,
             nargs='*', 
-            type=specs.annotations[specs.varargs]
         )
         
     return parser
@@ -56,13 +55,12 @@ def partially_resolve(func, options):
     args = []
     kwargs = {}
     for annotation, name, default in collect(specs):
-        result = annotation.postaction(options.get(name,None), options)
-        if default is None:
-            args.append(result) 
-        else:
-            kwargs[name] = result
+        result = annotation.postaction(options.get(name, None), options)
+        args.append(result if not result is None else default) 
 
-    return functools.partial(func,
+    args += options.get("*" + func.__name__, [])
+    return functools.partial(
+        func,
         *args,
         **kwargs
     )
@@ -90,7 +88,7 @@ class CLIArgument:
         self.type = type
 
     def postaction(self, value, options):
-        return self.action(value)
+        return self.action(value) if not value is None else None
 
 class SubCommands(CLIArgument):
 
@@ -136,14 +134,16 @@ class Arg (CLIArgument):
         else:
             options["type"] = type_
 
-        names = [ "--" + clean_name(name) ]
-        if self.short: 
-            names += [ self.short ]
+        if default is None:
+            names = [ clean_name(name) ]
+        else:
+            names = [ "--" + clean_name(name) ]
+            if self.short: 
+                names += [ self.short ]
 
         parser.add_argument(
             *names,
             help = format_help(self.help, default),
-            default = default,
             **options
         )
 
@@ -161,11 +161,11 @@ class OneOf:
     def parse(self, parser, name, default):
         grp = parser.add_mutually_exclusive_group(required = default is None)
         for ename, sub in self.options.items():
-            sub.parse(grp, ename, None);
+            sub.parse(grp, ename, []);
         if not default is None:
             defaults = {} 
             defaults[name] = default
-            parser.set_defaults(**defaults)
+            # parser.set_defaults(**defaults)
 
 class ListOf (CLIArgument):
 
