@@ -8,8 +8,8 @@ This is the main file of the scripting related to JBX.
 import inspect
 import os.path as path
 
-CURRENTFILE = inspect.getfile(inspect.currentframe())
-CURRENTFOLDER = path.dirname(path.abspath(CURRENTFILE))
+CURRENTFILE = path.realpath(__file__)
+CURRENTFOLDER = path.dirname(CURRENTFILE)
 JBXFOLDER = path.dirname(CURRENTFOLDER)
 JBXPATH = path.join(JBXFOLDER, "expr", "default.nix")
 
@@ -40,9 +40,12 @@ let
 in {query}
 """
 def list(
-        what : Enum(["analyses", "benchmarks", "transformers", "tags"],
+        what: 
+            Enum(["analyses", "benchmarks", "transformers", "tags"],
                 help = "what do you want information about"
-            ) = "benchmarks",
+            ) 
+        = "benchmarks",
+
         **opts
     ):
     """ returns a list of the things """
@@ -219,6 +222,10 @@ def analyse(
         Arg("-K", help = "keeps the output even if the output fails.") 
     = False,
     
+    short_curcuit: 
+        Arg("-c", help = "if one of the test failes stop computing.") 
+    = False,
+    
     dry_run: 
         Arg("-n", help = "do not execute, print nix command instead.") 
     = False,
@@ -242,6 +249,7 @@ def analyse(
         debug = debug,
         dry_run = dry_run, 
         keep_failed = keep_failed,
+        keep_going = not short_curcuit,
         **opts
     )
 
