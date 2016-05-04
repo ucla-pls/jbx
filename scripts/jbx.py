@@ -15,6 +15,7 @@ JBXPATH = path.join(JBXFOLDER, "expr", "default.nix")
 
 import nixutils
 from funcparse import *
+import addbm
 
 def quote(item):
     return '"{}"'.format(item)
@@ -191,9 +192,15 @@ def tool(
     cmd = TOOL_CMD.format(tool=tool, **opts)
     nixutils.build(cmd, **opts)
 
+def add(
+    repo : Arg(None, help = "the url of the repo to add"),
+    **opts
+    ):
+    addbm.add(repo, **opts)
+    
 def main(
         command : SubCommands(
-            build, list, run, tool, analyse,
+            build, list, run, tool, analyse, add,
             help = "available sub-commands"        
             ),
         java : Arg("-j",

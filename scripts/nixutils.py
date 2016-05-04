@@ -29,6 +29,9 @@ def evaluate(string):
         call(args, True)
         call(args) 
 
+def hash(path):
+    proc = subprocess.Popen(["nix-hash", path], stdout=subprocess.PIPE)
+    return proc.communicate()[0]
 
 def call(args, dry_run=False):
     if dry_run:
