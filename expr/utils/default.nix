@@ -166,8 +166,14 @@ in rec {
     benchmark:
     env:
     key:
-    let input = (builtins.elemAt (builtins.filter (i: i.name == key) benchmark.inputs) 0);
-    in analysis benchmark env input;
+    analysis benchmark env (getInput benchmark key);
+
+  # getInput : Benchmark -> Key -> Input
+  getInput = 
+    benchmark:
+    key:
+    (builtins.elemAt (builtins.filter (i: i.name == key) benchmark.inputs) 0);
+
 
   # analyse: Env -> Benchmark -> Analysis -> Result
   # Analyse calls the analysis with reverse arguments

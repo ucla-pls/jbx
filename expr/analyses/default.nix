@@ -14,4 +14,5 @@ in {
   reachable-methods = callPackage ./reachable-methods { inherit shared; };
   deadlock = callPackage ./deadlock { inherit shared; };
   data-flow-graph = callPackage ./data-flow-graph { inherit shared; };
+  traces = callPackage ./traces {};
 }
