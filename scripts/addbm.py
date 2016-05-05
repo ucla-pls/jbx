@@ -134,8 +134,9 @@ def get_repo(url):
 
     # Remove .git*
     shutil.rmtree(path.join(dtemp, ".git"))
-    for f in glob.glob(dtemp + "/.git*"):
-        os.remove(f)
+    for dir, _, files in os.walk(dtemp):
+        for f in glob.glob(path.join(dir, ".git*")):
+            os.remove(f)
 
     md5 = nixutils.hash(dtemp).strip()
     return dtemp, md5.decode("utf-8"), revision.decode("utf-8")
