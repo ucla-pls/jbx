@@ -19,74 +19,104 @@ JBX_HOME = path.dirname(path.dirname(__file__))
 AUTOGEN = path.join(JBX_HOME, "expr", "benchmarks", "auto-generated")
 DLJC = path.join(path.dirname(__file__), 'dljc', 'dljc')
 
-BM_TEMPLATE = """{{ fetchgit, utils, ant }}:
-{{
-  tags = [ "{tag}" ];
-  name = "{name}";
-  mainclass = "{main}";
-  build = java: {{
-    src = fetchgit {{
-      url = "{url}";
-      rev = "{rev}";
-      md5 = "{md5}";
-    }};
-    phases = [ "unpackPhase" "buildPhase" "installPhase" ];
-    buildInputs = [ ant java.jdk ];
-    buildPhase = ''
-      cd {build_path}
-      {build_cmd}
-      cd {rel_dest}
-      jar vcf {name}.jar .
-    '';
-    installPhase = ''
-      mkdir -p $out/share/java/
-      mv {name}.jar $_
-    '';
-  }};
-}}
-"""
-
-MV_CP_TEMPLATE = "mv {cp}/*.class $out/share/java/"
-
-AUTOGEN_TEMPLATE = """{{ utils }}:
+REPO_TEMPLATE = """{{ fetchgit, utils, ant, cpio }}:
 let
-  inherit (utils) callBenchmark;
+  bm = {{ name, main, builddir, srcdir, destdir }}: utils.mkBenchmarkTemplate {{
+    tags = [ "{repo}" ];
+    name = name;
+    mainclass = main;
+    build = java: {{
+      src = fetchgit {{
+        url = "{url}";
+        branchName = "master";
+        rev = "{rev}";
+        md5 = "{md5}";
+      }};
+      phases = [ "unpackPhase" "buildPhase" "installPhase" ];
+      buildInputs = [ ant java.jdk cpio ];
+      buildPhase = ''
+        cd ${{builddir}}
+        {build_cmd}
+        cd ${{destdir}}
+        jar vcf ${{name}}.jar .
+      '';
+      installPhase = ''
+        mkdir -p $out/share/java/
+        mv ${{name}}.jar $_
+        cd ../${{srcdir}}
+        mkdir -p $out/src/
+        find . -name '*.java' | cpio -pdm $out/src
+      '';
+    }};
+  }};
 in rec {{
   {bms}
 
-  all = [ {names} ];
+  all = [
+    {bmnames}
+  ];
 }}
 """
 
-CALLBM_TEMPLATE = "{name} = callBenchmark ./{name} {{}};"
+BM_TEMPLATE = """{name} = bm {{
+    name = "{name}";
+    main = "{main}";
+    builddir = "{builddir}";
+    destdir = "{destdir}";
+    srcdir = "{srcdir}";
+  }};
+"""
+
+AUTOGEN_TEMPLATE = """{{ callPackage, utils }}:
+rec {{
+  {callpkgs}
+
+  all = builtins.foldl' (all: bm: all ++ bm.all) [] [
+    {names}
+  ];
+}}
+"""
+
+CALLPKG_TEMPLATE = "{name} = callPackage ./{name} {{}};"
 
 def add(url, build_cmd="ant", **kwargs):
-    dtemp, md5, revision = get_repo(url)
+    dtemp, md5, rev = get_repo(url)
 
-    m = re.search('.*github.com/.*/(.*)\.git', url)
-    repo_name = m.group(1)
+    repo_name = re.search('.*github.com/.*/(.*)\.git', url).group(1)
 
     dirs = find_bms(dtemp)
 
+    bms = []
+    bmnames = []
     for bm in dirs:
-        cp = watch_build(bm, build_cmd)
+        cp, src = watch_build(bm, build_cmd)
         rel_cp = [rel_path(p, dtemp) for p in cp][0]
-        name = path.basename(bm)
+        rel_src = [rel_path(p, dtemp) for p in src][0]
+        rel_build = rel_path(bm, dtemp)
+
         main = get_mainclass(bm)
-        build_path = rel_path(bm, dtemp)
-        expr = BM_TEMPLATE.format(
-            tag=repo_name,
+        name = path.basename(bm)
+        bmnames.append(name)
+
+        bms.append(BM_TEMPLATE.format(
             name=name,
             main=main,
-            rev=revision,
-            url=url,
-            md5=md5,
-            build_path=build_path,
-            build_cmd=build_cmd,
-            rel_dest=rel_path(rel_cp, build_path)
-        )
-        store_expr(name, expr)
-        
+            builddir=rel_build,
+            destdir=rel_path(rel_cp, rel_build),
+            srcdir=rel_path(rel_src, rel_build)
+        ))
+
+    expr = REPO_TEMPLATE.format(
+        repo=repo_name,
+        url=url,
+        rev=rev,
+        md5=md5,
+        build_cmd=build_cmd,
+        bms="\n  ".join(bms),
+        bmnames="\n    ".join(bmnames)
+    )
+
+    store_expr(repo_name, expr)
     refresh_autogen()
 
     # Remove tmp folder
@@ -125,7 +155,9 @@ def watch_build(path, build_cmd):
     stdout, _ = proc.communicate()
 
     out = ast.literal_eval(stdout.decode("utf-8"))
-    return out['javac_switches']['classpath'].split(':')
+    cp = out['javac_switches']['classpath'].split(':')
+    src = out['javac_switches']['sourcepath'].split(':')
+    return cp, src
 
 def get_mainclass(bm):
     prop_file = path.join(bm, "petablox.properties")
@@ -149,10 +181,10 @@ def store_expr(name, expr):
 def refresh_autogen():
     _, dirs, _ = next(os.walk(AUTOGEN))
     names = [path.basename(d) for d in dirs]
-    bms = "\n  ".join([CALLBM_TEMPLATE.format(name=name) for name in names])
+    bms = "\n  ".join([CALLPKG_TEMPLATE.format(name=name) for name in names])
     expr = AUTOGEN_TEMPLATE.format(
-        bms=bms,
-        names=("\n" + (" " * 10)).join(names)
+        callpkgs=bms,
+        names="\n    ".join(names)
     )
     write_path = path.join(AUTOGEN, "default.nix")
     f = open(write_path, 'w')
