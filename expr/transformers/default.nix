@@ -5,17 +5,19 @@
     utils.mkTransformer 
       { name = "randoop";
         transform = benchmark: {
-          mainclass = "org.junit.runner.JUnitCore";
+          mainclass = "RegressionDriver";
           libraries = java: 
             with java.libs; (benchmark.libraries java) ++ [ hamcrest-core junit];
           build = java: 
             let 
               b = benchmark.withJava java;
               timelimit = 10;
+              outputlimit = 100;
             in { 
               src = b.build;
               phases = "buildPhase installPhase";
-              buildInputs = [ java.jdk randoop unzip] ++ b.libraries;
+              buildInputs = [ java.jdk randoop unzip] ++ b.libraries 
+                ++ (with java.libs; [ hamcrest-core junit]);
               buildPhase = ''
                 find $src/share/java/ -name '*.jar' -exec unzip -n {} -d stuff \;
                 export CLASSPATH="$CLASSPATH:stuff"
@@ -26,7 +28,9 @@
                   --classlist=classes.txt \
                   --timelimit=${toString timelimit} \
                   --junit-reflection-allowed=false \
+                  --outputlimit=${toString outputlimit} \
                   --silently-ignore-bad-class-names=true
+                echo "$CLASSPATH"
                 javac *.java
                 mv *.class stuff
                 cd stuff; jar vcf randoop-tests.jar .
@@ -43,9 +47,7 @@
           inputs = [
             {
               name = "regression"; 
-              args = [
-                "RegressionTest0"
-              ];
+              args = [];
             }
             # { 
             #   name = "error";

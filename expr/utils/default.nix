@@ -139,6 +139,7 @@ in rec {
       inherit (input_) setup stdin;
       inherit (benchmark) build libraries data mainclass;
       inputargs = input_.args;
+      inputname = input_.name;
       name = name + "+" + benchmark.name + "." + input.name;
       utils = ./utils.sh;
       builder = ./analysis.sh;
@@ -202,7 +203,7 @@ in rec {
   # Takes a list of results, run them and perform post actions to combine
   # everything:
   compose =
-    options @ { name }: # Needs atleast a name
+    options @ { name, ... }: # Needs atleast a name
     results:
     mkResult (options // {
       results = results;

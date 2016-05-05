@@ -27,4 +27,19 @@ in
     version = "2.1.4";
     md5 = "9445dceb07b1c52d033c426cb266ad5e";
   };
+  randoop-muse = stdenv.mkDerivation {
+    name = "randoop";
+    version = "muse";
+    src = fetchurl {
+      url = "http://www.csl.sri.com/users/schaef/jars/randoop.jar";
+      md5 = "b345ca843c66fe331321f848d017ce73";
+    };
+    phases = "installPhase";
+    buildInputs = [];
+    installPhase = ''
+      mkdir -p $out/share/java
+      cp $src $_
+    '';
+  };
+
 }

@@ -33,8 +33,9 @@ rec {
 
   inherit (callPackage ./randoop {})
     randoop-2_1_4
+    randoop-muse
   ; 
-  randoop = randoop-2_1_4;
+  randoop = randoop-muse;
 
   inherit (callPackage ./graphgen {})
     graphgen

@@ -3,13 +3,13 @@
   daikon = stdenv.mkDerivation {
     name = "daikon";
     src = fetchurl { 
-      url = "https://plse.cs.washington.edu/daikon/download/daikon-5.3.2.tar.gz";
-      md5 = "a2b8b1d65b1b311111448b9753a50dfd";
+      url = "http://www.csl.sri.com/users/schaef/jars/daikon.jar";
+      md5 = "6b564a3f0b3ff1abf70a44cd66bc210f";
     };
-    phases = "unpackPhase installPhase";
+    phases = "installPhase";
     installPhase = ''
       mkdir -p $out/share/java
-      cp daikon.jar $_
+      cp $src $_/daikon.jar
     '';
   };
 }

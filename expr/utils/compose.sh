@@ -33,4 +33,5 @@ for f in $results; do
     fi
 done 
 
+runHook collect
 

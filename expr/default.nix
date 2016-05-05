@@ -27,6 +27,8 @@ in {}:
     inherit pkgs;
     benchmarks = pkgs.callPackage ./benchmarks {};
     analyses = pkgs.callPackage ./analyses {};
-    targets = pkgs.callPackage ./targets { inherit benchmarks analyses env;};
     transformers = pkgs.callPackage ./transformers {};
+    targets = pkgs.callPackage ./targets { 
+      inherit benchmarks analyses env transformers;
+    };
   }  

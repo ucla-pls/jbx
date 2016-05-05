@@ -24,7 +24,7 @@ let
     utils.mkBenchmarkTemplate {
       name = name + "-harness";
       build = dacapo-all;
-      tags = tags ++ ["reflection"];
+      tags = tags ++ ["reflection" "dacapo-harness"];
       mainclass = "org.dacapo.harness.TestHarness";
       inputs = map (size: { name = size; args = ["-s" size name];}) sizes;
       filter = java: builtins.elem java.version versions;

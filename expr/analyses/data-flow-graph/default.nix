@@ -12,8 +12,10 @@
       
       for jar in $(echo $classpath | tr ":" "\n")
       do
-        unzip $jar
+        unzip -o $jar 
       done
+
+      rm -r META-INF
 
       jar vcf ../test.jar .
 
@@ -28,6 +30,9 @@
       cd ..
     
       analyse "make-dot" java -jar ${graphgen}/share/java/prog2dfg.jar -o graphs -j test.jar -source sources.txt
+    '';
+    postprocess = ''
+      cp -r sandbox/graphs .
     '';
   };
 }

@@ -1,26 +1,17 @@
-{ benchmarks, analyses, java, utils, env, lib, eject}:
+{ stdenv
+, benchmarks
+, transformers
+, analyses
+, java
+, utils
+, env
+, lib
+, eject
+}:
 let 
   inherit (utils) versionize usage onAll mkStatistics;
   all = versionize benchmarks.all java.all;
-  dacapo-harness =
-      (lib.attrsets.attrVals 
-        (map (bm: "${bm}-harness") [
-          "avrora"
-          "batik"
-          "eclipse"
-          "fop"
-          "h2"
-          "jython"
-          "luindex"
-          "lusearch"
-          "pmd"
-          "sunflow"
-          "tomcat"
-          "tradebeans"
-          "tradesoap"
-          "xalan"
-          ])
-        benchmarks.byName);
+  dacapo-harness = benchmarks.byTag.dacapo-harness;
 in rec {
   deadlocks = 
     onAll
@@ -63,4 +54,25 @@ in rec {
         column -ts, usage.csv
       '';
     } reachable-methods;
+
+  muse-backend = map (b:
+    let 
+      transformed = transformers.randoop b;
+      benchmark = transformed.withJava java.java7;
+    in stdenv.mkDerivation {
+      name = "muse-backend+" + benchmark.name;
+      phases = "installPhase";
+      dtrace = 
+        analyses.traces.daikonAll 
+          benchmark env;
+      dotfiles = 
+        analyses.data-flow-graph.graphgen 
+          (b.withJava java.java7) env;
+      installPhase = ''
+        mkdir $out
+        cp -r $dtrace/traces $out
+        cp -r $dotfiles/graphs $out
+      '';
+    }
+  ) benchmarks.byTag.integration-test;
 }
