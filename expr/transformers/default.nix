@@ -9,19 +9,22 @@
           libraries = java: 
             with java.libs; (benchmark.libraries java) ++ [ hamcrest-core junit];
           build = java: 
-            let b = benchmark.withJava java;
+            let 
+              b = benchmark.withJava java;
+              timelimit = 10;
             in { 
               src = b.build;
+              phases = "buildPhase installPhase";
               buildInputs = [ java.jdk randoop unzip] ++ b.libraries;
               buildPhase = ''
                 find $src/share/java/ -name '*.jar' -exec unzip -n {} -d stuff \;
                 export CLASSPATH="$CLASSPATH:stuff"
-                ls -l stuff/*
                 find stuff -name "*.class" | \
                   sed -e 's/stuff\///' -e 's/\.class//' -e 's/\//./g' -e 's/\$.*$//'\
                   | sort | uniq > classes.txt
                 java -ea randoop.main.Main gentests \
-                  --classlist=classes.txt --timelimit=60 \
+                  --classlist=classes.txt \
+                  --timelimit=${toString timelimit} \
                   --junit-reflection-allowed=false \
                   --silently-ignore-bad-class-names=true
                 javac *.java
@@ -36,19 +39,20 @@
                 mv classes.txt "$out"
               '';
             };
+          # TODO: Should do somthing about RegressionTest0, what about RegressionTestN
           inputs = [
             {
               name = "regression"; 
               args = [
-                "RegressionTest"
+                "RegressionTest0"
               ];
             }
-            { 
-              name = "error";
-              args = [ 
-                "ErrorTest" 
-              ];
-            }
+            # { 
+            #   name = "error";
+            #   args = [ 
+            #     "ErrorTest" 
+            #   ];
+            # }
           ];
         };
       };

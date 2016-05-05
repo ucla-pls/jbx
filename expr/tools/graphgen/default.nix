@@ -1,4 +1,4 @@
-{ fetchurl, stdenv, unzip}:
+{ fetchurl, stdenv, unzip, jdk7}:
 {
   graphgen = stdenv.mkDerivation {
     name = "graphgen";
@@ -7,12 +7,13 @@
       md5 = "152449151012b96420caf695f44103ef";
     };
     phases = "buildPhase installPhase";
-    buildInputs = [ unzip ];
+    buildInputs = [ unzip jdk7 ];
     buildPhase = ''
       unzip $src -d file
     ''; 
     installPhase = ''
-      cp -r file $out
+      mkdir -p $out/share/java
+      find file -name '*.jar' -exec cp -r {} $out/share/java \;
     '';
   };
 }

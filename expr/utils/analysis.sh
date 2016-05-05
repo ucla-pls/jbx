@@ -25,6 +25,7 @@ tpid=$!
 cd $out/sandbox
 
 export classpath=`toClasspath $build $libraries`
+export srcpath="$build/src"
 
 # Dynamic Analysis
 export stdin="${stdin:-"/dev/null"}"

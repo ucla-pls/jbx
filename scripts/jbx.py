@@ -70,6 +70,7 @@ let
   
   env = import {environment};
   lib = jbx.pkgs.lib;
+  inherit (jbx.utils) getInput;
 
   benchmark = {benchmark};
   transformers = {transformers};
@@ -131,7 +132,7 @@ def run(
     """ run a dynamic analysis """
 
     if input_name:
-        input = "getInput transformed {!r}".format(input_name)
+        input = "getInput transformed \"{}\"".format(input_name)
     else:
         input = "{{ name = \"cmdline\"; args = {}; }}".format(to_nix_list(args))
 
@@ -260,11 +261,14 @@ in jbx.pkgs.{tool}
 """
 def tool(
         tool : Arg(None, help="the tool to install"), 
+        dry_run: 
+            Arg("-n", help = "do not execute, print nix command instead.") 
+        = False,
         **opts
     ):
     """ test a tool."""
     cmd = TOOL_CMD.format(tool=tool, **opts)
-    nixutils.build(cmd, **opts)
+    nixutils.build(cmd, dry_run, **opts)
 
 def add(
     repo : Arg(None, help = "the url of the repo to add"),

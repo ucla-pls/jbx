@@ -39,4 +39,8 @@ rec {
   inherit (callPackage ./graphgen {})
     graphgen
   ;
+  
+  inherit (callPackage ./daikon {})
+    daikon
+  ;
 } 
