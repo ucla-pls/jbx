@@ -2,10 +2,11 @@ import subprocess
 
 import json
 
-def build(string, dry_run=True, keep_failed=False, debug=False, **kwargs):
+def build(string, dry_run=True, keep_failed=False, keep_going=True, debug=False, **kwargs):
     cmd = ( ["nix-build"] +
         (["--show-trace"] if debug else []) +
         (["--keep-failed"] if keep_failed else []) +
+        (["--keep-going"] if keep_going else []) +
         ["--expr", string]
     )
     if debug:
