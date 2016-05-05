@@ -39,6 +39,7 @@
                 mv classes.txt "$out"
               '';
             };
+          # TODO: Should do somthing about RegressionTest0, what about RegressionTestN
           inputs = [
             {
               name = "regression"; 
@@ -46,12 +47,12 @@
                 "RegressionTest0"
               ];
             }
-            { 
-              name = "error";
-              args = [ 
-                "ErrorTest" 
-              ];
-            }
+            # { 
+            #   name = "error";
+            #   args = [ 
+            #     "ErrorTest" 
+            #   ];
+            # }
           ];
         };
       };

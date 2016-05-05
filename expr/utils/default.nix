@@ -117,7 +117,7 @@ in rec {
       buildInputs = [procps] ++ tools;
     });
  
-  # Type: DynamicAnalysis : Benchmark -> Env -> Result
+  # Type: DynamicAnalysis : Benchmark -> Env -> Input -> Result
 
   # mkDynamicAnalysis : Options -> Benchmark -> Env -> Input -> Result 
   # mkDynamicAnalysis is a function that creates an result using an input.
@@ -153,8 +153,9 @@ in rec {
     options:
     benchmark:
     env:
-    let results = map (analysis benchmark env) benchmark.inputs;
-        basename = (builtins.elemAt results 0).name;
+    let 
+      results = map (analysis benchmark env) benchmark.inputs;
+      basename = (builtins.elemAt results 0).name;
     in compose (options // {
       name = builtins.elemAt (lib.strings.splitString "." basename) 0;
     }) results;
