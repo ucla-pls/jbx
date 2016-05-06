@@ -15,7 +15,7 @@ let
 in rec {
   deadlocks = 
     onAll
-      analyses.deadlock.jchord
+      analyses.deadlock.petablox
       (versionize [java.java6] benchmarks.byTag.reflection-free)
       env;
 
@@ -39,6 +39,21 @@ in rec {
       analyses.reachable-methods.petabloxExternal
       (versionize [java.java6] dacapo-harness)
       env;
+  
+  petablox-table = 
+    mkStatistics {
+      tools = [eject];
+      name = "petablox-table";
+      setup = ''echo "name,count" >> table.csv'';
+      foreach = '' 
+        v=`wc -l $result/may | cut -f1 -sd' '`
+        name=''${result#*-}
+        echo "$name,$v" >> table.csv
+      '';
+      collect = ''
+        column -ts, table.csv
+      '';
+    } reachable-methods;
 
   database-usage = 
     mkStatistics {
