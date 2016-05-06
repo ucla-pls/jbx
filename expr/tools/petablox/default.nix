@@ -61,7 +61,7 @@ in {
     branchName = "develop";
   };
   petablox-fix = testPetablox {
-    md5 = "49304df10ef89179c1117cf9b5da4faa";
+    md5 = "635f1d4441263640973d2d26252cc5ee";
     rev = "f8c55cc6fa140eeae9d7cfbb9b5cb88f87bbc78a";
     branchName = "master";
   };

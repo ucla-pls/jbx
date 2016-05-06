@@ -14,11 +14,15 @@ in rec {
       python2.7 ${./jchord-parse.py} $sandbox/chord_output > $out/may
     '';
   };
+  
   petablox = shared.petablox {
     name = "deadlock";
     petablox = petablox_;
     subanalyses = ["cipa-0cfa-dlog" "deadlock-java"];
     reflection = "external";
+    settings = [
+      { name = "deadlock.exclude.nongrded"; value ="true"; }
+    ];
   };
   
   overview = 
