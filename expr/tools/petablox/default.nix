@@ -60,4 +60,9 @@ in {
     rev = "058ffa2ebc9874e8a1664de640bbbac916bf9841";
     branchName = "develop";
   };
+  petablox-fix = testPetablox {
+    md5 = "49304df10ef89179c1117cf9b5da4faa";
+    rev = "f8c55cc6fa140eeae9d7cfbb9b5cb88f87bbc78a";
+    branchName = "master";
+  };
 }
