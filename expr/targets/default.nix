@@ -25,7 +25,12 @@ in rec {
       name = "deadlocks-table";
       setup = ''echo "name,count" >> table.csv'';
       foreach = '' 
-        v=`wc -l $result/may | cut -f1 -sd' '`
+	if [ -e "$result/may" ]
+	then
+        	v=`wc -l $result/may | cut -f1 -sd' '`
+	else
+		v="Err"
+	fi
         name=''${result#*-}
         echo "$name,$v" >> table.csv
       '';

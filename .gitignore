@@ -6,4 +6,4 @@ environment.nix
 \#*
 .vagrant
 *.pyc
-
+*.swp

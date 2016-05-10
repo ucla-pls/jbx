@@ -15,14 +15,19 @@ in rec {
     '';
   };
   
-  petablox = shared.petablox {
+  petablox = utils.after (shared.petablox {
     name = "deadlock";
     petablox = petablox_;
-    subanalyses = ["cipa-0cfa-dlog" "deadlock-java"];
+    subanalyses = ["cipa-0cfa-dlog" "queryE" "deadlock-java"];
     reflection = "external";
     settings = [
-      { name = "deadlock.exclude.nongrded"; value ="true"; }
+      { name = "deadlock.exclude.nongrded"; value = "true"; }
     ];
+  }) { 
+    tools = [ python ];
+    postprocess = ''
+      python2.7 ${./jchord-parse.py} $sandbox/petablox_output > $out/may
+    '';
   };
   
   overview = 
