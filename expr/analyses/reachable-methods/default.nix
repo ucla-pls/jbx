@@ -1,6 +1,6 @@
 { shared, utils, petablox, emma, python, logicblox-4_3_6_3}:
-let 
-  emma_ = emma; 
+let
+  emma_ = emma;
   inherit (utils) mkDynamicAnalysis onAllInputs;
 in rec {
   # Emma, dynammic reachable methods
@@ -31,7 +31,11 @@ in rec {
       python2.7 ${./petablox-parse.py} $sandbox/petablox_output/methods.txt > $out/may
     '';
   };
-  
+
+  wiretapped = shared.wiretap {};
+
+  wiretappedAll = onAllInputs wiretapped {};
+
   # Petablox with the dynamic reflection handeling
   petabloxDynamic = shared.petablox {
     petablox = petablox;
@@ -44,8 +48,8 @@ in rec {
     '';
   };
 
-  overview = utils.liftL (utils.overview "reachable-methods") [ 
-    petabloxExternal 
+  overview = utils.liftL (utils.overview "reachable-methods") [
+    petabloxExternal
     petabloxDynamic
     emmaAll
   ];

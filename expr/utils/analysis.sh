@@ -1,14 +1,21 @@
 source $stdenv/setup
 source $utils
 
+
+function center-text {
+    >&2 echo ">>>> $1 <<<<"
+}
+
 # analyse is a function that logs important information about the
 # execution of an analysis. Should be run on each major command in the
 # analysis. The first argument is the identifyier of the command, it
 # is used directly in the filepaths.
 function analyse {
     local id=$1; shift
+    center-text "JBX-STARTED $name $id"
     record "$name\$$id" "$BASE_FOLDER/$id" "${timelimit}" $@
     echo "$BASE_FOLDER/$id" >> "$BASE_FOLDER/phases"
+    center-text "JBX-DONE $name $id"
 }
 export -f analyse
 
