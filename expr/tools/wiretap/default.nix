@@ -1,15 +1,20 @@
-{ stdenv, fetchprop }:
+{ stdenv, fetchprop, unzip, ant}:
 {
-  wiretap = stdenv.mkDerivation {
+  wiretap = java: stdenv.mkDerivation {
     name = "wiretap";
     src = fetchprop {
-      url = "svm.jar";
-      md5 = "d1450cc88b9525c71aeed9a60c691823";
+      url = "wiretap.zip";
+      md5 = "e2a0330352c24b6213c6ae992ff83302";
     };
-    phases = "installPhase";
+    buildInputs = [ unzip ant java.jdk ];
+    phases = "buildPhase installPhase";
+    buildPhase = ''
+      unzip $src
+      ant
+    '';
     installPhase = ''
       mkdir -p $out/share/java
-      cp $src $out/share/java/svm.jar
+      cp build/wiretap.jar $out/share/java
     '';
   };
 }

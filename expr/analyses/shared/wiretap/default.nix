@@ -5,19 +5,16 @@ benchmark:
 env:
 input:
 let
-  wiretapped = utils.mkDynamicAnalysis {
-    name = "wiretap";
-    timelimit = 1800;
-    wiretap = wiretap;
-    analysis = ''
-      mkdir inst
-      echo $classpath
-      analyse "wiretap-instrument" java -jar $wiretap/share/java/svm.jar -d inst \
-        -cp $classpath $mainclass
-
-      analyse "wiretap-run" java -cp $wiretap/share/java/svm.jar:inst svm.Main \
-         --output trace.log $mainclass $args < $stdin
-    '';
-  };
+  wiretapped = benchmark:
+    utils.mkDynamicAnalysis {
+      name = "wiretap";
+      timelimit = 1800;
+      wiretap = wiretap benchmark.java;
+      analysis = ''
+        echo $classpath
+        analyse "wiretap-run" java -javaagent:$wiretap/share/java/wiretap.jar \
+          -cp $classpath $mainclass $args < $stdin
+      '';
+    } benchmark;
 in
 wiretapped benchmark env input
