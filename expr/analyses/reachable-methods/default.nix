@@ -20,38 +20,49 @@ in rec {
 
   emmaAll = onAllInputs emma {};
 
+
+  wiretapped = shared.wiretap {
+    settings = [
+      { name = "wiretappers";     value = "EnterMethod";      }
+      { name = "recorder";        value = "ReachableMethods"; }
+      { name = "ignoredprefixes"; value = "edu/ucla/pls/wiretap,java/security,java/lang"; }
+    ];
+    postprocess = ''
+      sort -u $sandbox/_wiretap/reachable.txt > $out/must
+      '';
+    };
+
+  wiretappedAll = onAllInputs wiretapped {};
+
+
   # Petablox with the external reflection handeling
   petabloxExternal = shared.petablox {
     petablox = petablox;
     name = "external";
     reflection = "external";
-    subanalyses = [ "cipa-0cfa-dlog" ];
+    subanalyses = [ "reachable-methods" ];
     tools = [ python ];
     postprocess = ''
-      python2.7 ${./petablox-parse.py} $sandbox/petablox_output/methods.txt > $out/may
-    '';
+      python2.7 ${./petablox-parse.py} $sandbox/petablox_output/reachable-methods.txt > $out/may
+      '';
   };
 
-  wiretapped = shared.wiretap {};
-
-  wiretappedAll = onAllInputs wiretapped {};
-
-  # Petablox with the dynamic reflection handeling
+      # Petablox with the dynamic reflection handeling
   petabloxDynamic = shared.petablox {
     petablox = petablox;
     name = "dynamic";
     reflection = "dynamic";
-    subanalyses = [ "cipa-0cfa-dlog" ];
+    subanalyses = [ "reachable-methods" ];
     tools = [ python ];
     postprocess = ''
-      python2.7 ${./petablox-parse.py} $sandbox/petablox_output/methods.txt > $out/may
-    '';
-  };
+      python2.7 ${./petablox-parse.py} $sandbox/petablox_output/reachable-methods.txt > $out/may
+      '';
+    };
 
   overview = utils.liftL (utils.overview "reachable-methods") [
     petabloxExternal
     petabloxDynamic
-    emmaAll
+    wiretappedAll
   ];
 
 }

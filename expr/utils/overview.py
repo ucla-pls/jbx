@@ -8,21 +8,21 @@ import os.path as path
 
 from collections import Container, namedtuple
 
-Stats = namedtuple("Stats", "name must may hitrate coverrate time exitcode") 
+Stats = namedtuple("Stats", "name must may hitrate coverrate time exitcode")
 
-def readset(filename, default): 
+def readset(filename, default):
     try:
         with open(filename, "r") as f:
             return set(f.readlines())
-    except: 
+    except:
         return default;
 
 class Everything(Container):
-    def __contains__ (self, other): 
+    def __contains__ (self, other):
         return True
 
     def __len__ (self):
-        return 0 
+        return 0
 
 class Result(object):
 
@@ -49,11 +49,11 @@ class Result(object):
             len(self.may) if self.may is not None else "inf",
             # Did the analysis hit everything in the
             # underapproximation
-            hits  / len(self.must) if self.must else "N/A", 
+            hits  / len(self.must) if self.must else "N/A",
             cover / len(underaprx) if underaprx else "N/A",
             "Pending", # self._time.real,
             "Pending", # reduce(lambda a, b: a + 1 if b.exitcode != 0 else a, self._result.times, 0)
-        ) 
+        )
 
     @classmethod
     def from_folder(cls, folder):
@@ -65,14 +65,14 @@ class Result(object):
     @staticmethod
     def overapproximation(results):
         list_of_elements = filter(
-            lambda f: f is not None, 
+            lambda f: f is not None,
             map(lambda r: r.may, results)
             );
         if not list_of_elements:
             return None
         else:
             return set.intersection(*list_of_elements);
-    
+
     @staticmethod
     def underapproximation(results):
         list_of_elements = map(lambda r: r.must, results)
@@ -83,12 +83,12 @@ class Result(object):
 
 def main():
     results = map(Result.from_folder, sys.argv[1:]);
-    
-    over = Result.overapproximation(results) 
-    under = Result.underapproximation(results) 
+
+    over = Result.overapproximation(results)
+    under = Result.underapproximation(results)
 
     writer = csv.DictWriter(sys.stdout, fieldnames=Stats._fields)
-    
+
     writer.writeheader()
     for result in results:
         writer.writerow(result.stats(under, over)._asdict())
