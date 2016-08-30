@@ -107,7 +107,7 @@ def main():
             if missing:
                 with open("missing-" + result.name + ".txt", "w") as e:
                     for missed in missing:
-                        e.write(str(missing));
+                        e.write(str(missed));
             writer.writerow(stats._asdict())
 
 if __name__ == "__main__":
