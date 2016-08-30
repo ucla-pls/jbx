@@ -63,8 +63,8 @@ in rec {
   # The results files. They should contain one result per line. The format and
   # defintion of results is left up to the analysis category. If the the file
   # does not exist, it is assumed that the analysis does not have a bound:
-  #   may     -- contains all the overapproximated results.
-  #   must    -- contains all the underapproximated results.
+  #   upper    -- contains all the upper bound of results.
+  #   lower    -- contains all the lower bound of results.
   #
   # The error file, if this file is present the analysis faced an error.
   #   error -- Contains a short description of the error.

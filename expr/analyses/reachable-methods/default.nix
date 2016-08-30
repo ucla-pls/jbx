@@ -15,7 +15,7 @@ in rec {
         -r xml -Dreport.depth=method \
         -cp $classpath $mainclass $args
     '';
-    postprocess = "python2.7 ${./emma-parse.py} $sandbox/coverage.xml | sort > $out/must";
+    postprocess = "python2.7 ${./emma-parse.py} $sandbox/coverage.xml | sort > $out/under";
   };
 
   emmaAll = onAllInputs emma {};
@@ -28,7 +28,7 @@ in rec {
       { name = "ignoredprefixes"; value = "edu/ucla/pls/wiretap,java/security,java/lang"; }
     ];
     postprocess = ''
-      sort -u $sandbox/_wiretap/reachable.txt > $out/must
+      sort -u $sandbox/_wiretap/reachable.txt > $out/lower
       '';
     };
 
@@ -43,7 +43,7 @@ in rec {
     subanalyses = [ "reachable-methods" ];
     tools = [ python ];
     postprocess = ''
-      python2.7 ${./petablox-parse.py} $sandbox/petablox_output/reachable-methods.txt > $out/may
+      python2.7 ${./petablox-parse.py} $sandbox/petablox_output/reachable-methods.txt > $out/upper
       '';
   };
 
@@ -55,7 +55,7 @@ in rec {
     subanalyses = [ "reachable-methods" ];
     tools = [ python ];
     postprocess = ''
-      python2.7 ${./petablox-parse.py} $sandbox/petablox_output/reachable-methods.txt > $out/may
+      python2.7 ${./petablox-parse.py} $sandbox/petablox_output/reachable-methods.txt > $out/upper
       '';
     };
 
