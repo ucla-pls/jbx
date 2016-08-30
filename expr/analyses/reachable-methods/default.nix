@@ -25,15 +25,32 @@ in rec {
     settings = [
       { name = "wiretappers";     value = "EnterMethod";      }
       { name = "recorder";        value = "ReachableMethods"; }
-      { name = "ignoredprefixes"; value = "edu/ucla/pls/wiretap,java/security,java/lang"; }
+      { name = "ignoredprefixes"; value = "edu/ucla/pls/wiretap,java"; }
     ];
     postprocess = ''
-      sort -u $sandbox/_wiretap/reachable.txt > $out/lower
+      # Remove everything before the first main called.
+      # This might miss any <clinit> in the main method.
+      sed -n '/main:(\[Ljava\/lang\/String;)V/,$p' \
+        $sandbox/_wiretap/reachable.txt | sort -u > $out/lower
       '';
     };
 
   wiretappedAll = onAllInputs wiretapped {};
 
+  # Petablox with the external reflection handeling
+  petabloxTamiflex = shared.petablox {
+    petablox = petablox;
+    name = "tamiflex";
+    reflection = "external";
+    subanalyses = [ "reachable-methods" ];
+    tools = [ python ];
+    postprocess = ''
+      if [ -f $sandbox/petablox_output/methods.txt ]
+      then
+        python2.7 ${./petablox-parse.py} $sandbox/petablox_output/methods.txt > $out/upper
+      fi
+    '';
+  };
 
   # Petablox with the external reflection handeling
   petabloxExternal = shared.petablox {
@@ -43,7 +60,10 @@ in rec {
     subanalyses = [ "reachable-methods" ];
     tools = [ python ];
     postprocess = ''
-      python2.7 ${./petablox-parse.py} $sandbox/petablox_output/reachable-methods.txt > $out/upper
+      if [ -f $sandbox/petablox_output/reachable-methods.txt ]
+      then
+        python2.7 ${./petablox-parse.py} $sandbox/petablox_output/reachable-methods.txt > $out/upper
+      fi
       '';
   };
 
@@ -55,13 +75,17 @@ in rec {
     subanalyses = [ "reachable-methods" ];
     tools = [ python ];
     postprocess = ''
-      python2.7 ${./petablox-parse.py} $sandbox/petablox_output/reachable-methods.txt > $out/upper
+      if [ -f $sandbox/petablox_output/reachable-methods.txt ]
+      then
+        python2.7 ${./petablox-parse.py} $sandbox/petablox_output/reachable-methods.txt > $out/upper
+      fi
       '';
     };
 
   overview = utils.liftL (utils.overview "reachable-methods") [
     petabloxExternal
     petabloxDynamic
+    petabloxTamiflex
     wiretappedAll
   ];
 

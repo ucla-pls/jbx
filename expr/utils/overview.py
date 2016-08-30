@@ -8,7 +8,7 @@ import os.path as path
 
 from collections import Container, namedtuple
 
-Stats = namedtuple("Stats", "name lower upper hitrate coverrate time exitcode")
+Stats = namedtuple("Stats", "name lower upper valid coverage precision time exitcode")
 
 def readset(filename, default):
     try:
@@ -41,16 +41,39 @@ class Result(object):
         self.lower = lower
 
     def stats(self, underaprx, overaprx):
-        hits  = len(overaprx & self.lower) if overaprx is not None else len(self.lower)
-        cover = len(underaprx & self.upper) if self.upper is not None else len(underaprx)
+        misses = self.lower - overaprx if overaprx is not None else set();
+        if misses:
+            sys.stderr.write(
+                "[WARNING] {} has {} item(s) in the lower bound not in the over-aproximation:\n".format(
+                    self.name,
+                    len(misses)
+                ));
+            for missed in misses:
+                sys.stderr.write(missed);
+
+        forgotten = underaprx - self.upper if self.upper is not None else set();
+        if forgotten:
+            sys.stderr.write(
+                "[WARNING] {} does not have {} item(s) in the upper bound from the under-aproximation:\n".format(
+                    self.name,
+                    len(forgotten)
+                ));
+            for forgot in forgotten:
+                sys.stderr.write(forgot);
+
         return Stats(
             self.name,
             len(self.lower),
             len(self.upper) if self.upper is not None else "inf",
-            # Did the analysis hit everything in the
-            # underapproximation
-            hits  / len(self.lower) if self.lower else "N/A",
-            cover / len(underaprx) if underaprx else "N/A",
+            (overaprx is None or self.lower < overaprx)
+               and (self.upper is None or underaprx < self.upper),
+            (len(self.lower & overaprx) / len(overaprx)
+               if len(overaprx) != 0 else 1.0)
+               if overaprx is not None else "N/A"
+            ,
+            (len(underaprx & self.upper) / len(self.upper)
+               if len(self.upper) != 0 else "N/A")
+               if self.upper is not None else 0.0,
             "Pending", # self._time.real,
             "Pending", # reduce(lambda a, b: a + 1 if b.exitcode != 0 else a, self._result.times, 0)
         )
