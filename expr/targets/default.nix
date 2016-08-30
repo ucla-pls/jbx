@@ -41,22 +41,15 @@ in rec {
 
   reachable-methods =
     onAll
-      analyses.reachable-methods.petabloxExternal
+      analyses.reachable-methods.overview
       (versionize [java.java6] dacapo-harness)
       env;
 
-  petablox-table =
+  reachable-methods-table =
     mkStatistics {
-      tools = [eject];
-      name = "petablox-table";
-      setup = ''echo "name,count" >> table.csv'';
+      name = "reachable-methods-table";
       foreach = ''
-        v=`wc -l $result/upper | cut -f1 -sd' '`
-        name=''${result#*-}
-        echo "$name,$v" >> table.csv
-      '';
-      collect = ''
-        column -ts, table.csv
+        cp -r $result ''${result##*+}
       '';
     } reachable-methods;
 
