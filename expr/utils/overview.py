@@ -9,6 +9,7 @@ import os.path as path
 from collections import Container, namedtuple
 
 Stats = namedtuple("Stats", "name lower upper coverage precision excess missing")
+Info = namedtuple("Info", "excess missing stats");
 
 def readset(filename, default):
     try:
@@ -40,28 +41,12 @@ class Result(object):
         self.upper = upper
         self.lower = lower
 
-    def stats(self, underaprx, overaprx):
+
+    def info(self, underaprx, overaprx):
         excess = self.lower - overaprx if overaprx is not None else set();
-        if excess:
-            sys.stderr.write(
-                "[WARNING] {} has {} item(s) in the lower bound not in the over-aproximation:\n".format(
-                    self.name,
-                    len(excess)
-                ));
-            for missed in excess:
-                sys.stderr.write(missed);
-
         missing = underaprx - self.upper if self.upper is not None else set();
-        if missing:
-            sys.stderr.write(
-                "[WARNING] {} does not have {} item(s) in the upper bound from the under-aproximation:\n".format(
-                    self.name,
-                    len(missing)
-                ));
-            for forgot in missing:
-                sys.stderr.write(forgot);
 
-        return Stats(
+        stats = Stats(
             self.name,
             len(self.lower),
             len(self.upper) if self.upper is not None else "inf",
@@ -75,6 +60,8 @@ class Result(object):
             len(excess),
             len(missing)
         )
+
+        return Info(excess, missing, stats);
 
     @classmethod
     def from_folder(cls, folder):
@@ -108,11 +95,20 @@ def main():
     over = Result.overapproximation(results)
     under = Result.underapproximation(results)
 
-    writer = csv.DictWriter(sys.stdout, fieldnames=Stats._fields)
-
-    writer.writeheader()
-    for result in results:
-        writer.writerow(result.stats(under, over)._asdict())
+    with open("overview.txt", "w") as f:
+        writer = csv.DictWriter(f, fieldnames=Stats._fields)
+        writer.writeheader()
+        for result in results:
+            excess, missing, stats = result.info(under, over);
+            if excess:
+                with open("excess-" + result.name + ".txt", "w") as e:
+                    for excessive in excess:
+                        e.write(str(excessive));
+            if missing:
+                with open("missing-" + result.name + ".txt", "w") as e:
+                    for missed in missing:
+                        e.write(str(missing));
+            writer.writerow(stats._asdict())
 
 if __name__ == "__main__":
     main()

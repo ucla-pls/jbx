@@ -301,7 +301,9 @@ in rec {
       name = name + "+" + benchmark.name;
       tools = [ python eject];
       collect = ''
-        python ${./overview.py} $results | tee overview.csv | column -ts','
+        cd $out
+        python ${./overview.py} $results
+        column -ts',' overview.txt
         echo "Results from:"
         cat $out/results
       '';
