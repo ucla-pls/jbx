@@ -224,9 +224,13 @@ in rec {
       ...
     }:
     result:
-    mkResult (options // {
+    let
+      nameList = lib.strings.splitString "+" result.name;
+      benchmarkName = (builtins.elemAt nameList 1);
+      analysisName = (builtins.elemAt nameList 0);
+    in mkResult (options // {
       inherit result;
-      name = result.name + "-" + name;
+      name = analysisName + "-" + name + "+" + benchmarkName;
       inherit time coreutils ignoreSandbox;
       buildInputs = [procps] ++ tools;
       builder = ./postprocess.sh;
