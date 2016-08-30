@@ -258,10 +258,10 @@ index d7cfbd0..b806d80 100755
          Unit bx = cfg.getTails().get(0).getHead();
 diff --git a/src/petablox/project/analyses/ReachableMethods.java b/src/petablox/project/analyses/ReachableMethods.java
 new file mode 100644
-index 0000000..c9fa944
+index 0000000..0c68c51
 --- /dev/null
 +++ b/src/petablox/project/analyses/ReachableMethods.java
-@@ -0,0 +1,49 @@
+@@ -0,0 +1,45 @@
 +package petablox.project.analyses;
 +
 +import java.io.PrintWriter;
@@ -293,15 +293,11 @@ index 0000000..c9fa944
 + */
 +@Petablox(name="reachable-methods")
 +public class ReachableMethods extends JavaAnalysis {
-+  // private DomM domM;
-+  // private DomC domC;
 +
 +  public void run() {
 +    ClassicProject project = ClassicProject.g();
 +    CICGAnalysis analysis = (CICGAnalysis) project.runTask("cicg-java");
 +    ICICG cicg = analysis.getCallGraph();
-+    //domM = (DomM) project.getTrgt("M");
-+    //domC = (DomC) project.getTrgt("C");
 +
 +    PrintWriter out = OutDirUtils.newPrintWriter("reachable-methods.txt");
 +    for (SootMethod m : cicg.getNodes()) {

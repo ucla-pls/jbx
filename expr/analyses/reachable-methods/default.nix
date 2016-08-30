@@ -42,7 +42,7 @@ in rec {
     petablox = petablox;
     name = "tamiflex";
     reflection = "external";
-    subanalyses = [ "reachable-methods" ];
+    subanalyses = [ "cipa-0cfa-dlog" ];
     tools = [ python ];
     postprocess = ''
       if [ -f $sandbox/petablox_output/methods.txt ]
@@ -57,7 +57,7 @@ in rec {
     petablox = petablox;
     name = "external";
     reflection = "external";
-    subanalyses = [ "reachable-methods" ];
+    subanalyses = [ "cipa-0cfa-dlog" "reachable-methods" ];
     tools = [ python ];
     postprocess = ''
       if [ -f $sandbox/petablox_output/reachable-methods.txt ]
