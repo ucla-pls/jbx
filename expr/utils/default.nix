@@ -220,13 +220,14 @@ in rec {
       postprocess,  # The extendsion
       name ? "pp",
       tools ? [],
+      ignoreSandbox ? false,
       ...
     }:
     result:
     mkResult (options // {
       inherit result;
       name = result.name + "-" + name;
-      inherit time coreutils;
+      inherit time coreutils ignoreSandbox;
       buildInputs = [procps] ++ tools;
       builder = ./postprocess.sh;
     });
@@ -284,21 +285,23 @@ in rec {
       builder = ./statistics.sh;
     });
 
-  # overview: Name -> [Result] -> Statistics
+  # overview: Name -> [Analysis] -> Benchmark -> Env -> Statistics
   # Overview creates a single table containing data about the success of the
   # execution.
   # TODO this might not fit in here.
   overview =
     name:
-    mkStatistics {
-      inherit name;
+    analyses:
+    benchmark:
+    liftL (mkStatistics {
+      name = name + "+" + benchmark.name;
       tools = [ python eject];
       collect = ''
         python ${./overview.py} $results | tee overview.csv | column -ts','
         echo "Results from:"
         cat $out/results
       '';
-    };
+    }) analyses benchmark;
 
   # usage: Name -> [Result] -> Statistics
   # Overview creates a single table containing data about the .
@@ -326,12 +329,19 @@ in rec {
   # >> Utilities
   # This section contains small functions that might be nice to have
 
-  # onAll: Analyis -> [Benchmark] -> Env -> [Results]
+  # onAll: Analysis -> [Benchmark] -> Env -> [Result]
   onAll =
     analysis:
     benchmarks:
     env:
       builtins.map (b: analysis b env) benchmarks;
+
+  # withAll: [Analysis] -> Benchmark -> Env -> [Result]
+  withAll =
+    analyses:
+    benchmark:
+    env:
+      builtins.map (analyse env benchmark) analyses;
 
   # lift: (Result -> a) -> Analysis -> Benchmark -> Env -> a
   lift =
@@ -347,7 +357,7 @@ in rec {
     analyses:
     benchmark:
     env:
-      f (builtins.map (analyse env benchmark) analyses);
+      f (withAll analyses benchmark env);
 
   # Groups a list of benchmarks by name
   byName =

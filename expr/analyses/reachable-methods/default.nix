@@ -38,11 +38,9 @@ in rec {
   wiretappedAll = onAllInputs wiretapped {};
 
   # Petablox with the external reflection handeling
-  petabloxTamiflex = shared.petablox {
-    petablox = petablox;
+  petabloxTamiflex = utils.after petabloxExternal {
     name = "tamiflex";
-    reflection = "external";
-    subanalyses = [ "cipa-0cfa-dlog" ];
+    ignoreSandbox = true;
     tools = [ python ];
     postprocess = ''
       if [ -f $sandbox/petablox_output/methods.txt ]
@@ -82,7 +80,7 @@ in rec {
       '';
     };
 
-  overview = utils.liftL (utils.overview "reachable-methods") [
+  overview = utils.overview "reachable-methods" [
     petabloxExternal
     petabloxDynamic
     petabloxTamiflex
