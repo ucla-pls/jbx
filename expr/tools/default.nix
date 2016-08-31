@@ -18,6 +18,8 @@ rec {
 
   doop = callPackage ./doop { inherit logicblox-3_10_21; };
 
+  dljc = callPackage ./do-like-javac {};
+
   inherit (callPackage ./jchord {})
     jchord-head
     jchord-2_0
