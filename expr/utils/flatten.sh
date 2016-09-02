@@ -1,21 +1,35 @@
-jbxtmp=_jbxtmp
+jbxtmp="$(pwd)/_jbxtmp"
 mkdir $jbxtmp
+
+if [ ! -z "$subfolder" ]; then
+    cd "$subfolder"
+    echo "Building from subfolder $subfolder..."
+fi
 
 # Maven
 if [ -e pom.xml ]; then
-    echo "Found maven project..."
-    dljc -t print -o $jbxtmp -- mvn compile -Dmaven.repo.local="$(pwd)/.m2" > $jbxtmp/result.json
+    echo "Found maven script..."
+    dljc -t print -o $jbxtmp -- \
+         mvn compile -Dmaven.repo.local="$(pwd)/.m2" > $jbxtmp/result.json
 
-    # Ant
+# Gradle
+elif [ -e build.gradle ]; then
+    echo "Found gradle script..."
+    GRADLE_USER_HOME=$(pwd) dljc -t print -o $jbxtmp -- \
+       gradle build > $jbxtmp/result.json
+# Ant
 elif [ -e build.xml ]; then
     echo "Found ant build script..."
-    dljc -t print -o $jbxtmp -- ant > $jbxtmp/result.json
+    dljc -t print -o $jbxtmp -- \
+         ant > $jbxtmp/result.json
 
-    # Fail if no build-script could be found
+# Fail if no build-script could be found
 else
     echo "Couldn't find a build script in $src"
     exit -1
 fi
+
+echo "Build completed with return code $?..."
 
 files=$(jq -r '.javac_commands[].java_files[]' $jbxtmp/result.json)
 
@@ -25,12 +39,31 @@ for file in $files; do
     cp "$file" "$jbxtmp/src/$path"
 done
 
+mkdir $jbxtmp/lib
+
+classpath=$(jq -r '[
+  .javac_commands[].javac_switches | .d as $r
+ | .classpath | ltrimstr($r) | split(":")
+  ] | add[] | select(. != "")' $jbxtmp/result.json)
+
+for path in $classpath; do
+    echo "Copying over classpath $path..."
+    if [[ $path == *.jar ]]; then
+        mkdir _out
+        unzip -qq -o "$path" -d _out
+        path=_out
+    fi
+    (cd "$path"; find . -name "*.class" | cpio --quiet -pdm $jbxtmp/lib)
+    if [[ -e _out ]]; then rm -r _out; fi
+done
+
 pushd $jbxtmp > /dev/null
 
 find src -name "*.java" > sources.txt
+
 mkdir classes
 
-javac -encoding UTF-8 -d classes @sources.txt
+javac -encoding UTF-8 -cp classes:lib -d classes @sources.txt
 
 classes=$(find classes -name "*.class" | sed 's/.class//;s/\//./g;s/classes.//');
 
@@ -44,7 +77,7 @@ sed -e '/.*public static .*void main(java.lang.String\[\])/{g;p;}' \
 
 mkdir -p share/java
 
-cd classes
-jar cf ../share/java/$name.jar .
+jar cf $jbxtmp/share/java/$name.jar -C classes .
+jar cf $jbxtmp/share/java/$name.jar -C lib .
 
 popd > /dev/null

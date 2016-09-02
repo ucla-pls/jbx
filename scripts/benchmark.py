@@ -123,6 +123,10 @@ def output_json(info, opts):
 NIX_EXPR = """{{ fetchurl, fetchgit, utils }}:
 let
   src = {fetchexpr};
+  repository = {{
+    src = src;
+    subfolder = "{{subfolder}}";
+  }}
 in rec {{
 
 {bms}
@@ -133,7 +137,7 @@ in rec {{
 }}"""
 
 BM_FORMAT = """  {name} =
-    utils.toBenchmark src {{
+    utils.toBenchmark repository {{
       name = "{name}";
       mainclass = "{mainclass}";
       inputs = [
@@ -211,19 +215,19 @@ ACTIONS = {
     "json": output_json
 }
 
-def get_cache(cache_file):
+def get_cache(cachefile):
     try:
-        with open(cache_file) as f:
+        with open(cachefile) as f:
             cache = json.load(f);
     except FileNotFoundError:
         cache = dict()
     except:
-        sys.stderr.write("Mall-formed cache: Delete or fix '{}'.\n".format(cache_file));
+        sys.stderr.write("Mall-formed cache: Delete or fix '{}'.\n".format(cachefile));
         sys.exit(-1);
     return cache
 
-def save_cache(cache_file, cache):
-    with open(cache_file, "w") as f:
+def save_cache(cachefile, cache):
+    with open(cachefile, "w") as f:
         f.write(json.dumps(cache, indent=2, separators=(',', ': '), sort_keys=True));
 
 EXPR = """
@@ -233,7 +237,10 @@ let
   src = {fetch_expr};
 in
   jbx.pkgs.stdenv.mkDerivation
-    (jbx.utils.flattenRepository src jbx.java.java{java})
+    (jbx.utils.flattenRepository {{
+       src = src;
+       subfolder = "{subfolder}";
+     }} jbx.java.java{java})
 """
 
 def benchmark (
@@ -252,9 +259,14 @@ def benchmark (
               )
           ),
 
-        cache_file :
+        cachefile :
           Arg("-c",
               help = "use a cache file"
+          ) = "",
+
+        subfolder :
+          Arg(None,
+              help = "use a subfolder of the repository"
           ) = "",
 
         action:
@@ -265,14 +277,21 @@ def benchmark (
 
         **opts):
     """ Add or test a new benchmark"""
-    cache = get_cache(cache_file);
+    cache = get_cache(cachefile);
 
     prefetch = repo.prefetch(cache);
 
-    save_cache(cache_file, cache)
+    save_cache(cachefile, cache)
 
     fetch_expr = repo.fetchexpr(prefetch)
-    dir_ = nixutils.build(EXPR.format(fetch_expr=fetch_expr, **opts), **opts);
+    dir_ = nixutils.build(
+        EXPR.format(
+            fetch_expr = fetch_expr,
+            subfolder = subfolder,
+            **opts
+        ),
+        **opts
+    );
 
     info = handle_results(dir_);
     info["repo"] = prefetch;

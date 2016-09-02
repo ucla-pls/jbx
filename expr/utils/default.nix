@@ -2,7 +2,8 @@
 # author: Christian Kalhauge <kalhauge@cs.ucla.edu>
 # description: |
 #   This module contains all the utilities needed to build jbx.
-{lib, stdenv, callPackage, procps, time, coreutils, python, eject, dljc, maven, jq, ant}:
+{lib, stdenv, callPackage, procps, time, coreutils, python, eject, dljc,
+ maven, jq, ant, unzip, cpio, gradle}:
 let inherit (lib.lists) concatMap filter;
 in rec {
   # Type: Benchmark
@@ -332,18 +333,22 @@ in rec {
 
   # flattenRepository: Derivation -> Repository
   flattenRepository =
-    src:
+    options @ {
+       src
+       , subfolder ? ""
+       , ...
+    }:
     java:
-    {
-      name = src.name;
-      src = src;
-      phases = [ "unpackPhase" "buildPhase" "installPhase" ];
-      buildInputs = [ dljc maven jq ant java.jdk ];
+    ({
+      inherit subfolder;
+      name = src.name + (if subfolder != "" then "_" + subfolder else "");
+      phases = [ "unpackPhase" "buildPhase" "installPhase"];
+      buildInputs = [ dljc maven jq ant java.jdk unzip cpio gradle ];
       buildPhase = ./flatten.sh;
       installPhase = ''
         cp -r _jbxtmp $out
       '';
-    };
+    } // options);
 
   # toBenchmark: Repository -> Options -> Benchmark
   toBenchmark =
