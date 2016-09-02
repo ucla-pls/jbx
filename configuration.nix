@@ -7,8 +7,8 @@
     vim
     git
     ant
-    jdk7
     python
     python3
+    nix-prefetch-scripts
   ];
 }

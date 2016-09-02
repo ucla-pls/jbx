@@ -2,7 +2,7 @@
 # author: Christian Kalhauge <kalhauge@cs.ucla.edu>
 # description: |
 #   This module contains all the utilities needed to build jbx.
-{lib, stdenv, callPackage, procps, time, coreutils, python, eject}:
+{lib, stdenv, callPackage, procps, time, coreutils, python, eject, dljc, maven, jq, ant}:
 let inherit (lib.lists) concatMap filter;
 in rec {
   # Type: Benchmark
@@ -329,11 +329,39 @@ in rec {
           benchmarks javas
           ;#  );
 
-  # product :: (a -> b -> c) -> [a] -> [b] -> [c]
-  product = f: as: bs: concatMap (a: map (b: f a b) bs) as;
+
+  # flattenRepository: Derivation -> Repository
+  flattenRepository =
+    src:
+    java:
+    {
+      name = src.name;
+      src = src;
+      phases = [ "unpackPhase" "buildPhase" "installPhase" ];
+      buildInputs = [ dljc maven jq ant java.jdk ];
+      buildPhase = ./flatten.sh;
+      installPhase = ''
+        cp -r _jbxtmp $out
+      '';
+    };
+
+  # toBenchmark: Repository -> Options -> Benchmark
+  toBenchmark =
+    repository:
+    options @ {
+      name
+    , mainclass
+    , ...
+    }:
+    mkBenchmarkTemplate ({
+      build = java: flattenRepository repository java;
+    } // options);
 
   # >> Utilities
   # This section contains small functions that might be nice to have
+
+  # product :: (a -> b -> c) -> [a] -> [b] -> [c]
+  product = f: as: bs: concatMap (a: map (b: f a b) bs) as;
 
   # onAll: Analysis -> [Benchmark] -> Env -> [Result]
   onAll =
