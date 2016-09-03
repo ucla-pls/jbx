@@ -1,15 +1,21 @@
 import json
 import subprocess
 import sys
+import tempfile
 
 def build(string, dry_run=True,
           keep_failed=False, keep_going=True, debug=False,
           **kwargs):
+
+    (f, t) = tempfile.mkstemp()
+    with open(t, "w") as f:
+        f.write(string);
+
     cmd = ( ["nix-build"] +
         (["--show-trace"] if debug else []) +
         (["--keep-failed"] if keep_failed else []) +
         (["--keep-going"] if keep_going else []) +
-        ["--expr", string]
+        [t]
     )
     if debug:
         call(cmd, True)

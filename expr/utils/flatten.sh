@@ -46,22 +46,29 @@ files=$(jq -r '.javac_commands[].java_files[]' info/result.json)
 
 for file in $files; do
     path=$(sed -n '
-       /package .*;/{
+       /^[[:space:]]*package [[:space:][:alnum:].].*;/{
          s/.*package//g
          s/[[:space:]]//g
          s/;.*//
          s/\./\//g
          p
+         q
        }' $file)
     mkdir -p "$jbxtmp/src/$path"
     cp "$file" "$jbxtmp/src/$path"
 done
 
 
-classpath=$(jq -r '[
-  .javac_commands[].javac_switches | .d as $r
- | .classpath | ltrimstr($r) | split(":")
-  ] | add[] | select(. != "")' info/result.json)
+classpath=$(jq -r '
+  [ .javac_commands[].javac_switches
+  | .d as $r
+  | select(has("classpath"))
+  | .classpath
+  | ltrimstr($r)
+  | split(":")
+  ] | add
+    | unique[]
+    | select(. != "")' info/result.json)
 
 echo "$classpath" > info/classpath
 
@@ -76,7 +83,7 @@ for path in $classpath; do
     if [[ -e _out ]]; then rm -r _out; fi
 done
 
-find src -name "*.java" > info/sources
+find src -name '*.java' > info/sources
 
 javac -encoding UTF-8 -cp classes:lib -d classes @info/sources
 

@@ -30,8 +30,10 @@ def handle_results(path):
 
     buildwith = getfile(path, "info/buildwith")[0]
 
+    mainclasses = sorted(set(getfile(path, "info/mainclasses")));
+
     benchmarks = [
-        { "name":  name + "_" + class_.rsplit(".",1)[1].lower(),
+        { "name":  name + "_" + class_.replace(".","_").lower(),
           "mainclass":  class_,
           "inputs": [
               { "name": "empty",
@@ -40,7 +42,7 @@ def handle_results(path):
               }
           ]
         }
-        for class_ in getfile(path, "info/mainclasses")
+        for class_ in mainclasses
     ]
 
     return {

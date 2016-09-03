@@ -29,7 +29,7 @@ class GitRepo (collections.namedtuple("GitRepo", "url rev")):
             info = nixutils.prefetch_git(self.url, self.rev)
             info["rev"] = info["rev"] or self.rev
             info["type"] = "git"
-            info["name"] = self.url.strip("/").rsplit("/",1)[1]
+            info["name"] = self.url.strip("/").rsplit("/",1)[1].lower()
             del info["date"]
             cache[str(self)] = info;
         return info

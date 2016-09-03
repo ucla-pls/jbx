@@ -222,7 +222,8 @@ def add(
 def main(
     command :
         SubCommands(
-            analyse, run, list, tool, add, benchmark.benchmark, fetch.fetch
+            analyse, run, list,
+            tool, add, benchmark.benchmark, fetch.fetch,
             help = "available sub-commands"
         ),
 
