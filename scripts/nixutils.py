@@ -32,7 +32,7 @@ def check_output(args):
     try:
         return subprocess.check_output(args, universal_newlines=True)
     except:
-        logger.error("Failed while running", subprocess.list2cmdline(args))
+        logger.error("Failed while running %s", subprocess.list2cmdline(args))
         sys.exit("Failed while running program");
 
 def check_json(args):
