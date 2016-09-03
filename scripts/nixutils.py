@@ -31,13 +31,13 @@ def shell(string, dry_run=True, **kwargs):
 def check_output(args):
     try:
         return subprocess.check_output(args, universal_newlines=True)
-    except subprocess.CalledProcessError:
+    except:
         logger.error("Failed while running", subprocess.list2cmdline(args))
         sys.exit();
 
 def check_json(args):
+    output = check_output(args);
     try:
-        output = check_output(args);
         return json.loads(output)
     except:
         logger.error("Couldn't parse output from command")
