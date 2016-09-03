@@ -7,20 +7,27 @@ This is the main file of the scripting related to JBX.
 
 import inspect
 import os.path as path
+from functools import partial
+import logging
 
 CURRENTFILE = path.realpath(__file__)
 CURRENTFOLDER = path.dirname(CURRENTFILE)
 JBXFOLDER = path.dirname(CURRENTFOLDER)
 JBXPATH = path.join(JBXFOLDER, "expr", "default.nix")
 
-from functools import partial
+logger = logging.getLogger()
+handler = logging.StreamHandler()
+formatter = logging.Formatter(
+        '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 from funcparse import *
-
 import nixutils
 import addbm
 import benchmark
 import fetch
+
 
 def quote(item):
     return '"{}"'.format(item)

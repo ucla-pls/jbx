@@ -8,15 +8,18 @@ import collections
 import json
 import os.path
 import sys
+import logging
 
 from funcparse import *
 import nixutils
 import fetch
 
+logger = logging.getLogger("jbx.benchmark")
+
 
 def getfile(path, filename):
     with open(os.path.join(path, filename)) as f:
-        return f.read().splitlines();
+        return [ v for v in map(str.strip,f.read().splitlines()) if v];
 
 
 def handle_results(path):

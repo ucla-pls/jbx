@@ -3,6 +3,10 @@ import subprocess
 import sys
 import tempfile
 
+import logging
+
+logger = logging.getLogger("jbx.nixutils")
+
 def build(string, dry_run=True,
           keep_failed=False, keep_going=True, debug=False,
           **kwargs):
@@ -28,7 +32,7 @@ def check_output(args):
     try:
         return subprocess.check_output(args, universal_newlines=True)
     except subprocess.CalledProcessError:
-        print("Failed while running", subprocess.list2cmdline(args))
+        logger.error("Failed while running", subprocess.list2cmdline(args))
         sys.exit();
 
 def check_json(args):
@@ -36,9 +40,9 @@ def check_json(args):
         output = check_output(args);
         return json.loads(output)
     except:
-        print("Couldn't parse output from command")
+        logger.error("Couldn't parse output from command")
         call(args, True)
-        print(output)
+        logger.info(output)
         sys.exit()
 
 def evaluate(string):
@@ -51,7 +55,7 @@ def hash(path):
 
 def call(args, dry_run=False):
     if dry_run:
-        print(subprocess.list2cmdline(args))
+        logger.info(subprocess.list2cmdline(args))
     else:
         return check_output(args)
 
