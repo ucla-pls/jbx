@@ -11,7 +11,6 @@ let
       src = fetchgit {
         inherit url rev sha256;
       };
-      phases = [ "unpackPhase" "patchPhase" "installPhase" ];
       buildInputs = [ makeWrapper ];
       installPhase = ''
         mkdir -p $out/bin/
