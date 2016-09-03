@@ -11,7 +11,7 @@ let
       src = fetchgit {
         inherit url rev sha256;
       };
-      buildInputs = [ makeWrapper ];
+      buildInputs = [ makeWrapper python ];
       installPhase = ''
         mkdir -p $out/bin/
         cp -r dljc do_like_javac $out

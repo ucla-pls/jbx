@@ -24,7 +24,7 @@ def getfile(path, filename):
 
 def handle_results(path):
     classes = getfile(path, "info/classes")
-    name = path.rsplit("-", 1)[1];
+    name = path.split("-", 1)[1];
 
     try:
         subfolder = getfile(path, "info/subfolder")[0]
