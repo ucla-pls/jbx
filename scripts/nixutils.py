@@ -33,7 +33,7 @@ def check_output(args):
         return subprocess.check_output(args, universal_newlines=True)
     except:
         logger.error("Failed while running", subprocess.list2cmdline(args))
-        sys.exit();
+        sys.exit("Failed while running program");
 
 def check_json(args):
     output = check_output(args);
@@ -43,7 +43,7 @@ def check_json(args):
         logger.error("Couldn't parse output from command")
         call(args, True)
         logger.info(output)
-        sys.exit()
+        sys.exit("Could not parse output")
 
 def evaluate(string):
     args = ["nix-instantiate", "--eval", "--json", "--expr", string]
