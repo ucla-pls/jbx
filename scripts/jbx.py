@@ -20,6 +20,7 @@ from funcparse import *
 import nixutils
 import addbm
 import benchmark
+import fetch
 
 def quote(item):
     return '"{}"'.format(item)
@@ -221,7 +222,7 @@ def add(
 def main(
     command :
         SubCommands(
-            analyse, run, list, tool, add, benchmark.benchmark,
+            analyse, run, list, tool, add, benchmark.benchmark, fetch.fetch
             help = "available sub-commands"
         ),
 

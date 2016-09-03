@@ -1,27 +1,34 @@
 jbxtmp="$(pwd)/_jbxtmp"
 mkdir $jbxtmp
 
+mkdir $jbxtmp/info
+
 if [ ! -z "$subfolder" ]; then
     cd "$subfolder"
     echo "Building from subfolder $subfolder..."
+    echo "$subfolder" > $jbxtmp/subfolder
 fi
 
 # Maven
 if [ -e pom.xml ]; then
     echo "Found maven script..."
     dljc -t print -o $jbxtmp -- \
-         mvn compile -Dmaven.repo.local="$(pwd)/.m2" > $jbxtmp/result.json
+         mvn compile -Dmaven.repo.local="$(pwd)/.m2" > $jbxtmp/info/result.json
+    echo "maven" > $jbxtmp/info/buildwith
 
 # Gradle
 elif [ -e build.gradle ]; then
     echo "Found gradle script..."
     GRADLE_USER_HOME=$(pwd) dljc -t print -o $jbxtmp -- \
-       gradle build > $jbxtmp/result.json
+       gradle build > $jbxtmp/info/result.json
+    echo "gradle" > $jbxtmp/info/buildwith
+
 # Ant
 elif [ -e build.xml ]; then
     echo "Found ant build script..."
     dljc -t print -o $jbxtmp -- \
-         ant > $jbxtmp/result.json
+         ant > $jbxtmp/info/result.json
+    echo "ant" > $jbxtmp/info/buildwith
 
 # Fail if no build-script could be found
 else
@@ -31,20 +38,32 @@ fi
 
 echo "Build completed with return code $?..."
 
-files=$(jq -r '.javac_commands[].java_files[]' $jbxtmp/result.json)
+pushd $jbxtmp > /dev/null
+
+mkdir -p lib src classes
+
+files=$(jq -r '.javac_commands[].java_files[]' info/result.json)
 
 for file in $files; do
-    path=`sed -n '/package .*;/{s/package//g; s/[[:space:]]//g; s/;//; s/\./\//g; p}' $file`
+    path=$(sed -n '
+       /package .*;/{
+         s/.*package//g
+         s/[[:space:]]//g
+         s/;.*//
+         s/\./\//g
+         p
+       }' $file)
     mkdir -p "$jbxtmp/src/$path"
     cp "$file" "$jbxtmp/src/$path"
 done
 
-mkdir $jbxtmp/lib
 
 classpath=$(jq -r '[
   .javac_commands[].javac_switches | .d as $r
  | .classpath | ltrimstr($r) | split(":")
-  ] | add[] | select(. != "")' $jbxtmp/result.json)
+  ] | add[] | select(. != "")' info/result.json)
+
+echo "$classpath" > info/classpath
 
 for path in $classpath; do
     echo "Copying over classpath $path..."
@@ -53,31 +72,27 @@ for path in $classpath; do
         unzip -qq -o "$path" -d _out
         path=_out
     fi
-    (cd "$path"; find . -name "*.class" | cpio --quiet -pdm $jbxtmp/lib)
+    (cd "$path"; find . -name "*.class" | cpio --quiet -updm $jbxtmp/lib)
     if [[ -e _out ]]; then rm -r _out; fi
 done
 
-pushd $jbxtmp > /dev/null
+find src -name "*.java" > info/sources
 
-find src -name "*.java" > sources.txt
-
-mkdir classes
-
-javac -encoding UTF-8 -cp classes:lib -d classes @sources.txt
+javac -encoding UTF-8 -cp classes:lib -d classes @info/sources
 
 classes=$(find classes -name "*.class" | sed 's/.class//;s/\//./g;s/classes.//');
 
-echo $classes | sed "s/ /\n/g" > classes.txt
-javap -classpath classes $classes > declarations.txt
+echo "$classes" | sed "s/ /\n/g" > info/classes
+javap -classpath classes $classes > info/declarations
 
 # Finding mainclasses
 sed -e '/.*public static .*void main(java.lang.String\[\])/{g;p;}' \
     -e 's/.*class \([[:alnum:].]*\).*/\1/;T;h' \
-    -n declarations.txt > mainclasses.txt
+    -n info/declarations > info/mainclasses
 
 mkdir -p share/java
 
 jar cf $jbxtmp/share/java/$name.jar -C classes .
-jar cf $jbxtmp/share/java/$name.jar -C lib .
+jar uf $jbxtmp/share/java/$name.jar -C lib .
 
 popd > /dev/null
