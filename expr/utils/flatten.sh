@@ -32,8 +32,9 @@ elif [ -e build.xml ]; then
 
 # Fail if no build-script could be found
 else
+    echo "none" > $jbxtmp/info/buildwith
     echo "Couldn't find a build script in $src"
-    exit -1
+    exit 0
 fi
 
 echo "Build completed with return code $?..."

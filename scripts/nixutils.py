@@ -10,6 +10,7 @@ logger = logging.getLogger("jbx.nixutils")
 
 def build(string, dry_run=True,
           keep_failed=False, keep_going=True, debug=False,
+          timeout=None,
           **kwargs):
 
     (f, t) = tempfile.mkstemp()
@@ -24,14 +25,20 @@ def build(string, dry_run=True,
     )
     if debug:
         call(cmd, True)
-    return call(cmd, dry_run).strip();
+    return call(cmd, dry_run, timeout=timeout).strip();
 
 def shell(string, dry_run=True, **kwargs):
     return call(["nix-shell", "--expr", string], dry_run)
 
-def check_output(args, env=None):
+def call(args, dry_run=False, timeout=None):
+    if dry_run:
+        logger.info(subprocess.list2cmdline(args))
+    else:
+        return check_output(args, timeout=timeout)
+
+def check_output(args, env=None, timeout=None):
     try:
-        return subprocess.check_output(args, universal_newlines=True, env=env)
+        return subprocess.check_output(args, universal_newlines=True, env=env, timeout=timeout)
     except:
         logger.error("Failed while running %s", subprocess.list2cmdline(args))
         sys.exit("Failed while running program");
@@ -53,12 +60,6 @@ def evaluate(string):
 def hash(path):
     proc = subprocess.Popen(["nix-hash", path], stdout=subprocess.PIPE)
     return proc.communicate()[0]
-
-def call(args, dry_run=False):
-    if dry_run:
-        logger.info(subprocess.list2cmdline(args))
-    else:
-        return check_output(args)
 
 def prefetch_git(url, rev, cache = None):
     env = os.environ.copy()

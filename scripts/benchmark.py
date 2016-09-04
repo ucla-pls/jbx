@@ -18,9 +18,11 @@ logger = logging.getLogger("jbx.benchmark")
 
 
 def getfile(path, filename):
-    with open(os.path.join(path, filename)) as f:
-        return [ v for v in map(str.strip,f.read().splitlines()) if v];
-
+    try:
+        with open(os.path.join(path, filename)) as f:
+            return [ v for v in map(str.strip,f.read().splitlines()) if v];
+    except:
+        return []
 
 def handle_results(path):
     classes = getfile(path, "info/classes")
@@ -32,6 +34,7 @@ def handle_results(path):
         subfolder = ""
 
     buildwith = getfile(path, "info/buildwith")[0]
+    
 
     mainclasses = sorted(set(getfile(path, "info/mainclasses")));
 
@@ -197,6 +200,7 @@ def benchmark (
             subfolder = subfolder,
             **opts
         ),
+     	timeout=300,
         **opts
     );
 
