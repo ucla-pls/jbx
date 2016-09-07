@@ -358,8 +358,10 @@ in rec {
     java:
     {
        src = stdenv.mkDerivation (repository java);
+       buildInputs = [ java.jdk ];
+       phases = [ "unpackPhase" "buildPhase" "installPhase"];
        buildPhase = ''
-         mkdir -p share/java
+         mkdir -p $out/share/java
 
          jar cf $out/share/java/$name.jar -C classes .
          jar uf $out/share/java/$name.jar -C lib .
