@@ -3,13 +3,17 @@ import subprocess
 import sys
 import tempfile
 import os
+import re
 
 import logging
 
 logger = logging.getLogger("jbx.nixutils")
 
-def build(string, dry_run=True,
-          keep_failed=False, keep_going=True, debug=False,
+def build(string,
+          dry_run=True,
+          keep_failed=False,
+          keep_going=True,
+          debug=False,
           timeout=None,
           **kwargs):
 
@@ -24,8 +28,37 @@ def build(string, dry_run=True,
         [t]
     )
     if debug:
-        call(cmd, True)
+        logger.debug(string);
     return call(cmd, dry_run, timeout=timeout).strip();
+
+hashfetchre = re.compile(
+    r"output path ‘[^’]+’ should have r:sha256 hash ‘[^‘]+’, instead has ‘([^‘]+)’"
+)
+def fetchhash(string,
+          dry_run=True,
+          keep_failed=False,
+          keep_going=True,
+          debug=False,
+          timeout=None,
+          **kwargs):
+
+    (f, t) = tempfile.mkstemp()
+    with open(t, "w") as f:
+        f.write(string);
+
+    cmd = ( ["nix-build"] +
+        (["--show-trace"] if debug else []) +
+        (["--keep-failed"] if keep_failed else []) +
+        (["--keep-going"] if keep_going else []) +
+        [t]
+    )
+    if debug:
+        logger.debug(string);
+    result = run(cmd, timeout=timeout);
+
+    print(result.stderr)
+    if result.returncode != 0:
+        return hashfetchre.search(result.stderr).group(1);
 
 def shell(string, dry_run=True, **kwargs):
     return call(["nix-shell", "--expr", string], dry_run)
@@ -42,6 +75,15 @@ def check_output(args, env=None, timeout=None):
     except:
         logger.error("Failed while running %s", subprocess.list2cmdline(args))
         sys.exit("Failed while running program");
+
+def run(args, env=None, timeout=None):
+    result = subprocess.run(args,
+                    universal_newlines=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    env=env,
+                    timeout=timeout);
+    return result;
 
 def check_json(args, env=None):
     output = check_output(args, env=env);

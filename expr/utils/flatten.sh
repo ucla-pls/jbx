@@ -1,45 +1,45 @@
 jbxtmp="$(pwd)/_jbxtmp"
 mkdir $jbxtmp
 
-mkdir $jbxtmp/info
+mkdir -p $out/info
 
 if [ ! -z "$subfolder" ]; then
     cd "$subfolder"
     echo "Building from subfolder $subfolder..."
-    echo "$subfolder" > $jbxtmp/subfolder
+    echo "$subfolder" > $out/info/subfolder
 fi
 
 # Maven
 if [ -e pom.xml ]; then
     echo "Found maven script..."
     dljc -t print -o $jbxtmp -- \
-         mvn compile -Dmaven.repo.local="$(pwd)/.m2" > $jbxtmp/info/result.json
-    echo "maven" > $jbxtmp/info/buildwith
+         mvn compile -Dmaven.repo.local="$(pwd)/.m2" > $out/info/result.json
+    echo "maven" > $out/info/buildwith
 
 # Gradle
 elif [ -e build.gradle ]; then
     echo "Found gradle script..."
     GRADLE_USER_HOME=$(pwd) dljc -t print -o $jbxtmp -- \
-       gradle build > $jbxtmp/info/result.json
-    echo "gradle" > $jbxtmp/info/buildwith
+       gradle build > $out/info/result.json
+    echo "gradle" > $out/info/buildwith
 
 # Ant
 elif [ -e build.xml ]; then
     echo "Found ant build script..."
     dljc -t print -o $jbxtmp -- \
-         ant > $jbxtmp/info/result.json
-    echo "ant" > $jbxtmp/info/buildwith
+         ant > $out/info/result.json
+    echo "ant" > $out/info/buildwith
 
 # Fail if no build-script could be found
 else
-    echo "none" > $jbxtmp/info/buildwith
+    echo "none" > $out/info/buildwith
     echo "Couldn't find a build script in $src"
     exit 0
 fi
 
 echo "Build completed with return code $?..."
 
-pushd $jbxtmp > /dev/null
+pushd $out > /dev/null
 
 mkdir -p lib src classes
 
@@ -55,8 +55,8 @@ for file in $files; do
          p
          q
        }' $file)
-    mkdir -p "$jbxtmp/src/$path"
-    cp "$file" "$jbxtmp/src/$path"
+    mkdir -p "$out/src/$path"
+    cp "$file" "$out/src/$path"
 done
 
 
@@ -80,7 +80,7 @@ for path in $classpath; do
         unzip -qq -o "$path" -d _out
         path=_out
     fi
-    (cd "$path"; find . -name "*.class" | cpio --quiet -updm $jbxtmp/lib)
+    (cd "$path"; find . -name "*.class" | cpio --quiet -updm $out/lib)
     if [[ -e _out ]]; then rm -r _out; fi
 done
 
@@ -97,10 +97,5 @@ javap -classpath classes $classes > info/declarations
 sed -e '/.*public static .*void main(java.lang.String\[\])/{g;p;}' \
     -e 's/.*class \([[:alnum:].]*\).*/\1/;T;h' \
     -n info/declarations > info/mainclasses
-
-mkdir -p share/java
-
-jar cf $jbxtmp/share/java/$name.jar -C classes .
-jar uf $jbxtmp/share/java/$name.jar -C lib .
 
 popd > /dev/null

@@ -335,20 +335,39 @@ in rec {
   flattenRepository =
     options @ {
        src
+       , sha256
        , subfolder ? ""
-       , ...
     }:
     java:
-    ({
-      inherit subfolder;
+    {
+      inherit src subfolder;
       name = src.name + (if subfolder != "" then "_" + subfolder else "");
-      phases = [ "unpackPhase" "buildPhase" "installPhase"];
+      phases = [ "unpackPhase" "buildPhase" ];
       buildInputs = [ dljc maven jq ant java.jdk unzip cpio gradle ];
       buildPhase = ./flatten.sh;
-      installPhase = ''
-        cp -r _jbxtmp $out
-      '';
-    } // options);
+      outputHash = sha256;
+      outputHashAlgo = "sha256";
+      outputHashMode = "recursive";
+      impureEnvVars = [
+        "http_proxy" "https_proxy" "ftp_proxy" "all_proxy" "no_proxy"
+      ];
+    };
+
+  buildJar =
+    repository:
+    java:
+    {
+       src = stdenv.mkDerivation (repository java);
+       buildPhase = ''
+         mkdir -p share/java
+
+         jar cf $out/share/java/$name.jar -C classes .
+         jar uf $out/share/java/$name.jar -C lib .
+       '';
+       installPhase = ''
+         cp -r . $out
+       '';
+    };
 
   # toBenchmark: Repository -> Options -> Benchmark
   toBenchmark =
@@ -359,7 +378,7 @@ in rec {
     , ...
     }:
     mkBenchmarkTemplate ({
-      build = java: flattenRepository repository java;
+      build = buildJar (flattenRepository repository);
     } // options);
 
   # >> Utilities
