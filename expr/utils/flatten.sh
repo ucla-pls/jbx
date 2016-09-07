@@ -80,15 +80,15 @@ for path in $classpath; do
         unzip -qq -o "$path" -d _out
         path=_out
     fi
-    (cd "$path"; find . -name "*.class" | cpio --quiet -updm $out/lib)
+    (cd "$path"; find . -name "*.class" | sort | cpio --quiet -updm $out/lib)
     if [[ -e _out ]]; then rm -r _out; fi
 done
 
-find src -name '*.java' > info/sources
+find src -name '*.java' | sort > info/sources
 
 javac -encoding UTF-8 -cp classes:lib -d classes @info/sources
 
-classes=$(find classes -name "*.class" | sed 's/.class//;s/\//./g;s/classes.//');
+classes=$(find classes -name "*.class" | sed 's/.class//;s/\//./g;s/classes.//' | sort );
 
 echo "$classes" | sed "s/ /\n/g" > info/classes
 javap -classpath classes $classes > info/declarations
