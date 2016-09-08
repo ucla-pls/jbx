@@ -2,8 +2,15 @@
 # author: Christian Kalhauge <kalhauge@cs.ucla.edu>
 # description: |
 #   This module contains all the utilities needed to build jbx.
-{lib, stdenv, callPackage, procps, time, coreutils, python, eject, dljc,
- maven, jq, ant, unzip, cpio, gradle}:
+{ lib
+, stdenv
+, callPackage
+, procps
+, time
+, coreutils
+, python
+, eject
+}:
 let inherit (lib.lists) concatMap filter;
 in rec {
   # Type: Benchmark
@@ -332,32 +339,13 @@ in rec {
 
 
   # flattenRepository: Derivation -> Repository
-  flattenRepository =
-    options @ {
-       src
-       , sha256
-       , subfolder ? ""
-    }:
-    java:
-    {
-      inherit src subfolder;
-      name = src.name + (if subfolder != "" then "_" + subfolder else "");
-      phases = [ "unpackPhase" "buildPhase" ];
-      buildInputs = [ dljc maven jq ant java.jdk unzip cpio gradle ];
-      buildPhase = ./flatten.sh;
-      outputHash = sha256;
-      outputHashAlgo = "sha256";
-      outputHashMode = "recursive";
-      impureEnvVars = [
-        "http_proxy" "https_proxy" "ftp_proxy" "all_proxy" "no_proxy"
-      ];
-    };
+  flattenRepository = callPackage ../flatten-repository;
 
   buildJar =
     repository:
     java:
     {
-       src = stdenv.mkDerivation (repository java);
+       src = repository java;
        buildInputs = [ java.jdk ];
        phases = [ "unpackPhase" "buildPhase" "installPhase"];
        buildPhase = ''
@@ -382,6 +370,17 @@ in rec {
     mkBenchmarkTemplate ({
       build = buildJar (flattenRepository repository);
     } // options);
+
+  # This project contains some proprietary file not
+  # distributed with this pkg.
+  fetchprop =
+    options:
+    pkgs.fetchurl (options // {
+      url = env.ppath + options.url;
+    });
+
+  # Fetching from the leidos muse corpus
+  fetchmuse = callPackage ../fetchmuse {};
 
   # >> Utilities
   # This section contains small functions that might be nice to have
@@ -438,4 +437,5 @@ in rec {
   # Update the a value with default, if it exists if not use default value.
   updateDefault = attrset: name: default: fun:
     attrset // {${name} = fun (getDefault attrset name default); };
+
 }

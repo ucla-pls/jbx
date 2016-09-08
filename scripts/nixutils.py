@@ -56,9 +56,13 @@ def fetchhash(string,
         logger.debug(string);
     result = run(cmd, timeout=timeout);
 
-    print(result.stderr)
     if result.returncode != 0:
-        return hashfetchre.search(result.stderr).group(1);
+        try:
+            return hashfetchre.search(result.stderr).group(1);
+        except:
+            logger.error("Bad thing happend while looking for sha256")
+            logger.error(result.stderr)
+
 
 def shell(string, dry_run=True, **kwargs):
     return call(["nix-shell", "--expr", string], dry_run)

@@ -50,7 +50,6 @@ class GitRepo (collections.namedtuple("GitRepo", "url rev")):
         return self.url + ":" + self.rev;
 
 
-
 FETCHURL_EXPR = """
     fetchurl {{
       url = "{url}";
@@ -72,9 +71,37 @@ class UrlRepo (collections.namedtuple("UrlRepo", "url")):
     def fetchexpr (options):
         return FETCHURL_EXPR.format(**options);
 
+
+FETCHMUSE_EXPR = """
+    fetchmuse {{
+      url = "{path}";
+      sha256 = "{sha256}";
+    }}"""
+
+
+class MuseRepo (collections.namedtuple("MuseRepo", "path")):
+
+    def prefetch (repo, cache = {}):
+        try:
+            info = cache[str(self)];
+        except:
+            info["sha256"] = nixutils.fetchhash(repo.fetchexpr({
+                "path": repo.path,
+                "sha256": "0000000000000000000000000000000000000000000000000000"
+            }));
+            info["type"] = "muse"
+        return info
+
+    @staticmethod
+    def fetchexpr (options):
+        return FETCHMUSE_EXPR.format(**options);
+
+
+
 TYPES = {
     "git": GitRepo,
-    "url": UrlRepo
+    "url": UrlRepo,
+    "muse": MuseRepo
 }
 
 def fromtype(type_):
@@ -120,6 +147,11 @@ REPO_ARG = OneOf(
         Arg(None,
             help = "the url of the benchmark",
             action = UrlRepo
+        ),
+    muse =
+        Arg(None,
+            help = "the muse url of the benchmark",
+            action = MuseRepo
         )
 )
 

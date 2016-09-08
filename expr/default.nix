@@ -2,15 +2,7 @@ let
   nixpkgs = import ../nixpkgs {};
   env = import ../environment.nix;
 
-  # This project contains some proprietary file not
-  # distributed with this pkg.
-  fetchprop =
-    options:
-    pkgs.fetchurl (options // {
-      url = env.ppath + options.url;
-    });
-
-  tools = nixpkgs.callPackage ./tools { inherit fetchprop; };
+  tools = nixpkgs.callPackage ./tools { inherit (utils) fetchprop; };
 
   # Update the packages with our tools
   pkgs = nixpkgs // tools // {
