@@ -9,6 +9,8 @@
 , time
 , coreutils
 , python
+, fetchurl
+, env
 , eject
 }:
 let inherit (lib.lists) concatMap filter;
@@ -339,7 +341,7 @@ in rec {
 
 
   # flattenRepository: Derivation -> Repository
-  flattenRepository = callPackage ../flatten-repository;
+  flattenRepository = callPackage ./flatten-repository;
 
   buildJar =
     repository:
@@ -375,12 +377,12 @@ in rec {
   # distributed with this pkg.
   fetchprop =
     options:
-    pkgs.fetchurl (options // {
+    fetchurl (options // {
       url = env.ppath + options.url;
     });
 
   # Fetching from the leidos muse corpus
-  fetchmuse = callPackage ../fetchmuse {};
+  fetchmuse = callPackage ./fetchmuse;
 
   # >> Utilities
   # This section contains small functions that might be nice to have

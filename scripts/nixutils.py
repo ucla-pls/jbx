@@ -31,37 +31,6 @@ def build(string,
         logger.debug(string);
     return call(cmd, dry_run, timeout=timeout).strip();
 
-hashfetchre = re.compile(
-    r"output path ‘[^’]+’ should have r:sha256 hash ‘[^‘]+’, instead has ‘([^‘]+)’"
-)
-def fetchhash(string,
-          dry_run=True,
-          keep_failed=False,
-          keep_going=True,
-          debug=False,
-          timeout=None,
-          **kwargs):
-
-    (f, t) = tempfile.mkstemp()
-    with open(t, "w") as f:
-        f.write(string);
-
-    cmd = ( ["nix-build"] +
-        (["--show-trace"] if debug else []) +
-        (["--keep-failed"] if keep_failed else []) +
-        (["--keep-going"] if keep_going else []) +
-        [t]
-    )
-    if debug:
-        logger.debug(string);
-    result = run(cmd, timeout=timeout);
-
-    if result.returncode != 0:
-        try:
-            return hashfetchre.search(result.stderr).group(1);
-        except:
-            logger.error("Bad thing happend while looking for sha256")
-            logger.error(result.stderr)
 
 
 def shell(string, dry_run=True, **kwargs):
@@ -113,10 +82,146 @@ def prefetch_git(url, rev, cache = None):
     return check_json(
     	["nix-prefetch-git", url, rev]
 	+ ([cache] if cache else []),
-        env=env 
+        env=env
     )
 
 def prefetch_url(url, cache = None):
     sha256 = check_output(["nix-prefetch-url", url]
                           + ([cache] if cache else []))
     return { "url" : url, "sha256" : sha256 }
+
+def raw_build(
+        expr,
+        debug=False,
+        keep_failed=False,
+        keep_going=False,
+        env=None,
+        timeout=None,
+        **kwargs):
+    """ Raw build builds an expression and returns a subprocess.CompletedProcess
+    """
+
+    cmd = ["nix-build"]
+
+    if debug: cmd += ["--show-trace"]
+    if keep_failed: cmd += ["--keep-failed"]
+    if keep_going: cmd += ["--keep-going"]
+
+    if len(expr) < 512:
+        cmd += [ "--expr", expr ]
+    else:
+        (f, t) = tempfile.mkstemp()
+        with open(t, "w") as f:
+            f.write(string)
+
+        cmd.append(t)
+
+    for line in expr.split("\n"):
+        logger.debug(line)
+
+    logger.debug(cmd);
+
+    return subprocess.run(
+        cmd,
+        universal_newlines=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        env=env,
+        timeout=timeout
+    )
+
+HASH_REGEXS = [
+    re.compile(
+        r"output path ‘[^’]+’ should have r:sha256 hash ‘[^‘]+’, instead has ‘([^‘]+)’"
+    ),
+    re.compile(
+        r"output path ‘[^’]+’ has r:sha256 hash ‘([^‘]+)’ when ‘[^‘]+’ was expected"
+    ),
+    re.compile(
+        r"output path ‘[^’]+’ has sha256 hash ‘([^‘]+)’ when ‘[^‘]+’ was expected"
+    )
+]
+
+
+def verify(method, obj, **kwargs):
+    """ verify runs the method with the object and checks if builds completes.
+    If the command succeeds a copy of the object is returned. If the command
+    fails, then we search the output for a sha256 hash line, add it to the
+    object and rerun the program. If that does not succeed the program will throw
+    an exception.
+    """
+    arg = dict(obj);
+    arg.setdefault("sha256", "0000000000000000000000000000000000000000000000000000")
+
+    cmd = method.format(dumps(arg), **kwargs);
+
+    result = raw_build(cmd, **kwargs);
+
+    if result.returncode == 0:
+        arg["path"] = result.stdout.strip();
+        return arg;
+    else:
+        try:
+            for regex in HASH_REGEXS:
+                match = regex.search(result.stderr);
+                if match:
+                    break
+            arg["sha256"] = match.group(1);
+        except:
+            logger.error("Build failed:")
+            for line in result.stderr.split('\n'):
+                logger.error(line);
+            raise ValueError("Un-buildable Build");
+        else:
+            cmd = method.format(dumps(arg), **kwargs);
+            result = raw_build(cmd, **kwargs);
+            if result.returncode == 0:
+                arg["path"] = result.stdout.strip();
+                return arg;
+            else:
+                logger.error("Build not reproducable:")
+                for line in result.stderr.split('\n'):
+                    logger.error(line);
+                raise ValueError("Unverifiable Build");
+
+
+import numbers;
+
+def dump(obj, fp, **kwargs):
+    """dump is equivalent to json.dump, but with nix, and less options.
+    """
+    seperators = kwargs.setdefault("seperators", ("=", ";"))
+
+    if isinstance(obj, dict):
+        fp.write("{");
+        for key in obj:
+            fp.write(key)
+            fp.write(seperators[0])
+            dump(obj[key], fp, **kwargs)
+            fp.write(seperators[1])
+        fp.write("}");
+    elif isinstance(obj, list):
+        fp.write("[");
+        fst, *rest = obj;
+        dump(fst, fp, **kwargs);
+        for val in rest:
+            fp.write(" ")
+            dump(val, fp, **kwargs);
+        fp.write("]");
+    elif isinstance(obj, str):
+        fp.write('"')
+        fp.write(obj)
+        fp.write('"')
+    elif isinstance(obj, bool):
+        fp.write("true" if obj else "false");
+    elif isinstance(obj, numbers.Number):
+        fp.write(str(obj));
+    else:
+        raise TypeError("Bad argument type " + str(type(obj)) + ": " + str(obj))
+
+
+def dumps(obj, **kwargs):
+    from io import StringIO
+    fp = StringIO()
+    dump(obj, fp, **kwargs)
+    return fp.getvalue()

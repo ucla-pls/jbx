@@ -1,5 +1,6 @@
 # Copy of the fecthurl code, but with a twist
 { system ? builtins.currentSystem
+, stdenv
 , url
 , name
 , outputHash ? ""
@@ -10,17 +11,21 @@
 assert (outputHash != "" && outputHashAlgo != "")
     || md5 != "" || sha1 != "" || sha256 != "";
 
-mkDerivation {
-  builder = ''cp "$MUSE_MOUNT/$url" "$out"'';
+stdenv.mkDerivation {
+  phases = "installPhase";
+  installPhase = ''
+    echo "$MUSE_MOUNT";
+    cp "$MUSE_MOUNT/$url" "$out";
+  '';
 
   # New-style output content requirements.
   outputHashAlgo = if outputHashAlgo != "" then outputHashAlgo else
       if sha256 != "" then "sha256" else if sha1 != "" then "sha1" else "md5";
   outputHash = if outputHash != "" then outputHash else
       if sha256 != "" then sha256 else if sha1 != "" then sha1 else md5;
-  outputHashMode = if unpack || executable then "recursive" else "flat";
+  outputHashMode = "flat";
 
-  inherit name system url executable unpack;
+  inherit name url;
 
   # No need to double the amount of network traffic
   preferLocalBuild = true;
@@ -32,3 +37,4 @@ mkDerivation {
     # by definition pure.
     "MUSE_MOUNT"
   ];
+}

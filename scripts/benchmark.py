@@ -78,7 +78,7 @@ def test(info, opts):
 ACTIONS = {
     "test": test,
     "nix":  output_nix,
-    "json": output_json,
+    "output_json": output_json,
     "overview": output_overview
 }
 

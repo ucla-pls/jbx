@@ -135,23 +135,90 @@ def prefetch(repo, cachefile):
     save_cache(cachefile, cache)
     return prefetch
 
+def only(dict_, *keys):
+    return { key: dict_[key] for key in keys if key in dict_ }
+
+def fetchobj(obj, **opts):
+    type_ = obj["type"];
+
+    obj = dict(obj);
+
+    if type_ == "git":
+        obj.update(
+            ixutils.verify(
+                "(import {filename} {{}}).pkgs.fetchgit {}",
+                only(obj, "name", "url", "rev", "sha256"),
+                **opts
+            )
+        )
+    elif type_ == "url":
+        obj.update(
+            nixutils.verify(
+                "(import {filename} {{}}).pkgs.fetchurl {}",
+                only(obj, "name", "url", "sha256"),
+                **opts
+            )
+        )
+    elif type_ == "muse":
+        obj.update(
+            nixutils.verify(
+                "(import {filename} {{}}).utils.fetchmuse {}",
+                only(obj, "name", "url", "sha256"),
+                **opts
+            )
+        )
+
+    return obj
+
+GIT_REGEX = re.compile("(?P<url>https:[^:]*):(?P<rev>.*)")
+def parse_git(string):
+    macth = GIT_REGEX.match(string);
+    if match is None:
+        info = { "url": string }
+    else:
+        info = match.groupdict()
+    info["name"] = info['url'].strip("/").rsplit("/",1)[1];
+    info["type"] = "git"
+
+    return info;
+
+def parse_url(string):
+    return {
+        "name": string.strip("/").rsplit("/",1)[1],
+        "url": string,
+        "type": "url"
+    }
+
+def parse_muse(string):
+    return {
+        "url": string,
+        "type": "muse"
+    }
+
+def parse_json(string):
+    return json.load(string)
 
 REPO_ARG = OneOf(
     git =
         Arg(None,
             help = "name and optionally rev of benchmark. "
             + "https://github.com/s/repo:refs/heads/master",
-            action = GitRepo.parse
+            action = parse_git
         ),
     url =
         Arg(None,
             help = "the url of the benchmark",
-            action = UrlRepo
+            action = parse_url
         ),
     muse =
         Arg(None,
             help = "the muse url of the benchmark",
-            action = MuseRepo
+            action = parse_muse
+        ),
+    json =
+        Arg(None,
+            help = "a json object describing the benchmark",
+            action = parse_json
         )
 )
 
@@ -160,14 +227,15 @@ CACHEFILE_ARG = Arg(
     help = "use a cache file"
 )
 
-def fetch (
+def fetch(
         repo : REPO_ARG,
+        name :
+           Arg(None,
+               help = "The name of the build",
+               ) = "",
         cachefile : CACHEFILE_ARG = "",
         **opts):
 
-    print(json.dumps(
-        prefetch(repo, cachefile),
-        indent=2,
-        separators=(",", ": "),
-        sort_keys=True
-    ));
+    if name:
+        repo["name"] = name
+    print(json.dumps(fetchobj(repo, **opts)))

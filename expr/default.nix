@@ -11,7 +11,7 @@ let
     java = java;
   };
 
-  utils = pkgs.callPackage ./utils {};
+  utils = pkgs.callPackage ./utils { inherit env; };
   java = import ./java { inherit pkgs; };
 in {}:
   rec {
