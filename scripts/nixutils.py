@@ -95,6 +95,7 @@ def raw_build(
         debug=False,
         keep_failed=False,
         keep_going=False,
+        cores="",
         env=None,
         timeout=None,
         **kwargs):
@@ -106,6 +107,7 @@ def raw_build(
     if debug: cmd += ["--show-trace"]
     if keep_failed: cmd += ["--keep-failed"]
     if keep_going: cmd += ["--keep-going"]
+    if cores: cmd += ["--cores", cores]
 
     if len(expr) < 512:
         cmd += [ "--expr", expr ]

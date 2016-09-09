@@ -6,134 +6,11 @@ This this module enables us to download repositories.
 
 import collections
 import json
+import sys
+import os.path
 
 from funcparse import *
 import nixutils
-
-FETCHGIT_EXPR = """
-    fetchgit {{
-      name = "{name}";
-      url = "{url}";
-      rev = "{rev}";
-      sha256 = "{sha256}";
-    }}"""
-
-GIT_REGEX = re.compile("(?P<url>https:[^:]*):(?P<rev>.*)")
-
-class GitRepo (collections.namedtuple("GitRepo", "url rev")):
-
-    def prefetch (self, cache = {}):
-        try:
-            info = cache[str(self)];
-        except:
-            info = nixutils.prefetch_git(self.url, self.rev)
-            info["rev"] = info["rev"] or self.rev
-            info["type"] = "git"
-            info["name"] = self.url.strip("/").rsplit("/",1)[1].lower()
-            del info["date"]
-            cache[str(self)] = info;
-        return info
-
-    @staticmethod
-    def parse (string):
-        match = GIT_REGEX.match(string);
-        if match:
-            return GitRepo(**match.groupdict());
-        else:
-            return GitRepo(url=string, rev="refs/heads/master");
-
-    @staticmethod
-    def fetchexpr (options):
-        return FETCHGIT_EXPR.format(**options);
-
-    def __str__(self):
-        return self.url + ":" + self.rev;
-
-
-FETCHURL_EXPR = """
-    fetchurl {{
-      url = "{url}";
-      rev = "{rev}";
-      sha256 = "{sha256}";
-    }}"""
-
-class UrlRepo (collections.namedtuple("UrlRepo", "url")):
-
-    def prefetch (repo, cache = {}):
-        try:
-            info = cache[str(self)];
-        except:
-            info = nixutils.prefetch_url(repo.url, cache);
-            info["type"] = "url"
-        return info
-
-    @staticmethod
-    def fetchexpr (options):
-        return FETCHURL_EXPR.format(**options);
-
-
-FETCHMUSE_EXPR = """
-    fetchmuse {{
-      url = "{path}";
-      sha256 = "{sha256}";
-    }}"""
-
-
-class MuseRepo (collections.namedtuple("MuseRepo", "path")):
-
-    def prefetch (repo, cache = {}):
-        try:
-            info = cache[str(self)];
-        except:
-            info["sha256"] = nixutils.fetchhash(repo.fetchexpr({
-                "path": repo.path,
-                "sha256": "0000000000000000000000000000000000000000000000000000"
-            }));
-            info["type"] = "muse"
-        return info
-
-    @staticmethod
-    def fetchexpr (options):
-        return FETCHMUSE_EXPR.format(**options);
-
-
-
-TYPES = {
-    "git": GitRepo,
-    "url": UrlRepo,
-    "muse": MuseRepo
-}
-
-def fromtype(type_):
-    return TYPES[type_]
-
-
-def fetchexpr(info):
-    return fromtype(info["type"]).fetchexpr(info);
-
-
-def get_cache(cachefile):
-    try:
-        with open(cachefile) as f:
-            cache = json.load(f);
-    except FileNotFoundError:
-        cache = dict()
-    except:
-        sys.stderr.write("Mall-formed cache: Delete or fix '{}'.\n".format(cachefile));
-        sys.exit(-1);
-    return cache
-
-
-def save_cache(cachefile, cache):
-    with open(cachefile, "w") as f:
-        f.write(json.dumps(cache, indent=2, separators=(',', ': '), sort_keys=True));
-
-
-def prefetch(repo, cachefile):
-    cache = get_cache(cachefile);
-    prefetch = repo.prefetch(cache);
-    save_cache(cachefile, cache)
-    return prefetch
 
 def only(dict_, *keys):
     return { key: dict_[key] for key in keys if key in dict_ }
@@ -189,14 +66,29 @@ def parse_url(string):
         "type": "url"
     }
 
+UUID_REGEX = re.compile(r"[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}")
 def parse_muse(string):
+    match = UUID_REGEX.match(string)
+    if not match:
+        url = string
+        uuid = UUID_REGEX.search(string).group(0)
+    else:
+        uuid = match.group(0)
+        url = "/".join(list(uuid.split('-',1)[0])) + "/" + uuid + "/" + uuid + "_code.tgz"
     return {
-        "url": string,
+        "url": url,
+        "uuid": uuid,
         "type": "muse"
     }
 
 def parse_json(string):
-    return json.load(string)
+    if string == '-':
+        return json.load(sys.stdin)
+    elif os.path.isfile(string):
+        with open(string, "r") as fp:
+            return json.load(fp)
+    else:
+        return json.loads(string)
 
 REPO_ARG = OneOf(
     git =
@@ -227,15 +119,70 @@ CACHEFILE_ARG = Arg(
     help = "use a cache file"
 )
 
+def pool_helper(a):
+    return fetchobj(a[0], **a[1]);
+
 def fetch(
         repo : REPO_ARG,
         name :
            Arg(None,
                help = "The name of the build",
                ) = "",
-        cachefile : CACHEFILE_ARG = "",
+        sha256 :
+           Arg(None,
+               help = "The hash of the build",
+           ) = "",
+        jobs:
+           Arg(None,
+               help = "The number of cores to use.",
+           ) = 0,
+        append:
+           Arg(None,
+               help = "Appends the results to the this file"
+           ) = "",
         **opts):
 
-    if name:
-        repo["name"] = name
-    print(json.dumps(fetchobj(repo, **opts)))
+    if isinstance(repo, list):
+        from multiprocessing import Pool
+        if jobs == 0:
+            jobs = None
+        with Pool(jobs) as p:
+            result = p.map(pool_helper, [ (r, opts) for r in repo ]);
+    else:
+        if name:
+            repo["name"] = name
+
+        if sha256:
+            repo["sha256"] = sha256
+
+        result = fetchobj(repo, **opts);
+
+    if append:
+        try:
+            with open(append, "r") as fp:
+                lists = json.load(fp)
+        except:
+            lists = [];
+
+        if isinstance(result, list):
+            lists.extend(result)
+        else:
+            lists.append(result)
+
+        with open(append, "w") as fp:
+            json.dump(
+                result,
+                fp,
+                indent=2,
+                sort_keys=True,
+                separators=(",", ": ")
+            )
+    else:
+
+        json.dump(
+            result,
+            sys.stdout,
+            indent=2,
+            sort_keys=True,
+            separators=(",", ": ")
+        )
