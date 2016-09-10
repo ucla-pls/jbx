@@ -5,6 +5,8 @@ import tempfile
 import os
 import re
 
+from collections import namedtuple
+
 import logging
 
 logger = logging.getLogger("jbx.nixutils")
@@ -76,19 +78,23 @@ def hash(path):
     proc = subprocess.Popen(["nix-hash", path], stdout=subprocess.PIPE)
     return proc.communicate()[0]
 
-def prefetch_git(url, rev, cache = None):
+def prefetch_git(url, rev, sha256 = None):
     env = os.environ.copy()
     env["GIT_TERMINAL_PROMPT"] = "0"
     return check_json(
     	["nix-prefetch-git", url, rev]
-	+ ([cache] if cache else []),
+        + ([sha256] if sha256 else []),
         env=env
     )
 
-def prefetch_url(url, cache = None):
-    sha256 = check_output(["nix-prefetch-url", url]
-                          + ([cache] if cache else []))
-    return { "url" : url, "sha256" : sha256 }
+def prefetch_url(url, sha256 = None):
+    return {
+        "url" : url,
+        "sha256" : check_output(
+            ["nix-prefetch-url", url]
+            + ([sha256] if sha256 else [])
+        )
+    }
 
 def raw_build(
         expr,
@@ -114,7 +120,7 @@ def raw_build(
     else:
         (f, t) = tempfile.mkstemp()
         with open(t, "w") as f:
-            f.write(string)
+            f.write(expr)
 
         cmd.append(t)
 
@@ -153,7 +159,9 @@ def verify(method, obj, **kwargs):
     an exception.
     """
     arg = dict(obj);
-    arg.setdefault("sha256", "0000000000000000000000000000000000000000000000000000")
+
+    if not arg.get("sha256"):
+        arg["sha256"] = "0000000000000000000000000000000000000000000000000000"
 
     cmd = method.format(dumps(arg), **kwargs);
 
@@ -173,6 +181,7 @@ def verify(method, obj, **kwargs):
             logger.error("Build failed:")
             for line in result.stderr.split('\n'):
                 logger.error(line);
+            logger.error(cmd);
             raise ValueError("Un-buildable Build");
         else:
             cmd = method.format(dumps(arg), **kwargs);
@@ -187,11 +196,13 @@ def verify(method, obj, **kwargs):
                 raise ValueError("Unverifiable Build");
 
 
-import numbers;
+call = namedtuple("call", "function arg")
 
 def dump(obj, fp, **kwargs):
     """dump is equivalent to json.dump, but with nix, and less options.
     """
+    import numbers;
+
     seperators = kwargs.setdefault("seperators", ("=", ";"))
 
     if isinstance(obj, dict):
@@ -218,6 +229,10 @@ def dump(obj, fp, **kwargs):
         fp.write("true" if obj else "false");
     elif isinstance(obj, numbers.Number):
         fp.write(str(obj));
+    elif isinstance(obj, call):
+        fp.write(obj.function)
+        fp.write(" ")
+        dump(obj.arg, fp, **kwargs)
     else:
         raise TypeError("Bad argument type " + str(type(obj)) + ": " + str(obj))
 

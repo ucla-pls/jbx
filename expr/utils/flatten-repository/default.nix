@@ -4,13 +4,15 @@
 , ant
 , cpio
 , gradle
+, stdenv
+, unzip
 # Inputs:
 , src
 , sha256
 , subfolder ? ""
 }:
 java:
-mkDerivation {
+stdenv.mkDerivation {
   inherit src subfolder;
   name = src.name + (if subfolder != "" then "_" + subfolder else "");
   phases = [ "unpackPhase" "buildPhase" ];
@@ -22,4 +24,4 @@ mkDerivation {
   impureEnvVars = [
     "http_proxy" "https_proxy" "ftp_proxy" "all_proxy" "no_proxy"
   ];
-};
+}

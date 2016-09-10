@@ -12,8 +12,10 @@ import os.path
 from funcparse import *
 import nixutils
 
-def only(dict_, *keys):
-    return { key: dict_[key] for key in keys if key in dict_ }
+def only(dict_, *keys, **kwargs):
+    obj= { key: dict_[key] for key in keys if key in dict_ }
+    obj.update(kwargs);
+    return obj;
 
 def fetchobj(obj, **opts):
     type_ = obj["type"];
@@ -21,14 +23,16 @@ def fetchobj(obj, **opts):
     obj = dict(obj);
 
     if type_ == "git":
+        obj.update(nixutils.prefetch_git(**only(obj, "url", "rev", "sha256")))
         obj.update(
-            ixutils.verify(
+            nixutils.verify(
                 "(import {filename} {{}}).pkgs.fetchgit {}",
                 only(obj, "name", "url", "rev", "sha256"),
                 **opts
             )
         )
     elif type_ == "url":
+        obj.update(nixutils.prefetch_url(**only(obj, "url", "sha256")))
         obj.update(
             nixutils.verify(
                 "(import {filename} {{}}).pkgs.fetchurl {}",
@@ -46,6 +50,17 @@ def fetchobj(obj, **opts):
         )
 
     return obj
+
+def nixexpr(obj):
+    type_ = obj["type"];
+    if type_ == 'git':
+        expr = nixutils.call("fetchgit", only(obj, "name", "url", "rev", "sha256"))
+    if type_ == 'url':
+        expr = nixutils.call("fetchurl", only(obj, "name", "url", "sha256"))
+    if type_ == 'muse':
+        expr = nixutils.call("fetchmuse", only(obj, "name", "url", "sha256"))
+    return expr
+
 
 GIT_REGEX = re.compile("(?P<url>https:[^:]*):(?P<rev>.*)")
 def parse_git(string):
@@ -78,6 +93,7 @@ def parse_muse(string):
     return {
         "url": url,
         "uuid": uuid,
+        "name": uuid + "_code.tgz",
         "type": "muse"
     }
 
@@ -178,7 +194,6 @@ def fetch(
                 separators=(",", ": ")
             )
     else:
-
         json.dump(
             result,
             sys.stdout,

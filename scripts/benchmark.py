@@ -35,6 +35,7 @@ def output_overview(info, opts):
         "benchmarks": len(info["benchmarks"]),
         "classes": len(info["classes"]),
         "repo": info["repo"],
+        "path": info["path"],
         "subfolder": info["subfolder"]
     }
     print(json.dumps(minimal, indent=2, separators=(",", ": "), sort_keys=True));
@@ -152,34 +153,28 @@ def nixexpr(info):
         **info
     );
 
-def populate(benchmark, opts):
+def populate(benchmark, **opts):
     """given a minimal dict of benchmarks, calculate hash if missing."""
-    fetch_expr = fetch.fetchexpr(benchmark["repo"]);
+
+    fetch_expr = fetch.nixexpr(benchmark["repo"]);
 
     pop = dict(benchmark);
 
-    if not benchmark["sha256"]:
-        logger.info("No --sha256 given calculate hash")
-        pop["sha256"] = "0000000000000000000000000000000000000000000000000000"
-        pop["sha256"] = nixutils.fetchhash(
-           EXPR.format(
-                **pop,
-                fetch_expr = fetch_expr,
-                **opts
-            ),
-            timeout=300,
+    pop.update(
+        nixutils.verify(
+            """
+            let jbx = import {filename} {{}};
+                inherit (jbx.pkgs) fetchurl fetchgit;
+                inherit (jbx.utils) fetchmuse;
+                java = jbx.java.java{java};
+            in jbx.utils.flattenRepository {} java
+            """,
+            fetch.only(pop, "name", "subfolder", "sha256", src=fetch_expr),
             **opts
-        );
+        )
+    )
 
-    path = pop["path"] = nixutils.build(
-        EXPR.format(
-            **pop,
-            fetch_expr = fetch_expr,
-            **opts
-        ),
-        timeout=300,
-        **opts
-    );
+    path = pop["path"];
 
     pop["classes"] = getfile(path, "info/classes")
     name = pop["name"] = pop.get("name") or path.split("-", 1)[1].replace("-", "_");
@@ -213,7 +208,7 @@ def benchmark (
 
         sha256 :
           Arg(None,
-              help = "use a know hash"
+              help = "use a known hash"
           ) = "",
 
         action:
@@ -224,12 +219,14 @@ def benchmark (
 
         **opts):
     """ Add or test a new benchmark"""
-    prefetch = fetch.prefetch(repo, cachefile);
+
+    # Ensure the repo is working
+    repo = fetch.fetchobj(repo, **opts);
 
     info = populate({
-        "repo": prefetch,
+        "repo": repo,
         "subfolder": subfolder,
         "sha256": sha256
-    }, opts)
+    }, **opts)
 
     action(info, opts)
