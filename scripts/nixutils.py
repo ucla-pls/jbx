@@ -31,12 +31,13 @@ def build(string,
     )
     if debug:
         logger.debug(string);
-    return call(cmd, dry_run, timeout=timeout).strip();
-
+    print(timeout)
+    return call(cmd, dry_run=dry_run, timeout=timeout).strip();
 
 
 def shell(string, dry_run=True, **kwargs):
     return call(["nix-shell", "--expr", string], dry_run)
+
 
 def call(args, dry_run=False, timeout=None):
     if dry_run:
@@ -196,7 +197,7 @@ def verify(method, obj, **kwargs):
                 raise ValueError("Unverifiable Build");
 
 
-call = namedtuple("call", "function arg")
+App = namedtuple("App", "function arg")
 
 def dump(obj, fp, **kwargs):
     """dump is equivalent to json.dump, but with nix, and less options.
@@ -229,7 +230,7 @@ def dump(obj, fp, **kwargs):
         fp.write("true" if obj else "false");
     elif isinstance(obj, numbers.Number):
         fp.write(str(obj));
-    elif isinstance(obj, call):
+    elif isinstance(obj, App):
         fp.write(obj.function)
         fp.write(" ")
         dump(obj.arg, fp, **kwargs)

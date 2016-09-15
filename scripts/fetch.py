@@ -54,11 +54,11 @@ def fetchobj(obj, **opts):
 def nixexpr(obj):
     type_ = obj["type"];
     if type_ == 'git':
-        expr = nixutils.call("fetchgit", only(obj, "name", "url", "rev", "sha256"))
+        expr = nixutils.App("fetchgit", only(obj, "name", "url", "rev", "sha256"))
     if type_ == 'url':
-        expr = nixutils.call("fetchurl", only(obj, "name", "url", "sha256"))
+        expr = nixutils.App("fetchurl", only(obj, "name", "url", "sha256"))
     if type_ == 'muse':
-        expr = nixutils.call("fetchmuse", only(obj, "name", "url", "sha256"))
+        expr = nixutils.App("fetchmuse", only(obj, "name", "url", "sha256"))
     return expr
 
 

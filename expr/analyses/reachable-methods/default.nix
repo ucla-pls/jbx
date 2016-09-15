@@ -20,7 +20,6 @@ in rec {
 
   emmaAll = onAllInputs emma {};
 
-
   wiretapped = shared.wiretap {
     settings = [
       { name = "wiretappers";     value = "EnterMethod";      }
@@ -33,6 +32,20 @@ in rec {
       sed -n '/main:(\[Ljava\/lang\/String;)V/,$p' \
         $sandbox/_wiretap/reachable.txt | sort -u > $out/lower
       '';
+    };
+  
+  wiretapLog = shared.wiretap {
+    settings = [
+      # { name = "wiretappers";     value = "EnterMethod";      }
+      { name = "recorder";        value = "Logger"; }
+      { name = "ignoredprefixes"; value = "edu/ucla/pls/wiretap,java"; }
+    ];
+    # postprocess = ''
+    #   # Remove everything before the first main called.
+    #   # This might miss any <clinit> in the main method.
+    #   sed -n '/main:(\[Ljava\/lang\/String;)V/,$p' \
+    #     $sandbox/_wiretap/reachable.txt | sort -u > $out/lower
+    #   '';
     };
 
   wiretappedAll = onAllInputs wiretapped {};

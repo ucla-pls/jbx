@@ -268,11 +268,18 @@ def main(
         Arg("-e",
             help = "if one of the test failes stop computing."
         ) = False,
+    
+    timeout:
+        Arg("-t",
+            help = "if one of the test failes stop computing.",
+            action=int
+        ) = -1,
 
     ):
     """Jbx is a collection of tools that helps you writing nix scripts
     for working with jbx.
     """
+    timeout = None if timeout < 0 else timeout
     return command(**locals())
 
 if __name__ == "__main__":
