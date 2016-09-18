@@ -31,7 +31,6 @@ def build(string,
     )
     if debug:
         logger.debug(string);
-    print(timeout)
     return call(cmd, dry_run=dry_run, timeout=timeout).strip();
 
 
