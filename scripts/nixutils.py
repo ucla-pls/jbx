@@ -55,8 +55,7 @@ def fetchhash(string,
     if debug:
         logger.debug(string);
     result = run(cmd, timeout=timeout);
-
-    print(result.stderr)
+    
     if result.returncode != 0:
         return hashfetchre.search(result.stderr).group(1);
 
