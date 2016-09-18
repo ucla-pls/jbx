@@ -4,7 +4,7 @@
     name = "wiretap";
     src = fetchprop {
       url = "wiretap.zip";
-      md5 = "84e8a949cb626d510b5ea9b863517075";
+      md5 = "44ce603f705c8a2be5f795d39e156c8b";
     };
     buildInputs = [ unzip ant java.jdk ];
     phases = "buildPhase installPhase";
