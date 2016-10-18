@@ -1,13 +1,15 @@
 { callPackage, utils}:
 let
-  # Same as: callBenchmark = utils.callBenchmark;
-  inherit (utils) callBenchmark;
+  inherit (utils) callBenchmark fetchprop;
+  # Same as: 
+  # callBenchmark = utils.callBenchmark;
+  # fetchprop = utils.fetchprop;
   java-grande-src = fetchprop {
      url="java_grande.tar.gz";
-     md5="2d2cd274632347353c9ab806b3384c47";
+     sha256="10mfasrbga7zvf51pybvp1cwwllm26i6c2v6w0gyay69nsb5sh91"; 
   };
 in rec {
-  java-grande-src = java-grande-src;
+  src = java-grande-src;
 
   monte-carlo = callBenchmark ./monte-carlo { inherit java-grande-src; };
   ray-tracer = callBenchmark ./ray-tracer { inherit java-grande-src; };
