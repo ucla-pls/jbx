@@ -16,8 +16,8 @@ in rec {
   mol-dyn = callBenchmark ./mol-dyn { inherit java-grande-src; };
 
   all = [
-    monte-carlo
-    ray-tracer
-    mol-dyn
+    # monte-carlo
+    # ray-tracer
+    # mol-dyn
   ];
 }
