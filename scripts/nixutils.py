@@ -29,10 +29,9 @@ def build(string,
         (["--keep-going"] if keep_going else []) +
         [t]
     )
-    if debug:
-        logger.debug(string);
+    logger.debug(string);
     print(timeout)
-    return call(cmd, dry_run=dry_run, timeout=timeout).strip();
+    return call(cmd, dry_run=dry_run, timeout=timeout)
 
 
 def shell(string, dry_run=True, **kwargs):
@@ -42,8 +41,9 @@ def shell(string, dry_run=True, **kwargs):
 def call(args, dry_run=False, timeout=None):
     if dry_run:
         logger.info(subprocess.list2cmdline(args))
+        return None
     else:
-        return check_output(args, timeout=timeout)
+        return check_output(args, timeout=timeout).strip();
 
 def check_output(args, env=None, timeout=None):
     try:

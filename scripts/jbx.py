@@ -279,6 +279,12 @@ def main(
     """Jbx is a collection of tools that helps you writing nix scripts
     for working with jbx.
     """
+
+    if debug:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
+
     timeout = None if timeout < 0 else timeout
     return command(**locals())
 
