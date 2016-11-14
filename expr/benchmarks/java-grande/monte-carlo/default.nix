@@ -17,12 +17,23 @@ rec {
         section3/JGFMonteCarloBenchSizeA.java \
         section3/JGFMonteCarloBenchSizeB.java \
         -d monte-carlo
-      jar cvf monte-carlo.jar monte-carlo
+      jar cvf monte-carlo.jar -C monte-carlo .
     '';
     installPhase = ''
       mkdir -p $out/share/java
       mv monte-carlo.jar $_
+      mkdir -p $out/data
+      cp section3/Data/hitData $_/
     '';
   };
+  inputs = [
+    {
+      name ="default";
+      args = [
+        "5"
+        "$data/data"
+        "hitData"
+      ];
+    }
+  ];
 }
-
