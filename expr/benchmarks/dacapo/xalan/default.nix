@@ -24,7 +24,7 @@ rec {
   };
   data = fetchzip {
     url = "http://www.w3.org/TR/2001/WD-xforms-20010608/WD-xforms-20010608.zip";
-    md5 = "8efa427e4e368cb0e2347b9491adac4c"; 
+    md5 = "8efa427e4e368cb0e2347b9491adac4c";
     stripRoot = false;
   };
   libraries = java: with java.libs; [ xalan xalan-serializer ];

@@ -12,7 +12,6 @@ rec {
       ++ java-grande.all
       ++ autogen.all;
 
-
-  byName = utils.byName all; 
+  byName = utils.byName all;
   byTag = utils.byTag all;
 }
