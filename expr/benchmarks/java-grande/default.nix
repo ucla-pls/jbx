@@ -90,12 +90,31 @@ in rec {
     } ];
   };
 
+  ray-tracer-a = java-grande-benchmark {
+    name = "ray-tracer-a";
+    mainclass = "JGFRayTracerBenchSizeA";
+    inputs = [ {
+      name ="default";
+      args = [ "5"];
+    } ];
+  };
+
+  ray-tracer-b = java-grande-benchmark {
+    name = "ray-tracer-b";
+    mainclass = "JGFRayTracerBenchSizeB";
+    inputs = [ {
+      name ="default";
+      args = [ "5"];
+    } ];
+  };
+
   all = [
     monte-carlo-a
     monte-carlo-b
     mol-dyn-a
     mol-dyn-b
-    # ray-tracer
+    ray-tracer-a
+    ray-tracer-b
     # mol-dyn
   ];
 }
