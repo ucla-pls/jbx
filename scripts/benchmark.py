@@ -36,6 +36,7 @@ def output_overview(info, opts):
         "classes": len(info["classes"]),
         "repo": info["repo"],
         "path": info["path"],
+        "buildwith": info["buildwith"],
         "subfolder": info["subfolder"]
     }
     print(json.dumps(minimal, indent=2, separators=(",", ": "), sort_keys=True));

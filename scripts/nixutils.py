@@ -33,6 +33,22 @@ def build(string,
     print(timeout)
     return call(cmd, dry_run=dry_run, timeout=timeout)
 
+    (f, t) = tempfile.mkstemp()
+    with open(t, "w") as f:
+        f.write(string);
+
+    cmd = ( ["nix-build"] +
+        (["--show-trace"] if debug else []) +
+        (["--keep-failed"] if keep_failed else []) +
+        (["--keep-going"] if keep_going else []) +
+        [t]
+    )
+    if debug:
+        logger.debug(string);
+    result = run(cmd, timeout=timeout);
+    
+    if result.returncode != 0:
+        return hashfetchre.search(result.stderr).group(1);
 
 def shell(string, dry_run=True, **kwargs):
     return call(["nix-shell", "--expr", string], dry_run)
