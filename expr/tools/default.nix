@@ -48,7 +48,7 @@ rec {
     daikon
   ;
 
-  inherit (callPackage ./wiretap { fetchprop = fetchprop; })
+  inherit (callPackage ./wiretap {})
     wiretap
   ;
 }

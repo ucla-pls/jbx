@@ -64,7 +64,7 @@ def nixexpr(obj):
 
 GIT_REGEX = re.compile("(?P<url>https:[^:]*):(?P<rev>.*)")
 def parse_git(string):
-    macth = GIT_REGEX.match(string);
+    match = GIT_REGEX.match(string);
     if match is None:
         info = { "url": string }
     else:

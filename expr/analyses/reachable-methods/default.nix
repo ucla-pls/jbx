@@ -39,6 +39,7 @@ in rec {
       # { name = "wiretappers";     value = "EnterMethod";      }
       { name = "recorder";        value = "Logger"; }
       { name = "ignoredprefixes"; value = "edu/ucla/pls/wiretap,java"; }
+      { name = "classfilesfolder"; value = "_wiretap/classes"; }
     ];
     # postprocess = ''
     #   # Remove everything before the first main called.
