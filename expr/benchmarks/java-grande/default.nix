@@ -1,9 +1,6 @@
 { callPackage, utils }:
 let
   inherit (utils) callBenchmark mkBenchmarkTemplate fetchprop;
-  # Same as:
-  # callBenchmark = utils.callBenchmark;
-  # fetchprop = utils.fetchprop;
   java-grande-src = fetchprop {
      url="java_grande.tar.gz";
      sha256="10mfasrbga7zvf51pybvp1cwwllm26i6c2v6w0gyay69nsb5sh91";
@@ -115,6 +112,5 @@ in rec {
     mol-dyn-b
     ray-tracer-a
     ray-tracer-b
-    # mol-dyn
   ];
 }
