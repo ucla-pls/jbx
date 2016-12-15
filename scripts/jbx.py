@@ -268,7 +268,7 @@ def main(
         Arg("-e",
             help = "if one of the test failes stop computing."
         ) = False,
-    
+
     timeout:
         Arg("-t",
             help = "if one of the test failes stop computing.",

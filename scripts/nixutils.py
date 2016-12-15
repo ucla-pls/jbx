@@ -46,7 +46,7 @@ def build(string,
     if debug:
         logger.debug(string);
     result = run(cmd, timeout=timeout);
-    
+
     if result.returncode != 0:
         return hashfetchre.search(result.stderr).group(1);
 

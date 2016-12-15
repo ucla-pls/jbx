@@ -3,9 +3,9 @@
 
 # Browed from https://gitlab.com/theerasmas/nixos-vagrant-quickstart
 Vagrant.configure("2") do |config|
-    project = "jbx" 
+    project = "jbx"
     # our custom built VM
-    config.vm.box = "jimmyyen/nixos-15.09-x86_64"
+    config.vm.box = "nixos/nixos-16.09-x86_64"
 
     config.vm.provider "virtualbox" do |vb|
         # Use VBoxManage to customize the VM. For example to change memory:
