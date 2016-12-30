@@ -219,7 +219,7 @@ benchmarks. All benchmarks are run with the harness.
 
 ## Developing
 
-#### Dacapo
+### Dacapo
 
 We have tried to keep the version of Dacapo in this repository as
 close to the original as possible, but we have had to make some
@@ -238,6 +238,12 @@ arguments.
 
 All analyses MUST NOT have side effect, if so find or run the program
 in a rooted environment.
+
+### Useful commands
+
+ | Command                       | Description                                        |
+ | :---                          | :----                                              |
+ | `nix-env -f expr -iA tools.?` | Install the tool so that you can use it everywhere |
 
 ### To Do
 

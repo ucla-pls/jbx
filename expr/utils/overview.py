@@ -8,90 +8,107 @@ import os.path as path
 
 from collections import Container, namedtuple
 
-Stats = namedtuple("Stats", "name must may hitrate coverrate time exitcode") 
+Stats = namedtuple("Stats", "name lower upper coverage precision excess missing")
+Info = namedtuple("Info", "excess missing stats");
 
-def readset(filename, default): 
+def readset(filename, default):
     try:
         with open(filename, "r") as f:
             return set(f.readlines())
-    except: 
+    except:
         return default;
 
 class Everything(Container):
-    def __contains__ (self, other): 
+    def __contains__ (self, other):
         return True
 
     def __len__ (self):
-        return 0 
+        return 0
 
 class Result(object):
 
     """Docstring for Result. """
 
-    def __init__(self, name, may, must):
+    def __init__(self, name, upper, lower):
         """A result of an analysis
 
         :name: TODO
-        :may: TODO
-        :must: TODO
+        :upper: TODO
+        :lower: TODO
 
         """
         self.name = name
-        self.may = may
-        self.must = must
+        self.upper = upper
+        self.lower = lower
 
-    def stats(self, underaprx, overaprx):
-        hits  = len(overaprx & self.must) if overaprx is not None else len(self.must)
-        cover = len(underaprx & self.may) if self.may is not None else len(underaprx)
-        return Stats(
+
+    def info(self, underaprx, overaprx):
+        excess = self.lower - overaprx if overaprx is not None else set();
+        missing = underaprx - self.upper if self.upper is not None else set();
+
+        stats = Stats(
             self.name,
-            len(self.must),
-            len(self.may) if self.may is not None else "inf",
-            # Did the analysis hit everything in the
-            # underapproximation
-            hits  / len(self.must) if self.must else "N/A", 
-            cover / len(underaprx) if underaprx else "N/A",
-            "Pending", # self._time.real,
-            "Pending", # reduce(lambda a, b: a + 1 if b.exitcode != 0 else a, self._result.times, 0)
-        ) 
+            len(self.lower),
+            len(self.upper) if self.upper is not None else "inf",
+            (len(self.lower & overaprx) / len(overaprx)
+               if len(overaprx) != 0 else 1.0)
+               if overaprx is not None else "N/A"
+            ,
+            (len(underaprx) / len(self.upper)
+               if len(self.upper) != 0 else "N/A")
+               if self.upper is not None else 0.0,
+            len(excess),
+            len(missing)
+        )
+
+        return Info(excess, missing, stats);
 
     @classmethod
     def from_folder(cls, folder):
         name = folder.split("-", 1)[1].split("+")[0]
-        may = readset(path.join(folder, "may"), None)
-        must = readset(path.join(folder, "must"), set())
-        return cls(name, may, must);
+        upper = readset(path.join(folder, "upper"), None)
+        lower = readset(path.join(folder, "lower"), set())
+        return cls(name, upper, lower);
 
     @staticmethod
     def overapproximation(results):
         list_of_elements = filter(
-            lambda f: f is not None, 
-            map(lambda r: r.may, results)
+            lambda f: f is not None,
+            map(lambda r: r.upper, results)
             );
         if not list_of_elements:
             return None
         else:
             return set.intersection(*list_of_elements);
-    
+
     @staticmethod
     def underapproximation(results):
-        list_of_elements = map(lambda r: r.must, results)
+        list_of_elements = map(lambda r: r.lower, results)
         return set.union(*list_of_elements);
 
     def __str__(self):
-        return "{} {} {}".format(self.name, len(self.may) if self.may is not None else "inf", len(self.must))
+        return "{} {} {}".format(self.name, len(self.upper) if self.upper is not None else "inf", len(self.lower))
 
 def main():
     results = map(Result.from_folder, sys.argv[1:]);
-    
-    over = Result.overapproximation(results) 
-    under = Result.underapproximation(results) 
 
-    writer = csv.DictWriter(sys.stdout, fieldnames=Stats._fields)
-    
-    writer.writeheader()
-    for result in results:
-        writer.writerow(result.stats(under, over)._asdict())
+    over = Result.overapproximation(results)
+    under = Result.underapproximation(results)
+
+    with open("overview.txt", "w") as f:
+        writer = csv.DictWriter(f, fieldnames=Stats._fields)
+        writer.writeheader()
+        for result in results:
+            excess, missing, stats = result.info(under, over);
+            if excess:
+                with open("excess-" + result.name + ".txt", "w") as e:
+                    for excessive in excess:
+                        e.write(str(excessive));
+            if missing:
+                with open("missing-" + result.name + ".txt", "w") as e:
+                    for missed in missing:
+                        e.write(str(missed));
+            writer.writerow(stats._asdict())
 
 if __name__ == "__main__":
     main()

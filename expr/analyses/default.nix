@@ -7,12 +7,21 @@
 #  analysis), or a function that can be used to create an analysis.
 
 {callPackage, utils}:
-let 
+let
   shared = callPackage ./shared {};
 in {
-  run = callPackage ./run {};
-  reachable-methods = callPackage ./reachable-methods { inherit shared; };
-  deadlock = callPackage ./deadlock { inherit shared; };
-  data-flow-graph = callPackage ./data-flow-graph { inherit shared; };
-  traces = callPackage ./traces {};
+  run =
+    callPackage ./run {};
+
+  reachable-methods =
+    callPackage ./reachable-methods { inherit shared; };
+
+  deadlock =
+    callPackage ./deadlock { inherit shared; };
+
+  data-flow-graph =
+    callPackage ./data-flow-graph { inherit shared; };
+
+  traces =
+     callPackage ./traces {};
 }

@@ -1,5 +1,5 @@
 {shared, jchord-2_0, petablox, utils, python}:
-let 
+let
   jchord_ = jchord-2_0;
   petablox_ = petablox;
 in rec {
@@ -8,25 +8,29 @@ in rec {
     jchord = jchord_;
     subanalyses = ["deadlock-java"];
     reflection = "dynamic";
-  }) { 
+  }) {
     tools = [ python ];
     postprocess = ''
-      python2.7 ${./jchord-parse.py} $sandbox/chord_output > $out/may
+      python2.7 ${./jchord-parse.py} $sandbox/chord_output > $out/upper
     '';
   };
-  
-  petablox = shared.petablox {
+
+  petablox = utils.after (shared.petablox {
     name = "deadlock";
     petablox = petablox_;
-    subanalyses = ["cipa-0cfa-dlog" "deadlock-java"];
+    subanalyses = ["cipa-0cfa-dlog" "queryE" "deadlock-java"];
     reflection = "external";
     settings = [
-      { name = "deadlock.exclude.nongrded"; value ="true"; }
+      { name = "deadlock.exclude.nongrded"; value = "true"; }
     ];
+  }) {
+    tools = [ python ];
+    postprocess = ''
+      python2.7 ${./jchord-parse.py} $sandbox/petablox_output > $out/upper
+    '';
   };
-  
-  overview = 
-    utils.liftL (utils.overview "deadlock") 
+
+  overview =
+    utils.liftL (utils.overview "deadlock")
       [ jchord ];
 }
-

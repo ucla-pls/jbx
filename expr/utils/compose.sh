@@ -6,32 +6,29 @@ cd $out
 
 compose $out $results
 
-for f in $results; do 
-    # May analyses has to be pressent in all analyses.
-    if [ -e "$f/may" ]; then
-        if [ ! -e may ]; then 
-            cp "$f/may" may
+for f in $results; do
+    if [ -e "$f/upper" ]; then
+        if [ ! -e upper ]; then
+            cp "$f/upper" upper
         else
-            comm -12 "$f/may" may > tmp
-            mv -f tmp may
+            comm -12 "$f/upper" upper > tmp
+            mv -f tmp upper
         fi
     fi
-    # The Must analysis just have to be there
-    if [ -e "$f/must" ]; then
-        if [ ! -e must ]; then 
-            cp "$f/must" must
+    if [ -e "$f/lower" ]; then
+        if [ ! -e lower ]; then
+            cp "$f/lower" lower
         else
-            sort -m "$f/must" must | uniq > tmp
-            mv -f tmp must
+            sort -m "$f/lower" lower | uniq > tmp
+            mv -f tmp lower
         fi
     fi
-done 
+done
 
-for f in $results; do 
-    if [ -e "$f/error" ]; then 
-        cat "$f/error" >> error; 
+for f in $results; do
+    if [ -e "$f/error" ]; then
+        cat "$f/error" >> error;
     fi
-done 
+done
 
 runHook collect
-
