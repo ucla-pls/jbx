@@ -133,7 +133,7 @@ INPUT_FORMAT = """        {{
 
 def nixexpr(info):
     return NIX_EXPR.format(
-        fetchexpr = fetch.fetchexpr(info["repo"]),
+        fetchexpr = fetch.nixexpr(info["repo"]),
         bms = "\n".join(
             BM_FORMAT.format(
                 inputs_ = "\n".join(
