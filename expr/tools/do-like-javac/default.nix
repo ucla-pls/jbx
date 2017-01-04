@@ -2,8 +2,8 @@
 let
   doLikeJavaCBldr =
     { url ? "https://github.com/SRI-CSL/do-like-javac.git"
-    , rev ? "74c144da969bbf6f940f19a16e2401dee359cb15"
-    , sha256 ? "019chfsndqgks3bv9jjrixm71d60wz7awrbsnqr4wmyn4k3lq4yb"
+    , rev ? "94b885c901b29d0a5ae55a2f38512e8825b09503"
+    , sha256 ? "0r9m3n1yvckdpach6hz42bpxzaq28bxp96cxiyjjb2kj7lcsqr99"
     , patches ? []
     }:
     stdenv.mkDerivation {
@@ -21,4 +21,4 @@ let
       inherit patches;
     };
  in
-   doLikeJavaCBldr { patches = [ ./json-fix.patch ]; }
+   doLikeJavaCBldr {}
