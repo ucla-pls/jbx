@@ -14,7 +14,7 @@
 java:
 stdenv.mkDerivation {
   inherit src subfolder;
-  name = src.name + (if subfolder != "" then "_" + subfolder else "");
+  name = src.name + (if subfolder != "" then "_" + (builtins.replaceStrings ["/"] ["_"] subfolder) else "");
   phases = [ "unpackPhase" "buildPhase" ];
   buildInputs = [ dljc maven jq ant java.jdk unzip cpio gradle ];
   buildPhase = ./builder.sh;

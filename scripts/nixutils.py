@@ -181,7 +181,6 @@ def verify(method, obj, **kwargs):
         arg["sha256"] = "0000000000000000000000000000000000000000000000000000"
 
     cmd = method.format(dumps(arg), **kwargs);
-
     result = raw_build(cmd, **kwargs);
 
     if result.returncode == 0:
