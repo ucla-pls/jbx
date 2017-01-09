@@ -1,20 +1,20 @@
-{ utils, wiretap, lib}:
-options @ {
-  postprocess ? "",
-  settings ? []
-}:
-benchmark:
-env:
-input:
-let
-  inherit (lib.strings) concatStringsSep concatMapStringsSep;
-  ppsettings = concatMapStringsSep " " (o: "-Dwiretap.${o.name}=${o.value}");
-
-  wiretapped = benchmark:
+{ utils, wiretap, wiretap-tools, lib}:
+let wiretap_ = wiretap;
+in rec {
+  wiretap =
+    options @ {
+      postprocess ? "",
+      settings ? []
+    }:
+    benchmark:
+    let
+      inherit (lib.strings) concatStringsSep concatMapStringsSep;
+      ppsettings = concatMapStringsSep " " (o: "-Dwiretap.${o.name}=${o.value}");
+    in
     utils.mkDynamicAnalysis {
       name = "wiretap";
       timelimit = 1800;
-      wiretap = wiretap benchmark.java;
+      wiretap = wiretap_ benchmark.java;
       settings = ppsettings ( [
         ] ++ settings );
       analysis = ''
@@ -25,5 +25,27 @@ let
       '';
       inherit postprocess;
     } benchmark;
-in
-wiretapped benchmark env input
+
+  surveil =
+    options @
+    { name ? "surveil"
+    , depth ? 10000
+    , cmd ? "parse"
+    }:
+    utils.afterD (
+      wiretap {
+        settings = [
+          { name = "recorder";        value = "BinaryHistoryLogger"; }
+          { name = "ignoredprefixes"; value = "edu/ucla/pls/wiretap,java,sun"; }
+          { name = "loggingdepth";    value = "${toString depth}"; }
+        ];
+      }
+    ) {
+      inherit name;
+      tools = [ wiretap-tools ];
+      postprocess = ''
+        set +e
+        wiretap-tools ${cmd} $sandbox/_wiretap/wiretap.hist > $out/lower
+      '';
+    };
+}

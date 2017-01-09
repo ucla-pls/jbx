@@ -253,6 +253,13 @@ in rec {
     options:
       lift (postprocess ({ name = "after"; } // options)) analysis;
 
+  # afterD : DynamicAnalysis -> Options -> DynamicAnalysis
+  # perform postprocessing after an dynamic analysis has run
+  afterD =
+    danalysis:
+    options:
+      liftD (postprocess ({ name = "after"; } // options))
+           danalysis;
 
   # liftpp : (Result -> Result) -> Analysis -> Analysis
   # liftpp =
@@ -411,6 +418,15 @@ in rec {
     benchmark:
     env:
       f (analysis benchmark env);
+
+  # liftD: (Result -> a) -> Analysis -> Benchmark -> Env -> Input -> a
+  liftD =
+    f:
+    analysis:
+    benchmark:
+    env:
+    input:
+      f (analysis benchmark env input);
 
   # liftL: ([Result] -> a) -> [Analysis] -> Benchmark -> Env -> a
   liftL =

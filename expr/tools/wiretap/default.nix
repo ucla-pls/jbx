@@ -4,8 +4,8 @@
     name = "wiretap";
     src = fetchgit {
       url = "https://github.com/ucla-pls/wiretap.git";
-      rev = "eb60ed0abade59c882df879185a92336e63f32fb";
-      sha256 = "0gq2bk7gxpf2psb75g2yb7hgyhkqi0cwrz8f95w910cbkav2lahz";
+      rev = "539060b655decc3aeefa09744d9251804e668757";
+      sha256 = "1sjchl2kzlg388c812nc9jiw5p7p3h6hmfh514s5ffah2s6swzkd";
     };
     buildInputs = [ unzip ant java.jdk ];
     phases = "unpackPhase buildPhase installPhase";

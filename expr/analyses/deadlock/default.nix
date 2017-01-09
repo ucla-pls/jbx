@@ -30,7 +30,20 @@ in rec {
     '';
   };
 
+  surveil =
+    shared.surveil {
+      name = "deadlock";
+      depth = 10000;
+      cmd = "deadlocks";
+    };
+
+  surveilAll =
+    utils.onAllInputs surveil {};
+
   overview =
-    utils.liftL (utils.overview "deadlock")
-      [ jchord ];
+    utils.overview "deadlock" [
+      jchord
+      petablox
+      surveilAll
+    ];
 }
