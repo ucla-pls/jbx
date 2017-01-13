@@ -28,9 +28,11 @@ in rec {
 
   surveil =
     options @
-    { name ? "surveil"
-    , depth ? 10000
+     { name ? "surveil"
+    , depth ? 100000
     , cmd ? "parse"
+    , chunkSize ? 10000
+    , chunkOffset ? 5000
     }:
     utils.afterD (
       wiretap {
@@ -44,8 +46,10 @@ in rec {
       inherit name;
       tools = [ wiretap-tools ];
       postprocess = ''
-        set +e
-        wiretap-tools ${cmd} $sandbox/_wiretap/wiretap.hist > $out/lower
+        wiretap-tools ${cmd} -v ${if (cmd == "deadlocks" || cmd == "dataraces") && chunkSize > 0
+            then "--chunk-size ${toString chunkSize} --chunk-offset ${toString chunkOffset}"
+            else ""
+           } $sandbox/_wiretap/wiretap.hist > $out/lower
       '';
     };
 }

@@ -33,7 +33,7 @@ in rec {
   surveil =
     shared.surveil {
       name = "deadlock";
-      depth = 10000;
+      depth = 10000000;
       cmd = "deadlocks";
     };
 
