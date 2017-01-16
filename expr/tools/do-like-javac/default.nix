@@ -3,7 +3,7 @@ let
   doLikeJavaCBldr =
     { url ? "https://github.com/SRI-CSL/do-like-javac.git"
     , rev ? "94b885c901b29d0a5ae55a2f38512e8825b09503"
-    , sha256 ? "0v6b09d2x3ifah9036i0sbxizz9gzk0ndnn234n9555q9qr79zcc"
+    , sha256 ? "0r9m3n1yvckdpach6hz42bpxzaq28bxp96cxiyjjb2kj7lcsqr99"
     , patches ? []
     }:
     stdenv.mkDerivation {
