@@ -45,8 +45,9 @@ in rec {
     ) {
       inherit name;
       tools = [ wiretap-tools ];
+      ignoreSandbox = true;
       postprocess = ''
-        wiretap-tools ${cmd} -v ${if (cmd == "deadlocks" || cmd == "dataraces") && chunkSize > 0
+        analyse "wiretap-tools" wiretap-tools ${cmd} -v ${if (cmd == "deadlocks" || cmd == "dataraces") && chunkSize > 0
             then "--chunk-size ${toString chunkSize} --chunk-offset ${toString chunkOffset}"
             else ""
            } $sandbox/_wiretap/wiretap.hist > $out/lower

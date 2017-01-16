@@ -231,6 +231,7 @@ in rec {
       name ? "pp",
       tools ? [],
       ignoreSandbox ? false,
+      timelimit ? 3600,
       ...
     }:
     result:
@@ -240,7 +241,9 @@ in rec {
       analysisName = (builtins.elemAt nameList 0);
     in mkResult (options // {
       inherit result;
+      inherit timelimit;
       name = analysisName + "-" + name + "+" + benchmarkName;
+      utils = ./utils.sh;
       inherit time coreutils ignoreSandbox;
       buildInputs = [procps] ++ tools;
       builder = ./postprocess.sh;
