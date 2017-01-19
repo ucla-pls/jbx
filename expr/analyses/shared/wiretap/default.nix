@@ -46,7 +46,7 @@ in rec {
     , timelimit ? 36000  # 10 hours.
     }:
     utils.afterD (wiretapSurveil depth) {
-      inherit name timelimit
+      inherit name timelimit;
       tools = [ wiretap-tools ];
       ignoreSandbox = true;
       postprocess = ''
