@@ -43,9 +43,10 @@ in rec {
     , cmd ? "parse"
     , chunkSize ? 10000
     , chunkOffset ? 5000
+    , timelimit ? 36000  # 10 hours.
     }:
     utils.afterD (wiretapSurveil depth) {
-      inherit name;
+      inherit name timelimit;
       tools = [ wiretap-tools ];
       ignoreSandbox = true;
       postprocess = ''
