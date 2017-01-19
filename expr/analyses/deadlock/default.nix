@@ -36,6 +36,9 @@ in rec {
       name = "deadlock";
       depth = surveilDepth;
       cmd = "deadlocks";
+      timelimit = 36000;
+      chunkSize = 100000;
+      chunkOffset = 50000;
     };
 
   surveilWiretap =

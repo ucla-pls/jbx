@@ -11,6 +11,7 @@
 let
   inherit (utils) versionize usage onAll mkStatistics;
   all = versionize benchmarks.all java.all;
+  with_inputs = builtins.filter (b: builtins.length b.inputs > 0)
   dacapo-harness = benchmarks.byTag.dacapo-harness;
 in rec {
   deadlocks =
@@ -21,8 +22,8 @@ in rec {
 
   wiretap-deadlocks =
     onAll
-      analyses.deadlock.surveil
-      (versionize [java.java6] benchmarks.all)
+      analyses.deadlock.surveilAll
+      (versionize [java.java6] (with_inputs benchmarks.all))
       env;
 
   wiretap-deadlocks-table =
