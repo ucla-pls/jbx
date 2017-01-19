@@ -19,6 +19,32 @@ in rec {
       (versionize [java.java6] benchmarks.byTag.reflection-free)
       env;
 
+  wiretap-deadlocks =
+    onAll
+      analyses.deadlock.surveil
+      (versionize [java.java6] benchmarks.all)
+      env;
+
+  wiretap-deadlocks-table =
+    mkStatistics {
+      tools = [eject];
+      name = "deadlocks-table";
+      setup = ''echo "name,count" >> table.csv'';
+      foreach = ''
+        if [ -e "$result/lower" ]
+        then
+          v=`wc -l $result/lower | cut -f1 -sd' '`
+        else
+          v="Err"
+        fi
+        name=''${result#*-}
+        echo "$name,$v" >> table.csv
+      '';
+      collect = ''
+        column -ts, table.csv
+      '';
+    } wiretap-deadlocks;
+
   deadlocks-table =
     mkStatistics {
       tools = [eject];

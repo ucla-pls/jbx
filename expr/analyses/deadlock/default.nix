@@ -2,7 +2,7 @@
 let
   jchord_ = jchord-2_0;
   petablox_ = petablox;
-  surveilDepth = 0;
+  surveilDepth = 100000;
 in rec {
   jchord = utils.after (shared.jchord {
     name = "deadlock";
