@@ -8,5 +8,6 @@ rec {
   inherit (callPackage ./wiretap {})
     wiretap
     surveil
+    wiretapSurveil
     ;
 }

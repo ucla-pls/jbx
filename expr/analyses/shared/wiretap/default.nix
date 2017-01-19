@@ -26,23 +26,25 @@ in rec {
       inherit postprocess;
     } benchmark;
 
+  wiretapSurveil =
+    depth:
+    wiretap {
+      settings = [
+        { name = "recorder";        value = "BinaryHistoryLogger"; }
+        { name = "ignoredprefixes"; value = "edu/ucla/pls/wiretap,java,sun"; }
+        { name = "loggingdepth";    value = "${toString depth}"; }
+      ];
+    };
+
   surveil =
     options @
-     { name ? "surveil"
+    { name ? "surveil"
     , depth ? 100000
     , cmd ? "parse"
     , chunkSize ? 10000
     , chunkOffset ? 5000
     }:
-    utils.afterD (
-      wiretap {
-        settings = [
-          { name = "recorder";        value = "BinaryHistoryLogger"; }
-          { name = "ignoredprefixes"; value = "edu/ucla/pls/wiretap,java,sun"; }
-          { name = "loggingdepth";    value = "${toString depth}"; }
-        ];
-      }
-    ) {
+    utils.afterD (wiretapSurveil depth) {
       inherit name;
       tools = [ wiretap-tools ];
       ignoreSandbox = true;
