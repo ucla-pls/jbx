@@ -4,7 +4,8 @@ in rec {
   wiretap =
     options @ {
       postprocess ? "",
-      settings ? []
+      settings ? [], 
+      timelimit ? 1800,
     }:
     benchmark:
     let
@@ -13,7 +14,6 @@ in rec {
     in
     utils.mkDynamicAnalysis {
       name = "wiretap";
-      timelimit = 1800;
       wiretap = wiretap_ benchmark.java;
       settings = ppsettings ( [
         ] ++ settings );
@@ -23,7 +23,7 @@ in rec {
           $settings\
           -cp $classpath $mainclass $args < $stdin
       '';
-      inherit postprocess;
+      inherit postprocess timelimit;
     } benchmark;
 
   wiretapSurveil =
@@ -43,7 +43,7 @@ in rec {
     , cmd ? "parse"
     , chunkSize ? 10000
     , chunkOffset ? 5000
-    , timelimit ? 36000  # 10 hours.
+    , timelimit ? 3600  # 1 hours.
     }:
     utils.afterD (wiretapSurveil depth) {
       inherit name timelimit;
