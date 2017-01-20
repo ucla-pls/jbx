@@ -65,6 +65,7 @@ function record {
         2> >($coreutils/bin/tee "$folder/stderr" >&2) || export RETVAL="$?"
 
     if ! grep "$id" "$folder/times.csv" > /dev/null; then
+        center-text "${id} timed out after ${timelimit}s"
         echo "$id,${timelimit},N/A,N/A,N/A,N/A" >> "$folder/times.csv"
     fi
     sed -i -e "/Command/d" "$folder/times.csv"

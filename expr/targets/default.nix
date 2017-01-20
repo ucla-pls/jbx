@@ -11,7 +11,7 @@
 let
   inherit (utils) versionize usage onAll mkStatistics;
   all = versionize benchmarks.all java.all;
-  with_inputs = builtins.filter (b: builtins.length b.inputs > 0)
+  with_inputs = builtins.filter (b: builtins.length b.inputs > 0);
   dacapo-harness = benchmarks.byTag.dacapo-harness;
 in rec {
   deadlocks =
