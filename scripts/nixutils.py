@@ -11,6 +11,20 @@ import logging
 
 logger = logging.getLogger("jbx.nixutils")
 
+def quote(item):
+    return '"{}"'.format(item)
+
+def to_nix_list(list):
+    return "[{}]".format(" ".join(map(quote, list)))
+
+def from_attrset_list(attrset):
+    def from_attrset(list):
+        return "lib.attrsets.attrVals {list} {attrset}".format(
+            attrset = attrset,
+            list = to_nix_list(list)
+        )
+    return from_attrset
+
 def build(string,
           dry_run=True,
           keep_failed=False,

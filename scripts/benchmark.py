@@ -1,4 +1,4 @@
-#!/usr/bin/evn python3
+#!/usr/bin/env python3
 
 """
 This module handles new benchmarks.
@@ -8,14 +8,10 @@ import collections
 import json
 import os.path
 import sys
-import logging
 
 from funcparse import *
 import nixutils
 import fetch
-
-logger = logging.getLogger("jbx.benchmark")
-
 
 def getfile(path, filename):
     try:
