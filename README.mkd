@@ -95,34 +95,16 @@ branch corresponding to your project.
     cd jbx
     git checkout -b yourProject
 
-NOTE: Downloading the dependencies is very important, so if you did not
-use the `--recursive` argument please run:
+NOTE: Downloading the dependencies is *very* important, so if you did not
+use the `--recursive` argument, please run:
 
     git submodule init
     git submodule update
 
-Then create a new folder in the results folder corresponding to the name
-of your project `results/yourProject` and create a `default.nix` in that
-folder which describes which analyses to run on which data, and
-eventually also some processing like graphical representations of the
-data. 
+For using the `jbx` tool you have to install nix-prefetch-scripts. This 
+is done by running this command:
 
-    mkdir -p results/yourProject/
-    echo "{ analyses, benchmarks, results}: {}" > $_/default.nix
-
-To figure out how to write these expressions, look through other
-projects, or consult the [nix manual](https://nixos.org/nixpkgs/manual/).
-
-Lastly you want to add the expression to the rest of the project. 
-
-    yourProject = callResult ./yourProject {}
-
-You can then get the results of your project by running the command:
-
-    nix-build -A result.yourProject
-
-And the result of running all the analyses and performing all of your
-graphics will now be returned to you in a `result/` folder. 
+    nix-env -f nixpkgs/ -i nix-prefetch-scripts
 
 ### Going further: Contributing
 
