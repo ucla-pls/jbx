@@ -101,9 +101,10 @@ use the `--recursive` argument, please run:
     git submodule init
     git submodule update
 
-For using the `jbx` tool you have to install python 3.5+ and nix-prefetch-scripts. The latter is installed by running this command:
+For using the `jbx` tool you have to install python 3.5+ and nix-prefetch-scripts, 
+both can be installed using this command:
 
-    nix-env -f nixpkgs/ -i nix-prefetch-scripts
+    nix-env -f nixpkgs/ -i nix-prefetch-scripts python3
 
 ### Going further: Contributing
 
