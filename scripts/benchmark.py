@@ -174,7 +174,7 @@ def populate(benchmark, **opts):
     path = pop["path"];
 
     pop["classes"] = getfile(path, "info/classes")
-    name = pop["name"] = pop.get("name") or path.split("-", 1)[1].replace("-", "_");
+    name = pop["name"] = pop.get("name") or path.split("-", 1)[1].replace("-", "_").replace(".","_");
     pop["buildwith"] = getfile(path, "info/buildwith")[0]
     pop["mainclasses"] = sorted(set(getfile(path, "info/mainclasses")));
 

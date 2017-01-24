@@ -11,46 +11,6 @@ import nixutils
 import benchmark
 import fetch
 
-def test(info, transformers, analysis, opts):
-    expr = benchmark.nixexpr(info)
-
-    test_expr = ANALYSE_JSON_CMD.format(
-        expr = "\n".join("    " + e for e in expr.split("\n")),
-        transformers = transformers,
-        analysis = analysis,
-        **opts
-    );
-
-    nixutils.build(test_expr, **opts)
-
-ANALYSE_JSON_CMD = """
-let
-  jbx = import {filename} {{}};
-  java = jbx.java.java{java};
-
-  env = import {environment};
-  lib = jbx.pkgs.lib;
-
-  benchmarkTemplate = {expr};
-
-  benchmarks = (jbx.pkgs.callPackage benchmarkTemplate {{}}).all;
-  transformers = {transformers};
-
-  analysis = {analysis};
-
-  transformed =
-    map
-      (b: builtins.foldl' (b': t: t b') b transformers)
-      benchmarks;
-
-  results =
-    map
-      (b: analysis (b.withJava java) env)
-      transformed;
-
-in results
-"""
-
 ANALYSE_CMD = """
 let
   jbx = import {filename} {{}};
@@ -77,6 +37,12 @@ let
 in results
 """
 
+
+def json_to_nix (string):
+    benchmarks = fetch.parse_json(string);
+    expr = benchmark.nixexpr(benchmarks)
+    return "(jbx.pkgs.callPackage ({}) {{}}).all".format(expr)
+
 def analyse(
 
     benchmarks:
@@ -91,7 +57,7 @@ def analyse(
             ),
             json = Arg(None,
                 help = "a json object representing the benchmark",
-                action=fetch.parse_json
+                action=json_to_nix
             )
         ),
 
@@ -113,28 +79,14 @@ def analyse(
     ):
     """ runs a series of analyses one or more benchmarks. """
 
-    # JSON code path
-    if (type(benchmarks) is dict):
-        repo = fetch.fetchobj(benchmarks, **opts)
-    
-        info = benchmark.populate({
-            "repo": repo,
-            "subfolder": "",
-            "sha256": ""
-        }, **opts)
-    
-        test(info, transformers, analysis, opts)
-
-    # NON-JSON code path
-    else:
-        cmd = ANALYSE_CMD.format(
-            benchmarks = benchmarks,
-            transformers = transformers,
-            analysis = analysis,
-            **opts
-        )
-        nixutils.build(
-            cmd,
-            keep_going = not opts["short_curcuit"],
-            **opts
-        )
+    cmd = ANALYSE_CMD.format(
+        benchmarks = benchmarks,
+        transformers = transformers,
+        analysis = analysis,
+        **opts
+    )
+    nixutils.build(
+        cmd,
+        keep_going = not opts["short_curcuit"],
+        **opts
+    )
