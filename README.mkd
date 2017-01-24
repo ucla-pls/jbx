@@ -1,7 +1,7 @@
 # Java Benchmark Expressions (JBX)
 
 JBX is a expression written in [nix](https://nixos.org/nix/) to allow
-you to compile benchmarks and run analysis on them. 
+you to compile benchmarks and run analysis on them.
 
 The goal of this repository is to create single instance of
 a benchmarks, which can be used a fixed point when reasoning about
@@ -9,12 +9,12 @@ dynamic and static analysis. This would hopefully reduce the time needed
 to build new tools.
 
 Also the JBX should stand as the platform from which it is possible to
-compare results of different analyses, both in terms of accuracy, speed, 
+compare results of different analyses, both in terms of accuracy, speed,
 and memory usage.
 
 ## Usage
 
-### Nix 
+### Nix
 JBX uses nix to manage and compile benchmarks. To get started one would
 have to download and install nix. According to nix, the easiest way to
 get started with nix is to run, the following:
@@ -56,11 +56,11 @@ The initial setup will take some time.
 The structure of the benchmarks is build in several categories
 
 `benchmarks/`
-:   Contains benchmarks that we would like to run code on. 
+:   Contains benchmarks that we would like to run code on.
 
 `tools/`
-:   Contains expressions about how to compile and download the tools used 
-    in the analyses. 
+:   Contains expressions about how to compile and download the tools used
+    in the analyses.
 
 `analyses/`
 :   Contains all the expressions for running the analyses on benchmarks.
@@ -101,10 +101,10 @@ use the `--recursive` argument, please run:
     git submodule init
     git submodule update
 
-For using the `jbx` tool you have to install nix-prefetch-scripts. This 
-is done by running this command:
+For using the `jbx` tool you have to install python 3.5+ and nix-prefetch-scripts, 
+both can be installed using this command:
 
-    nix-env -f nixpkgs/ -i nix-prefetch-scripts
+    nix-env -f nixpkgs/ -i nix-prefetch-scripts python3
 
 ### Going further: Contributing
 
@@ -115,15 +115,15 @@ get the results that you need.
 
 Analyses is nix functions that given a benchmark will produce a result.
 Analyses are ordered by output, e.g. deadlock analyses are stored in
-`analysis.deadlock`. 
+`analysis.deadlock`.
 
 #### Adding Tools
 
 When adding new tools, first check if they exist in the `nixpkgs` and
-before adding them to the project consider adding the tool to the 
+before adding them to the project consider adding the tool to the
 `nixpkgs` repository. This way a lot more people will use the tool and
 give feedback. Alternatively adhered to the standards of the nixpkgs
-repository, and add the nix expression in it's own subfolder. 
+repository, and add the nix expression in it's own subfolder.
 
 #### Adding Benchmarks
 
@@ -132,7 +132,7 @@ expression. Benchmarks is ordered after origin, ei. DaCapo benchmarks is
 under `dacapo/`. If your benchmark is not associated with any benchmark
 suite, add it to `independent/` expression. Because we are supporting
 multiple versions of java, we must also use java as a clear dependency
-when compiling our benchmarks. 
+when compiling our benchmarks.
 
 A benchmark is jar file (placed relatively in `$out/share/java/`), which
 can be executed given a main class and a set of inputs. To create a
@@ -145,38 +145,38 @@ benchmark you should call `mkBenchmark` with a minimum of:
 
 Optionally you can add:
 
--   `inputs`: a list of inputs, the inputs is defined using 
+-   `inputs`: a list of inputs, the inputs is defined using
     -  `name`: the name of the execution
-    -  `setup`: some setup phase before execution. In this phase 
+    -  `setup`: some setup phase before execution. In this phase
         is the `$data` and `$build` variables available.
     -  `args`: a list of arguments. Which can also use the `$data` variable.
-    -  `stdin`: a file containing the stdin of the function. 
--   `data`: optional other package which points some data. If not set 
+    -  `stdin`: a file containing the stdin of the function.
+-   `data`: optional other package which points some data. If not set
     will this variable point to `$build`.
 -   `filter`: a function that given a Java version 5 through 8, will
     indicate whether the benchmark run on that version.
 -   `tags`: a list of tags which will be used to organise the benchmarks
     on call.
 
-Any additional arguments is parsed on to eventual analyses. 
+Any additional arguments is parsed on to eventual analyses.
 
 Good examples of working benchmarks would be `dacapo.avrora` or
 `dacapo.sunflow`, which uses the `callBenchmark` shorthand which is
 defined in `benchmarks`. Also `baseline` contains minimal code and
-examples. 
+examples.
 
-##### Libraries 
+##### Libraries
 
 Many of the benchmarks used will have shared dependencies. They can be
-defined here. 
+defined here.
 
 #### Comparisons
 
-## Included 
+## Included
 
 ### Tools
 
-### Benchmarks 
+### Benchmarks
 
 Current results for running
 [petablox](https://github.com/petablox-project/petablox/) on the dacapo
@@ -206,7 +206,7 @@ benchmarks. All benchmarks are run with the harness.
 We have tried to keep the version of Dacapo in this repository as
 close to the original as possible, but we have had to make some
 changes, the most prominent is the complete removal of the harness
-from all benchmarks. 
+from all benchmarks.
 
 ### Analyses
 
@@ -229,7 +229,7 @@ in a rooted environment.
 
 ### To Do
 
-- Add [Dacabo](http://www.dacapobench.org/) to the benchmarks. 
+- Add [Dacabo](http://www.dacapobench.org/) to the benchmarks.
 
 - Create a tutorial or tool chain for how to run analyses with
   side effect.
