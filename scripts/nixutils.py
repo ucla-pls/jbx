@@ -98,11 +98,14 @@ def hash(path):
 def prefetch_git(url, rev, sha256 = None):
     env = os.environ.copy()
     env["GIT_TERMINAL_PROMPT"] = "0"
-    return check_json(
-    	["nix-prefetch-git", url, rev]
-        + ([sha256] if sha256 else []),
-        env=env
-    )
+    if sha256:
+        obj = check_json(["nix-prefetch-git", url, rev, sha256 ], env=env)
+        # Assume that the user knows the revision and the date.
+        del obj["rev"]
+        del obj["date"]
+    else:
+        obj = check_json(["nix-prefetch-git", url, rev], env=env)
+    return obj
 
 def prefetch_url(url, sha256 = None):
     return {

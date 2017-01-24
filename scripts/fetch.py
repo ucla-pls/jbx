@@ -66,7 +66,7 @@ GIT_REGEX = re.compile("(?P<url>https:[^:]*):(?P<rev>.*)")
 def parse_git(string):
     match = GIT_REGEX.match(string);
     if match is None:
-        info = { "url": string }
+        info = { "url": string, "rev": "refs/heads/master"}
     else:
         info = match.groupdict()
     info["name"] = info['url'].strip("/").rsplit("/",1)[1];
