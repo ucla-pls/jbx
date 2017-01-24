@@ -1,9 +1,12 @@
 source $stdenv/setup
 source $utils
 
-if [ "$ignoreSandbox" = true ]
+if [ "$ignoreSandbox" ]
 then
-    cp -r --exclude=sandbox $result $out
+    pushd $result
+    mkdir $out
+    tar -c --exclude sandbox . | tar -x -C "$out"
+    popd
 else
     cp -r $result $out
 fi

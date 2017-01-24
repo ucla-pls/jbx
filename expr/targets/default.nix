@@ -11,6 +11,7 @@
 let
   inherit (utils) versionize usage onAll mkStatistics;
   all = versionize benchmarks.all java.all;
+  with_inputs = builtins.filter (b: builtins.length b.inputs > 0);
   dacapo-harness = benchmarks.byTag.dacapo-harness;
 in rec {
   deadlocks =
@@ -18,6 +19,32 @@ in rec {
       analyses.deadlock.petablox
       (versionize [java.java6] benchmarks.byTag.reflection-free)
       env;
+
+  wiretap-deadlocks =
+    onAll
+      analyses.deadlock.surveilAll
+      (versionize [java.java6] (with_inputs benchmarks.all))
+      env;
+
+  wiretap-deadlocks-table =
+    mkStatistics {
+      tools = [eject];
+      name = "deadlocks-table";
+      setup = ''echo "name,count" >> table.csv'';
+      foreach = ''
+        if [ -e "$result/lower" ]
+        then
+          v=`wc -l $result/lower | cut -f1 -sd' '`
+        else
+          v="Err"
+        fi
+        name=''${result#*-}
+        echo "$name,$v" >> table.csv
+      '';
+      collect = ''
+        column -ts, table.csv
+      '';
+    } wiretap-deadlocks;
 
   deadlocks-table =
     mkStatistics {

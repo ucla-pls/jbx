@@ -4,7 +4,8 @@ in rec {
   wiretap =
     options @ {
       postprocess ? "",
-      settings ? []
+      settings ? [], 
+      timelimit ? 1800,
     }:
     benchmark:
     let
@@ -13,7 +14,6 @@ in rec {
     in
     utils.mkDynamicAnalysis {
       name = "wiretap";
-      timelimit = 1800;
       wiretap = wiretap_ benchmark.java;
       settings = ppsettings ( [
         ] ++ settings );
@@ -23,27 +23,30 @@ in rec {
           $settings\
           -cp $classpath $mainclass $args < $stdin
       '';
-      inherit postprocess;
+      inherit postprocess timelimit;
     } benchmark;
+
+  wiretapSurveil =
+    depth:
+    wiretap {
+      settings = [
+        { name = "recorder";        value = "BinaryHistoryLogger"; }
+        { name = "ignoredprefixes"; value = "edu/ucla/pls/wiretap,java,sun"; }
+        { name = "loggingdepth";    value = "${toString depth}"; }
+      ];
+    };
 
   surveil =
     options @
-     { name ? "surveil"
+    { name ? "surveil"
     , depth ? 100000
     , cmd ? "parse"
     , chunkSize ? 10000
     , chunkOffset ? 5000
+    , timelimit ? 3600  # 1 hours.
     }:
-    utils.afterD (
-      wiretap {
-        settings = [
-          { name = "recorder";        value = "BinaryHistoryLogger"; }
-          { name = "ignoredprefixes"; value = "edu/ucla/pls/wiretap,java,sun"; }
-          { name = "loggingdepth";    value = "${toString depth}"; }
-        ];
-      }
-    ) {
-      inherit name;
+    utils.afterD (wiretapSurveil depth) {
+      inherit name timelimit;
       tools = [ wiretap-tools ];
       ignoreSandbox = true;
       postprocess = ''

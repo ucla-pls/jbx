@@ -20,7 +20,7 @@ in rec {
 
   emmaAll = onAllInputs emma {};
 
-  wiretapped = shared.wiretap {
+  wiretap = shared.wiretap {
     settings = [
       { name = "wiretappers";     value = "EnterMethod";      }
       { name = "recorder";        value = "ReachableMethods"; }
@@ -33,7 +33,7 @@ in rec {
         $sandbox/_wiretap/reachable.txt | sort -u > $out/lower
       '';
     };
-  
+
   wiretapLog = shared.wiretap {
     settings = [
       # { name = "wiretappers";     value = "EnterMethod";      }
@@ -49,7 +49,7 @@ in rec {
     #   '';
     };
 
-  wiretappedAll = onAllInputs wiretapped {};
+  wiretapAll = onAllInputs wiretap {};
 
   # Petablox with the external reflection handeling
   petabloxTamiflex = utils.after petabloxExternal {
@@ -98,7 +98,7 @@ in rec {
     petabloxExternal
     petabloxDynamic
     petabloxTamiflex
-    wiretappedAll
+    wiretapAll
   ];
 
 }

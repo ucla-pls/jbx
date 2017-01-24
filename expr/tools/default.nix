@@ -51,4 +51,8 @@ rec {
   inherit (callPackage ./wiretap {})
     wiretap
   ;
+
+  inherit (callPackage ./wiretap-tools {})
+    wiretap-tools
+  ;
 }
