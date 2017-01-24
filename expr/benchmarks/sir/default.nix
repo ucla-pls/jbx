@@ -68,6 +68,11 @@ in rec {
     mainclass = "Main";
   };
 
+  accountsubtype = sirBenchmark {
+    name = "accountsubtype";
+    mainclass = "Main";
+  };
+
   airline = sirBenchmark {
     name = "airline";
     mainclass = "Main";
@@ -76,9 +81,43 @@ in rec {
     ];
   };
 
+  alarmclock = sirBenchmark {
+    name = "alarmclock";
+    mainclass = "AlarmClock";
+  };
+
+  boundedBuffer = sirBenchmark {
+    name = "boundedBuffer";
+    mainclass = "BoundedBuffer";
+    inputs = [
+      { name = "default";
+        args = ["1" "4" "4" "2"];
+      }
+    ];
+  };
+
+  clean = sirBenchmark {
+    name = "clean";
+    mainclass = "Main";
+    inputs = [
+      { name = "default";
+        args = ["1" "1" "12"];
+      }
+    ];
+  };
+
+  deadlock = sirBenchmark {
+    name = "deadlock";
+    mainclass = "Deadlock";
+  };
 
   all = [
     account
+    accountsubtype
     airline
+    alarmclock
+    boundedBuffer
+    clean
+    deadlock
   ];
 }
