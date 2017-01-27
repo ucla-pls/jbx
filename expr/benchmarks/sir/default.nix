@@ -17,7 +17,7 @@ let
     }:
     utils.mkBenchmarkTemplate {
       name = "sir-${name}";
-      inherit mainclass inputs;
+      inherit mainclass inputs tags;
       build = java: {
         src = base;
         phases = "unpackPhase buildPhase installPhase";
@@ -85,13 +85,13 @@ in rec {
   account = sirBenchmark {
     name = "account";
     mainclass = "Main";
-    tags = ["deadlock"];
+    tags = ["deadlock" "multilock"];
   };
 
   accountsubtype = sirBenchmark {
     name = "accountsubtype";
     mainclass = "Main";
-    tags = ["deadlock"];
+    tags = ["deadlock" "mulitlock"];
   };
 
   airline = sirBenchmark {
@@ -115,7 +115,7 @@ in rec {
         args = ["1" "4" "4" "2"];
       }
     ];
-    tags = ["deadlock"];
+    tags = ["deadlock" "waitnotify"];
   };
 
   clean = sirBenchmark {
@@ -126,7 +126,7 @@ in rec {
         args = ["1" "1" "12"];
       }
     ];
-    tags = ["deadlock"];
+    tags = ["deadlock" "waitnotify"];
   };
 
   deadlock = sirBenchmark {
@@ -138,26 +138,17 @@ in rec {
   diningPhilosophers = sirBenchmark {
     name = "diningPhilosophers";
     mainclass = "DiningPhilosophers";
-    tags = ["deadlock"];
+    tags = ["deadlock" "multilock"];
   };
 
   groovy = sirBenchmark {
     name = "groovy";
-    srcfolder = "versions.alt/fixed";
+    srcfolder = "versions.alt/orig";
     tags = ["deadlock"];
   };
 
-  log4j1-fixed = sirBenchmark {
-    name = "log4j1-fixed";
-    folder = "log4j1";
-    srcfolder = "versions.alt/fixed";
-    mainclass = "org.apache.log4j.test.UnitTestAppender";
-    tags = ["deadlock"];
-  };
-
-  log4j1-orig = sirBenchmark {
-    name = "log4j1-orig";
-    folder = "log4j1";
+  log4j1 = sirBenchmark {
+    name = "log4j1";
     srcfolder = "versions.alt/orig";
     mainclass = "org.apache.log4j.test.UnitTestAppender";
     tags = ["deadlock"];
@@ -165,19 +156,19 @@ in rec {
 
   loseNotify = sirBenchmark {
     name = "loseNotify";
-    tags = ["deadlock"];
     inputs = [
       { name = "default";
         args = ["1" "1" "12"];
       }
     ];
+    tags = ["waitnotify" "deadlock"];
   };
 
   nestedmonitor = sirBenchmark {
     name = "nestedmonitor";
-    tags = ["deadlock"];
     srcfolder = "versions.alt/orig";
     mainclass = "NestedMonitor";
+    tags = ["deadlock"];
   };
 
   piper = sirBenchmark {
@@ -212,7 +203,7 @@ in rec {
   readerswriters = sirBenchmark {
     name = "readerswriters";
     mainclass = "RWVSNDriver";
-    tags = ["deadlock"];
+    tags = ["deadlock" "waitnotify"];
     inputs = [
       { name = "default";
         args = ["2" "2" "100"];
@@ -233,8 +224,8 @@ in rec {
 
   sleepingBarber = sirBenchmark {
     name = "sleepingBarber";
-    tags = ["deadlock"];
     mainclass = "SleepingBarber";
+    tags = ["deadlock" "waitnotify"];
   };
 
   all = [
@@ -246,9 +237,8 @@ in rec {
     clean
     deadlock
     diningPhilosophers
-    groovy
-    log4j1-orig
-    log4j1-fixed
+    # groovy
+    log4j1
     loseNotify
     nestedmonitor
     piper
