@@ -2,7 +2,10 @@
 let
   jchord_ = jchord-2_0;
   petablox_ = petablox;
-  surveilDepth = 100000;
+  loggingSettings = {
+      depth = 10000 ;
+      timelimit = 120;
+  };
 in rec {
   jchord = utils.after (shared.jchord {
     name = "deadlock";
@@ -34,15 +37,17 @@ in rec {
   surveil =
     shared.surveil {
       name = "deadlock";
-      depth = surveilDepth;
+      logging = loggingSettings;
       cmd = "deadlocks";
+      filter = "unique,lockset";
+      prover = "kalhauge";
       timelimit = 36000;
       chunkSize = 100000;
       chunkOffset = 50000;
     };
 
   surveilWiretap =
-    shared.wiretapSurveil surveilDepth;
+    shared.wiretapSurveil loggingSettings;
 
   surveilAll =
     utils.onAllInputs surveil {};

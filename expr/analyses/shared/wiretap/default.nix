@@ -27,8 +27,11 @@ in rec {
     } benchmark;
 
   wiretapSurveil =
-    depth:
+    { timelimit ? 1800
+    , depth ? 100000
+    }:
     wiretap {
+      inherit timelimit;
       settings = [
         { name = "recorder";        value = "BinaryHistoryLogger"; }
         { name = "ignoredprefixes"; value = "edu/ucla/pls/wiretap,java,sun"; }
@@ -39,21 +42,23 @@ in rec {
   surveil =
     options @
     { name ? "surveil"
-    , depth ? 100000
     , cmd ? "parse"
+    , prover ? "kalhauge"
+    , filter ? "unique,lockset"
     , chunkSize ? 10000
     , chunkOffset ? 5000
     , timelimit ? 3600  # 1 hours.
+    , logging ? {}
     }:
-    utils.afterD (wiretapSurveil depth) {
+    utils.afterD (wiretapSurveil logging) {
       inherit name timelimit;
       tools = [ wiretap-tools ];
       ignoreSandbox = true;
       postprocess = ''
-        analyse "wiretap-tools" wiretap-tools ${cmd} -v ${if (cmd == "deadlocks" || cmd == "dataraces") && chunkSize > 0
+        analyse "wiretap-tools" wiretap-tools ${cmd} -p ${prover} ${if (cmd == "deadlocks" || cmd == "dataraces") && chunkSize > 0
             then "--chunk-size ${toString chunkSize} --chunk-offset ${toString chunkOffset}"
             else ""
-           } $sandbox/_wiretap/wiretap.hist > $out/lower
+           } -f ${filter} $sandbox/_wiretap/wiretap.hist > $out/lower
       '';
     };
 }
