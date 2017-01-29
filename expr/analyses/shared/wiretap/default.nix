@@ -48,6 +48,7 @@ in rec {
     , chunkSize ? 10000
     , chunkOffset ? 5000
     , timelimit ? 3600  # 1 hours.
+    , verbose ? true
     , logging ? {}
     }:
     utils.afterD (wiretapSurveil logging) {
@@ -55,7 +56,7 @@ in rec {
       tools = [ wiretap-tools ];
       ignoreSandbox = true;
       postprocess = ''
-        analyse "wiretap-tools" wiretap-tools ${cmd} -p ${prover} ${if (cmd == "deadlocks" || cmd == "dataraces") && chunkSize > 0
+        analyse "wiretap-tools" wiretap-tools ${cmd} ${if verbose then "-v" else ""} -p ${prover} ${if (cmd == "deadlocks" || cmd == "dataraces") && chunkSize > 0
             then "--chunk-size ${toString chunkSize} --chunk-offset ${toString chunkOffset}"
             else ""
            } -f ${filter} $sandbox/_wiretap/wiretap.hist > $out/lower
