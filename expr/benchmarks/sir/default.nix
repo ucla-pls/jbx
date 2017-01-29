@@ -65,7 +65,7 @@ let
 
           javac -encoding UTF-8 -cp classes:lib -d classes @info/sources
 
-          classes=$(find classes -name "*.class" | sed 's/.class//;s/\//./g;s/classes.//' | sort );
+          classes=$(find classes -name "*\.class" | sed 's/\.class//;s/\//./g;s/classes.//' | sort );
 
           echo "$classes" | sed "s/ /\n/g" > info/classes
           javap -classpath classes $classes > info/declarations
@@ -237,7 +237,7 @@ in rec {
     clean
     deadlock
     diningPhilosophers
-    # groovy
+    groovy
     log4j1
     loseNotify
     nestedmonitor
