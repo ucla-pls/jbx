@@ -5,6 +5,7 @@ rec {
   independent = callPackage ./dacapo {};
   java-grande = callPackage ./java-grande {};
   sir = callPackage ./sir {};
+  jaConTeBe = callPackage ./JaConTeBe {};
 
   autogen = callPackage ./auto-generated {};
 
@@ -13,6 +14,7 @@ rec {
       ++ dacapo.all
       ++ java-grande.all
       ++ sir.all
+      ++ jaConTeBe.all
       ++ autogen.all;
 
   byName = utils.byName all;
