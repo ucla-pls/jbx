@@ -132,7 +132,7 @@ in rec {
   deadlock = sirBenchmark {
     name = "deadlock";
     mainclass = "Deadlock";
-    tags = ["deadlock"];
+    tags = ["deadlock" "singlelock"];
   };
 
   diningPhilosophers = sirBenchmark {
@@ -151,7 +151,7 @@ in rec {
     name = "log4j1";
     srcfolder = "versions.alt/orig";
     mainclass = "org.apache.log4j.test.UnitTestAppender";
-    tags = ["deadlock"];
+    tags = ["deadlock" "singlelock"];
   };
 
   loseNotify = sirBenchmark {
@@ -168,7 +168,7 @@ in rec {
     name = "nestedmonitor";
     srcfolder = "versions.alt/orig";
     mainclass = "NestedMonitor";
-    tags = ["deadlock"];
+    tags = ["deadlock" "singlelock"];
   };
 
   piper = sirBenchmark {

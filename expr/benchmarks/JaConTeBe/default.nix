@@ -96,25 +96,25 @@ in rec {
   dbcp1 = jaConTeBenchmark {
     name = "dbcp1";
     mainclass = "Dbcp65";
-    tags = ["deadlock"];
+    tags = ["deadlock" "singlelock"];
   };
 
   dbcp2 = jaConTeBenchmark {
     name = "dbcp2";
     mainclass = "Dbcp270";
-    tags = ["deadlock"];
+    tags = ["deadlock" "singlelock"];
   };
 
   derby1 = jaConTeBenchmark {
     name = "derby1";
     mainclass = "Derby4129";
-    tags = ["deadlock"];
+    tags = ["deadlock" "singlelock"];
   };
 
   derby2 = jaConTeBenchmark {
     name = "derby2";
     mainclass = "Derby5560";
-    tags = ["deadlock"];
+    tags = ["deadlock" "singlelock"];
   };
 
   derby4 = jaConTeBenchmark {
@@ -125,25 +125,25 @@ in rec {
         args = ["org.apache.derby.impl.services.reflect.Derby764"];
       }
     ];
-    tags = ["deadlock"];
+    tags = ["deadlock" "singlelock"];
   };
 
   derby5 = jaConTeBenchmark {
     name = "derby5";
     mainclass = "org.apache.derby.impl.store.raw.data.Derby5447";
-    tags = ["deadlock"];
+    tags = ["deadlock" "singlelock"];
   };
 
   groovy2 = jaConTeBenchmark {
     name = "groovy2";
     mainclass = "Groovy4736";
-    tags = ["deadlock"];
+    tags = ["deadlock" "singlelock"];
   };
 
   log4j2 = jaConTeBenchmark {
     name = "log4j2";
     mainclass = "com.main.Test41214";
-    tags = ["deadlock"];
+    tags = ["deadlock" "singlelock"];
   };
 
   all = [

@@ -23,7 +23,7 @@ in rec {
   wiretap-deadlocks =
     onAll
       analyses.deadlock.surveilAll
-      (versionize [java.java6] (with_inputs benchmarks.byTag.deadlock ))
+      (versionize [java.java6] (with_inputs benchmarks.byTag.singlelock))
       env;
 
   wiretap-deadlocks-table =
