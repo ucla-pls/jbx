@@ -31,8 +31,9 @@ rec {
     petablox-1_0
     petablox-test
     petablox-fix
+    petablox-HEAD
   ;
-  petablox = petablox-fix;
+  petablox = petablox-HEAD;
 
   inherit (callPackage ./randoop {})
     randoop-2_1_4

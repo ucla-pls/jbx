@@ -21,13 +21,13 @@ let
     '';
   };
   testPetablox = options@{
-    rev,  
+    rev,
     branchName ? "gt-develop",
     md5 ? "ba3d91bd803350a3879d229549042fcd",
     owner ? "petablox-project",
     patches ? []
   }:
-  stdenv.mkDerivation { 
+  stdenv.mkDerivation {
     name = "petablox";
     version = "${branchName}-${rev}";
     src = fetchgit {
@@ -56,6 +56,10 @@ in {
   petablox-old = testPetablox {
     md5 = "d04713260148c7e7f05e95b039f28d38";
     rev = "0753f868485d032403e29393382895aeafb440a6";
+  };
+  petablox-HEAD = testPetablox {
+    md5 = "bb64812abe4b2d284a302d6941e02923";
+    rev = "bd5f3f05d575a0ff848e8b82465eac7e75c4182c";
   };
   petablox-test = testPetablox {
     md5 = "49304df10ef89179c1117cf9b5da4faa";
