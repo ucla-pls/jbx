@@ -24,7 +24,8 @@ let
     rev,  
     branchName ? "gt-develop",
     md5 ? "ba3d91bd803350a3879d229549042fcd",
-    owner ? "petablox-project"
+    owner ? "petablox-project",
+    patches ? []
   }:
   stdenv.mkDerivation { 
     name = "petablox";
@@ -34,7 +35,7 @@ let
       inherit branchName md5 rev;
       # deepClone = true;
     };
-    phases = [ "unpackPhase" "buildPhase" "installPhase" ];
+    phases = [ "unpackPhase" "patchPhase" "buildPhase" "installPhase" ];
     buildInputs = [ ant jdk7 ];
     buildPhase = "ant";
     installPhase = ''
@@ -42,6 +43,7 @@ let
       mv petablox.jar $_
       cp -r lib $_
     '';
+    inherit patches;
   };
 in {
   petablox-0_1 = petabloxBldr {
@@ -61,8 +63,9 @@ in {
     branchName = "develop";
   };
   petablox-fix = testPetablox {
-    md5 = "a635f1d4441263640973d2d26252cc5e";
-    rev = "f8c55cc6fa140eeae9d7cfbb9b5cb88f87bbc78a";
-    branchName = "master";
+    md5 = "4a395040aff93a85db5519974f09bd3b";
+    rev = "bb1e8b99dc5bb30368dcd299f64480e7667f7323";
+    branchName = "deadlocks";
+    patches = [ ./reachable-methods-fix.patch ];
   };
 }

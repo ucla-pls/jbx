@@ -5,5 +5,9 @@ rec {
     inherit (logicblox) mkLogicBloxAnalysis;
   };
   logicblox = callPackage ./logicblox { };
+  inherit (callPackage ./wiretap {})
+    wiretap
+    surveil
+    wiretapSurveil
+    ;
 }
-

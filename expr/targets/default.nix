@@ -8,29 +8,56 @@
 , lib
 , eject
 }:
-let 
+let
   inherit (utils) versionize usage onAll mkStatistics;
   all = versionize benchmarks.all java.all;
+  with_inputs = builtins.filter (b: builtins.length b.inputs > 0);
   dacapo-harness = benchmarks.byTag.dacapo-harness;
 in rec {
-  deadlocks = 
+  deadlocks =
     onAll
       analyses.deadlock.petablox
       (versionize [java.java6] benchmarks.byTag.reflection-free)
       env;
 
-  deadlocks-table = 
+  wiretap-deadlocks =
+    onAll
+      analyses.deadlock.surveilAll
+      (versionize [java.java6] (with_inputs benchmarks.all))
+      env;
+
+  wiretap-deadlocks-table =
     mkStatistics {
       tools = [eject];
       name = "deadlocks-table";
       setup = ''echo "name,count" >> table.csv'';
-      foreach = '' 
-	if [ -e "$result/may" ]
-	then
-        	v=`wc -l $result/may | cut -f1 -sd' '`
-	else
-		v="Err"
-	fi
+      foreach = ''
+        if [ -e "$result/lower" ]
+        then
+          v=`wc -l $result/lower | cut -f1 -sd' '`
+        else
+          v="Err"
+        fi
+        name=''${result#*-}
+        echo "$name,$v" >> table.csv
+      '';
+      collect = ''
+        column -ts, table.csv
+      '';
+    } wiretap-deadlocks;
+
+  deadlocks-table =
+    mkStatistics {
+      tools = [eject];
+      name = "deadlocks-table";
+      setup = ''echo "name,count" >> table.csv'';
+      foreach = ''
+        if [ -e "$result/upper" ]
+        then
+          v=`wc -l $result/upper | cut -f1 -sd' '`
+        else
+          v="Err"
+        fi
         name=''${result#*-}
         echo "$name,$v" >> table.csv
       '';
@@ -39,33 +66,26 @@ in rec {
       '';
     } deadlocks;
 
-  reachable-methods = 
-    onAll 
-      analyses.reachable-methods.petabloxExternal
+  reachable-methods =
+    onAll
+      analyses.reachable-methods.overview
       (versionize [java.java6] dacapo-harness)
       env;
-  
-  petablox-table = 
+
+  reachable-methods-table =
     mkStatistics {
-      tools = [eject];
-      name = "petablox-table";
-      setup = ''echo "name,count" >> table.csv'';
-      foreach = '' 
-        v=`wc -l $result/may | cut -f1 -sd' '`
-        name=''${result#*-}
-        echo "$name,$v" >> table.csv
-      '';
-      collect = ''
-        column -ts, table.csv
+      name = "reachable-methods-table";
+      foreach = ''
+        cp -r $result ''${result##*+}
       '';
     } reachable-methods;
 
-  database-usage = 
+  database-usage =
     mkStatistics {
-      tools = [eject]; 
+      tools = [eject];
       name = "database-useage";
       setup = ''echo "name,usage" >> usage.csv'';
-      foreach = '' 
+      foreach = ''
         v=`tail -n 1 $result/sandbox/lb_stats | cut -f1`
         name=''${result#*-}
         echo "$name,$v" >> usage.csv
@@ -76,17 +96,17 @@ in rec {
     } reachable-methods;
 
   muse-backend = map (b:
-    let 
+    let
       transformed = transformers.randoop b;
       benchmark = transformed.withJava java.java7;
     in stdenv.mkDerivation {
       name = "muse-backend+" + benchmark.name;
       phases = "installPhase";
-      dtrace = 
-        analyses.traces.daikonAll 
+      dtrace =
+        analyses.traces.daikonAll
           benchmark env;
-      dotfiles = 
-        analyses.data-flow-graph.graphgen 
+      dotfiles =
+        analyses.data-flow-graph.graphgen
           (b.withJava java.java7) env;
       installPhase = ''
         mkdir $out
