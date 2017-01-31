@@ -14,6 +14,7 @@ from subprocess import call, Popen, PIPE
 import tempfile
 
 import nixutils
+from funcparse import *
 
 JBX_HOME = path.dirname(path.dirname(__file__))
 AUTOGEN = path.join(JBX_HOME, "expr", "benchmarks", "auto-generated")
@@ -79,7 +80,13 @@ rec {{
 
 CALLPKG_TEMPLATE = "{name} = callPackage ./{name} {{}};"
 
-def add(url, build_cmd="ant", **kwargs):
+def add(
+    repo : Arg(None, help = "the url of the repo to add"),
+    **opts
+    ):
+    addbm(repo, **opts)
+
+def addbm(url, build_cmd="ant", **kwargs):
     dtemp, md5, rev = get_repo(url)
 
     repo_name = re.search('.*github.com/.*/(.*)\.git', url).group(1)
