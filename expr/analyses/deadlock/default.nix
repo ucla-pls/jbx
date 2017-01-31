@@ -3,7 +3,7 @@ let
   jchord_ = jchord-2_0;
   petablox_ = petablox;
   loggingSettings = {
-      depth = 10000 ;
+      depth = 0;
       timelimit = 120;
   };
 in rec {
@@ -42,8 +42,8 @@ in rec {
       filter = "unique,lockset";
       prover = "kalhauge";
       timelimit = 36000;
-      chunkSize = 100000;
-      chunkOffset = 50000;
+      chunkSize = 10000;
+      chunkOffset = 5000;
     };
 
   surveilWiretap =

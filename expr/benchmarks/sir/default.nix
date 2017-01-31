@@ -168,7 +168,7 @@ in rec {
     name = "nestedmonitor";
     srcfolder = "versions.alt/orig";
     mainclass = "NestedMonitor";
-    tags = ["deadlock" "singlelock"];
+    tags = ["deadlock" "waitnotify"];
   };
 
   piper = sirBenchmark {

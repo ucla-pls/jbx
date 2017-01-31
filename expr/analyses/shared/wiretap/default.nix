@@ -33,9 +33,10 @@ in rec {
     wiretap {
       inherit timelimit;
       settings = [
-        { name = "recorder";        value = "BinaryHistoryLogger"; }
-        { name = "ignoredprefixes"; value = "edu/ucla/pls/wiretap,java,sun"; }
-        { name = "loggingdepth";    value = "${toString depth}"; }
+        { name = "recorder";         value = "BinaryHistoryLogger"; }
+        { name = "ignoredprefixes";  value = "edu/ucla/pls/wiretap,java,sun"; }
+        { name = "loggingdepth";     value = "${toString depth}"; }
+        { name = "classfilesfolder"; value = "./_wiretap/classes"; }
       ];
     };
 
