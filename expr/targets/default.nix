@@ -16,13 +16,13 @@ let
 in rec {
   deadlocks =
     onAll
-      analyses.deadlock.petablox
+      analyses.deadlocks.petablox
       (versionize [java.java6] benchmarks.byTag.reflection-free)
       env;
 
   wiretap-deadlocks =
     onAll
-      analyses.deadlock.surveilAll
+      analyses.deadlocks.surveilAll
       (versionize [java.java6] (with_inputs benchmarks.byTag.singlelock))
       env;
 
