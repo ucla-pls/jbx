@@ -1,0 +1,12 @@
+diff -u -r JaConTeBe1/versions.alt/derby4/orig/org/apache/derby/impl/services/reflect/Derby764.java JaConTeBe/versions.alt/derby4/orig/org/apache/derby/impl/services/reflect/Derby764.java
+--- JaConTeBe1/versions.alt/derby4/orig/org/apache/derby/impl/services/reflect/Derby764.java	2014-08-20 01:55:54.000000000 -0700
++++ JaConTeBe/versions.alt/derby4/orig/org/apache/derby/impl/services/reflect/Derby764.java	2017-02-03 15:19:55.000000000 -0800
+@@ -60,8 +60,6 @@
+     @Test
+     public void run() throws StandardException, InterruptedException {
+         Reporter.reportStart("derby764", 0, "deadlock");
+-        DeadlockMonitor monitor = new DeadlockMonitor();
+-        monitor.start();
+ 
+         Thread th1 = new Thread1();
+         Thread th2 = new Thread2();

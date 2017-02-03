@@ -12,32 +12,49 @@ let
       { name = "default"; args = ["--monitoroff"]; }
     ]
     , tags ? []
+    , libs ? null
     }:
     utils.mkBenchmarkTemplate {
       name = "JaConTeBe-${name}";
-      inherit mainclass inputs tags;
+      tags = tags ++ ["JaConTeBe"];
+      inherit mainclass inputs;
       build = java: {
         src = base;
         phases = "unpackPhase buildPhase installPhase";
         buildInputs = [ java.jdk unzip cpio];
+        patches = [ ./derby4.patch ];
         unpackPhase = ''
           tar -xzf $src
           cd "JaConTeBe/"
         '';
+        libnames = libs;
         buildPhase = ''
           mkdir -p "$out/info" "$out/src" "$out/classes" "$out/lib"
 
-          for path in $(find ./versions.alt/lib/realLib -name "*.jar"); do
-              echo "Copying over classpath $path..."
-              if [[ $path == *.jar ]]; then
-                  mkdir _out
-                  unzip -qq -o "$path" -d _out
-                  path=_out
-              fi
-              (cd "$path";
-              find . -name "*.class" | sort | cpio --quiet -updm $out/lib)
-              if [[ -e _out ]]; then rm -r _out; fi
+          for lib in $libnames; do
+            path="./versions.alt/lib/realLib/$lib.jar"
+            echo "Copying over classpath $path..."
+            if [[ $path == *.jar ]]; then
+                mkdir _out
+                unzip -qq -o "$path" -d _out
+                path=_out
+            fi
+            (cd "$path";
+            find . -name "*.class" | sort | cpio --quiet -updm $out/lib)
+            if [[ -e _out ]]; then rm -r _out; fi
           done
+
+          # for path in $(find ./versions.alt/lib/realLib -name "*.jar"); do
+          #     echo "Copying over classpath $path..."
+          #     if [[ $path == *.jar ]]; then
+          #         mkdir _out
+          #         unzip -qq -o "$path" -d _out
+          #         path=_out
+          #     fi
+          #     (cd "$path";
+          #     find . -name "*.class" | sort | cpio --quiet -updm $out/lib)
+          #     if [[ -e _out ]]; then rm -r _out; fi
+          # done
 
           path=versions.alt/lib/${name}.jar
           if [ -e $path ]; then
@@ -97,24 +114,28 @@ in rec {
     name = "dbcp1";
     mainclass = "Dbcp65";
     tags = ["deadlock" "singlelock"];
+    libs = ["commons-dbcp-1.2" "commons-pool-1.2"  "mockito-all-1.9.5" "coring-1.4" "jacontebe-1.0" "commons-collections-2.1"];
   };
 
   dbcp2 = jaConTeBenchmark {
     name = "dbcp2";
     mainclass = "Dbcp270";
     tags = ["deadlock" "singlelock"];
+    libs = ["commons-dbcp-1.2" "commons-pool-1.2"  "mockito-all-1.9.5" "coring-1.4" "jacontebe-1.0" "commons-collections-2.1"];
   };
 
   derby1 = jaConTeBenchmark {
     name = "derby1";
     mainclass = "Derby4129";
     tags = ["deadlock" "singlelock"];
+    libs = ["asm-all-5.0.3" "coring-1.4" "jacontebe-1.0" "derby"];
   };
 
   derby2 = jaConTeBenchmark {
     name = "derby2";
     mainclass = "Derby5560";
     tags = ["deadlock" "singlelock"];
+    libs = ["asm-all-5.0.3" "coring-1.4" "jacontebe-1.0" "derby" "derbyclient" "mockito-all-1.9.5"];
   };
 
   derby4 = jaConTeBenchmark {
@@ -126,24 +147,28 @@ in rec {
       }
     ];
     tags = ["deadlock" "singlelock"];
+    libs = ["coring-1.4" "jacontebe-1.0" "derby" "mockito-all-1.9.5" "asm-all-5.0.3" "javassist-3.18.1-GA" "junit4.11" "powermock-mockito-1.5.3-full"];
   };
 
   derby5 = jaConTeBenchmark {
     name = "derby5";
     mainclass = "org.apache.derby.impl.store.raw.data.Derby5447";
     tags = ["deadlock" "singlelock"];
+    libs = ["coring-1.4" "jacontebe-1.0" "derby" "mockito-all-1.9.5" "asm-all-5.0.3"];
   };
 
   groovy2 = jaConTeBenchmark {
     name = "groovy2";
     mainclass = "Groovy4736";
     tags = ["deadlock" "singlelock"];
+    libs = ["coring-1.4" "jacontebe-1.0" "groovy-all-1.7.9"];
   };
 
   log4j2 = jaConTeBenchmark {
     name = "log4j2";
     mainclass = "com.main.Test41214";
     tags = ["deadlock" "singlelock"];
+    libs = ["coring-1.4" "jacontebe-1.0" "log4j-1.2.13"];
   };
 
   all = [
