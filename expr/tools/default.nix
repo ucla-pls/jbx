@@ -30,7 +30,6 @@ rec {
     petablox-0_1
     petablox-1_0
     petablox-test
-    petablox-fix
     petablox-HEAD
   ;
   petablox = petablox-HEAD;

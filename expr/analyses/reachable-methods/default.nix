@@ -69,7 +69,7 @@ in rec {
     petablox = petablox;
     name = "external";
     reflection = "external";
-    subanalyses = [ "cipa-0cfa-dlog" "reachable-methods" ];
+    subanalyses = [ "cipa-0cfa-dlog" ];
     tools = [ python ];
     postprocess = ''
       if [ -f $sandbox/petablox_output/reachable-methods.txt ]

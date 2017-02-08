@@ -58,18 +58,14 @@ in {
     rev = "0753f868485d032403e29393382895aeafb440a6";
   };
   petablox-HEAD = testPetablox {
-    md5 = "bb64812abe4b2d284a302d6941e02923";
-    rev = "bd5f3f05d575a0ff848e8b82465eac7e75c4182c";
+    md5 = "e0d2acee99e32ffc177b1b08d9280da1";
+    rev = "ffe59f93566d714ad1d26ff6125d572b0e452497";
+    branchName = "master";
+    patches = [ ./reachable-methods-fix.patch ];
   };
   petablox-test = testPetablox {
     md5 = "49304df10ef89179c1117cf9b5da4faa";
     rev = "058ffa2ebc9874e8a1664de640bbbac916bf9841";
     branchName = "develop";
-  };
-  petablox-fix = testPetablox {
-    md5 = "4a395040aff93a85db5519974f09bd3b";
-    rev = "bb1e8b99dc5bb30368dcd299f64480e7667f7323";
-    branchName = "deadlocks";
-    patches = [ ./reachable-methods-fix.patch ];
   };
 }
