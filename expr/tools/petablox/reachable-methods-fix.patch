@@ -1,3 +1,18 @@
+diff --git a/src/petablox/program/RTA.java b/src/petablox/program/RTA.java
+index ae571ca..3cbb8da 100755
+--- a/src/petablox/program/RTA.java
++++ b/src/petablox/program/RTA.java
+@@ -219,8 +219,8 @@ public class RTA implements ScopeBuilder {
+         entryMethods = new HashSet<SootMethod>();
+         if(Config.populate)
+         	entryPointGen();
+-		extractJUnitTests();
+-        //prepEntrypoints(); 
++	//extractJUnitTests();
++        prepEntrypoints(); 
+         Scene.v().loadBasicClasses();
+         
+         for (int i = 0; repeat; i++) {
 diff --git a/src/petablox/project/analyses/ReachableMethods.java b/src/petablox/project/analyses/ReachableMethods.java
 new file mode 100644
 index 0000000..0c68c51
