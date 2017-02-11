@@ -5,8 +5,8 @@ let
     src = fetchgit {
       url = "https://github.com/ucla-pls/baseline.git";
       branchName = "master";
-      rev = "2ef679e9eb6e551b53c0c4b184b86444e01024c9";
-      md5 = "bb18e512f7db5bad8d5dad8dd843d1e1";
+      rev = "8095a6021d4e8cc8ca2d469f70fef6e28915df7c";
+      md5 = "7d01373716f9999e14459af4f79cb1e5";
     };
     phases = [ "unpackPhase" "buildPhase" "installPhase" ];
     buildInputs = [ ant java.jdk ];
@@ -22,12 +22,23 @@ in rec {
     build = baseline;
     mainclass = "edu.ucla.pls.baseline.Transfer";
     inputs = [
-      { name = "one";
+      { name = "default";
+        args = [];
+      }
+    ];
+  };
+  infinite = utils.mkBenchmarkTemplate {
+    name = "infinite";
+    build = baseline;
+    mainclass = "edu.ucla.pls.baseline.Infinite";
+    inputs = [
+      { name = "default";
         args = [];
       }
     ];
   };
   all = [
     transfer
+    infinite
   ];
 }
