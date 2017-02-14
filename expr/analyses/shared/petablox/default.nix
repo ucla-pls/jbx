@@ -37,6 +37,7 @@ let
       { name = "runtime.jvmargs"; value = "-Xmx40960m";                               }
       { name = "class.path";      value = "$classpath";                               }
       { name = "reflect.kind";    value = reflection;                                 }
+      { name = "dynamic.timeout"; value = "300";                                      }
       { name = "run.ids";         value = concatMapStringsSep "," (x: x.name) inputs; }
       ] ++ builtins.map (input: {
         name = "args.${input.name}"; 
