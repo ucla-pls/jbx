@@ -5,6 +5,7 @@ rec {
      with ps;
      [ pymongo
        (mongoengine ps)
+       blinker
        six
      ]
    );
@@ -17,7 +18,7 @@ rec {
         sha256 = "1ff6q0brknahh209kfa237w2a6dv141fykqppfr3ppi65l6jnlrr";
       };
 
-      buildInputs = with ps; [ pymongo sphinx six ];
+      buildInputs = with ps; [ pymongo blinker sphinx six ];
       doCheck = false;
 
       meta = {
