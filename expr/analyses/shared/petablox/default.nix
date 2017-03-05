@@ -8,6 +8,7 @@ options @ {
   , tools ? []
   , timelimit ? 3600
   , settings ? []
+  , reflection-timelimit ? 300
   , ...
 }:
 benchmark: 
@@ -28,17 +29,19 @@ let
     tools = [ petablox benchmark.java.jre ] ++ tools;
     inherit timelimit;
     settings = ppsettings ( [
-      { name = "datalog.engine";  value = engine;                                     }
-      { name = "main.class";      value = benchmark.mainclass;                        }
-      { name = "run.analyses";    value = concatStringsSep "," subanalyses;           }
-      { name = "err.file";        value = "/dev/stderr";                              }
-      { name = "out.file";        value = "/dev/stdout";                              }
-      { name = "jvmargs";         value = "-Xmx40960m";                               }
-      { name = "runtime.jvmargs"; value = "-Xmx40960m";                               }
-      { name = "class.path";      value = "$classpath";                               }
-      { name = "reflect.kind";    value = reflection;                                 }
-      { name = "dynamic.timeout"; value = "300";                                      }
-      { name = "run.ids";         value = concatMapStringsSep "," (x: x.name) inputs; }
+      { name = "datalog.engine";       value = engine;                                     }
+      { name = "main.class";           value = benchmark.mainclass;                        }
+      { name = "run.analyses";         value = concatStringsSep "," subanalyses;           }
+      { name = "err.file";             value = "/dev/stderr";                              }
+      { name = "out.file";             value = "/dev/stdout";                              }
+      { name = "jvmargs";              value = "-Xmx40960m";                               }
+      { name = "runtime.jvmargs";      value = "-Xmx40960m";                               }
+      { name = "class.path";           value = "$classpath";                               }
+      { name = "reflect.kind";         value = reflection;                                 }
+      { name = "run.ids";              value = concatMapStringsSep "," (x: x.name) inputs; }
+      { name = "reflection.timeout";   value = "${toString reflection-timelimit}000";      }
+      { name = "dynamic.timeout";      value = "${toString reflection-timelimit}000";      }
+      { name = "reflection.haltonerr"; value = "false";                                    }
       ] ++ builtins.map (input: {
         name = "args.${input.name}"; 
         value = concatStringsSep " " input.args; 
