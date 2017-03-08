@@ -3,16 +3,17 @@ let wiretap_ = wiretap;
 in rec {
   wiretap =
     options @ {
-      postprocess ? "",
-      settings ? [], 
-      timelimit ? 1800,
+      postprocess ? ""
+      , settings ? []
+      , timelimit ? 1800
+      , ...
     }:
     benchmark:
     let
       inherit (lib.strings) concatStringsSep concatMapStringsSep;
       ppsettings = concatMapStringsSep " " (o: "-Dwiretap.${o.name}=${o.value}");
     in
-    utils.mkDynamicAnalysis {
+    utils.mkDynamicAnalysis ({
       name = "wiretap";
       wiretap = wiretap_ benchmark.java;
       settings = ppsettings ( [
@@ -24,13 +25,14 @@ in rec {
           -cp $classpath $mainclass $args < $stdin
       '';
       inherit postprocess timelimit;
-    } benchmark;
+    } // removeAttrs options ["settings"]) benchmark;
 
   wiretapSurveil =
-    { timelimit ? 1800
+    options @ { timelimit ? 1800
     , depth ? 100000
+    , ...
     }:
-    wiretap {
+    wiretap (options // {
       inherit timelimit;
       settings = [
         { name = "recorder";         value = "BinaryHistoryLogger"; }
@@ -38,9 +40,20 @@ in rec {
         { name = "loggingdepth";     value = "${toString depth}"; }
         { name = "classfilesfolder"; value = "./_wiretap/classes"; }
       ];
-    };
+    });
 
   surveil =
+    options @ {
+      logging ? {}
+      , ...
+    }:
+    utils.afterD (wiretapSurveil logging) (surveilBase options);
+
+  surveilFlat =
+    options:
+    wiretapSurveil (surveilBase options);
+
+  surveilBase =
     options @
     { name ? "surveil"
     , cmd ? "parse"
@@ -52,15 +65,17 @@ in rec {
     , verbose ? true
     , logging ? {}
     }:
-    utils.afterD (wiretapSurveil logging) {
+    {
       inherit name timelimit;
       tools = [ wiretap-tools ];
       ignoreSandbox = true;
       postprocess = ''
-        analyse "wiretap-tools" wiretap-tools ${cmd} ${if verbose then "-v" else ""} -p ${prover} ${if (cmd == "deadlocks" || cmd == "dataraces") && chunkSize > 0
+        analyse "wiretap-tools" wiretap-tools \
+            ${cmd} ${if verbose then "-v" else ""} \
+            -p ${prover} ${if (cmd == "deadlocks" || cmd == "dataraces") && chunkSize > 0
             then "--chunk-size ${toString chunkSize} --chunk-offset ${toString chunkOffset}"
             else ""
-           } -f ${filter} $sandbox/_wiretap/wiretap.hist > $out/lower
+           } -f ${filter} $sandbox/_wiretap/wiretap.hist > lower
       '';
     };
 }

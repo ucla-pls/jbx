@@ -14,6 +14,7 @@
 , eject
 }:
 let inherit (lib.lists) concatMap filter;
+    inherit (lib.debug) traceShowValMarked traceShowVal traceValSeq;
 in rec {
   # Type: Benchmark
   #   A benchmark is a description of a java program, which is buildable
@@ -370,6 +371,24 @@ in rec {
          cp -r . $out
        '';
     };
+
+  # repeat a dynamic benchmark a number of time, and combine the
+  # results
+  repeat =
+    analysis:
+    { times ? 100
+    , postprocess ? ""
+    }:
+    benchmark:
+    env:
+    input:
+    let singleRun = analysis benchmark env input;
+    in lib.overrideDerivation singleRun (options:
+       traceValSeq { name = traceShowVal options.name + "-repeated";
+         repeat_times = times;
+         repeat_postprocess = postprocess;
+         args = ["-e" ./repeat.sh];
+       });
 
   # toBenchmark: Repository -> Options -> Benchmark
   toBenchmark =

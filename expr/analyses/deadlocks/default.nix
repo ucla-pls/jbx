@@ -34,8 +34,7 @@ in rec {
     '';
   };
 
-  surveil =
-    shared.surveil {
+  surveilOptions = {
       name = "deadlock";
       logging = loggingSettings;
       cmd = "deadlocks";
@@ -46,11 +45,20 @@ in rec {
       chunkOffset = 5000;
     };
 
+  surveil = shared.surveil surveilOptions;
+  surveilFlat = shared.surveilFlat surveilOptions;
+
   surveilWiretap =
     shared.wiretapSurveil loggingSettings;
 
   surveilAll =
     utils.onAllInputs surveil {};
+
+  surveilRepeated =
+     utils.repeat surveilFlat {times = 10;};
+
+  surveilRepeatedAll =
+   utils.onAllInputs surveilRepeated {};
 
   overview =
     utils.overview "deadlock" [
