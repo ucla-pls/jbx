@@ -9,7 +9,7 @@
       branchName = "develop";
     };
     buildInputs = [ unzip ant java.jdk ];
-    phases = "unpackPhase buildPhase installPhase";
+    phases = "unpackPhase patchPhase buildPhase installPhase";
     buildPhase = ''
       ant
     '';
@@ -17,5 +17,6 @@
       mkdir -p $out/share/java
       cp build/wiretap.jar $out/share/java
     '';
+    patches = [ ./fix.patch ];
   };
 }

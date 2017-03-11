@@ -12,31 +12,29 @@ in rec {
     let
       inherit (lib.strings) concatStringsSep concatMapStringsSep;
       ppsettings = concatMapStringsSep " " (o: "-Dwiretap.${o.name}=${o.value}");
-    in
-    utils.mkDynamicAnalysis ({
+    in utils.mkDynamicAnalysis ({
       name = "wiretap";
       wiretap = wiretap_ benchmark.java;
       settings = ppsettings ( [
         ] ++ settings );
       analysis = ''
-        echo $classpath
         analyse "wiretap-run" java -javaagent:$wiretap/share/java/wiretap.jar \
-          $settings\
-          -cp $classpath $mainclass $args < $stdin
+          $settings -cp $classpath $mainclass $args < $stdin
       '';
       inherit postprocess timelimit;
     } // removeAttrs options ["settings"]) benchmark;
 
   wiretapSurveil =
-    options @ { timelimit ? 1800
-    , depth ? 100000
+    options:
+    logging @ {
+      depth ? 100000
+    , ignoredprefixes ? "edu/ucla/pls/wiretap,java,sun"
     , ...
     }:
     wiretap (options // {
-      inherit timelimit;
       settings = [
         { name = "recorder";         value = "BinaryHistoryLogger"; }
-        { name = "ignoredprefixes";  value = "edu/ucla/pls/wiretap,java,sun"; }
+        { name = "ignoredprefixes";  value = ignoredprefixes; }
         { name = "loggingdepth";     value = "${toString depth}"; }
         { name = "classfilesfolder"; value = "./_wiretap/classes"; }
       ];
@@ -47,35 +45,48 @@ in rec {
       logging ? {}
       , ...
     }:
-    utils.afterD (wiretapSurveil logging) (surveilBase options);
+    utils.afterD (wiretapSurveil {} logging) (surveilBase options);
 
   surveilFlat =
-    options:
-    wiretapSurveil (surveilBase options);
+    options @ {
+      logging ? {}
+      , ...
+    }:
+    wiretapSurveil (surveilBase options) options.logging;
 
   surveilBase =
     options @
     { name ? "surveil"
     , cmd ? "parse"
-    , prover ? "kalhauge"
+    , provers ? ["kalhauge"]
     , filter ? "unique,lockset"
     , chunkSize ? 10000
     , chunkOffset ? 5000
     , timelimit ? 3600  # 1 hours.
     , verbose ? true
     , logging ? {}
+    , ignoreSandbox ? true
     }:
     {
-      inherit name timelimit;
+      inherit name timelimit provers ignoreSandbox;
       tools = [ wiretap-tools ];
-      ignoreSandbox = true;
       postprocess = ''
-        analyse "wiretap-tools" wiretap-tools \
-            ${cmd} ${if verbose then "-v" else ""} \
-            -p ${prover} ${if (cmd == "deadlocks" || cmd == "dataraces") && chunkSize > 0
-            then "--chunk-size ${toString chunkSize} --chunk-offset ${toString chunkOffset}"
-            else ""
-           } -f ${filter} $sandbox/_wiretap/wiretap.hist > lower
+        runtime_deadlocks="$sandbox/_wiretap/deadlocks.txt"
+        if [ -e $runtime_deadlocks ]; then
+           for i in $(awk '{print $2}' "$runtime_deadlocks"); do
+             sed "$((i + 1))q;d" "$sandbox/_wiretap/instructions.txt"
+           done | sort | sed 'N;s/\n/ /' > "runtime-deadlock.txt"
+        fi
+        for prover in $provers; do
+          analyse "wiretap-tools-$prover" wiretap-tools \
+              ${cmd} ${if verbose then "-v" else ""} -p $prover \
+              ${if (cmd == "deadlocks" || cmd == "dataraces") && chunkSize > 0
+                          then "--chunk-size ${toString chunkSize} --chunk-offset ${toString chunkOffset}"
+              else ""
+            } -f ${filter} $sandbox/_wiretap/wiretap.hist > "$prover.${cmd}.txt"
+            cat "$prover.${cmd}.txt"
+        done | sort -u > lower
+
       '';
     };
 }

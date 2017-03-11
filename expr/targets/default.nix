@@ -11,7 +11,7 @@
 let
   inherit (utils) versionize usage onAll mkStatistics;
   all = versionize benchmarks.all java.all;
-  with_inputs = builtins.filter (b: builtins.length b.inputs > 0);
+  withInputs = builtins.filter (b: builtins.length b.inputs > 0);
   dacapo-harness = benchmarks.byTag.dacapo-harness;
 in rec {
   deadlocks =
@@ -23,7 +23,7 @@ in rec {
   wiretap-deadlocks =
     onAll
       analyses.deadlocks.surveilAll
-      (versionize [java.java6] (with_inputs benchmarks.byTag.singlelock))
+      (versionize [java.java6] (withInputs benchmarks.byTag.singlelock))
       env;
 
   wiretap-deadlocks-table =
@@ -65,6 +65,29 @@ in rec {
         column -ts, table.csv
       '';
     } deadlocks;
+
+  wiretap-cycles =
+    analyses.deadlocks.joinCycles "wiretap-cycles" wdc;
+
+  wdc =
+    (onAll
+      analyses.deadlocks.surveilRepeatedAll
+      (versionize [java.java6]
+       ( with benchmarks; [
+          baseline.transfer
+          sir.deadlock
+          sir.account
+          jaConTeBe.dbcp1
+          jaConTeBe.dbcp2
+          jaConTeBe.derby1
+          jaConTeBe.derby2
+          jaConTeBe.derby4
+          jaConTeBe.derby5
+          jaConTeBe.derby5
+          jaConTeBe.log4j2
+       ])
+      )
+      env);
 
   reachable-methods =
     onAll

@@ -1,10 +1,11 @@
-{shared, jchord-2_0, petablox, utils, python}:
+{shared, jchord-2_0, petablox, utils, python, python3, eject}:
 let
   jchord_ = jchord-2_0;
   petablox_ = petablox;
   loggingSettings = {
       depth = 0;
-      timelimit = 120;
+      timelimit = 122;
+      ignoredprefixes = "org/mockito,org/powermock,edu/ucla/pls/wiretap,java,sun";
   };
 in rec {
   jchord = utils.after (shared.jchord {
@@ -39,7 +40,7 @@ in rec {
       logging = loggingSettings;
       cmd = "deadlocks";
       filter = "unique,lockset";
-      prover = "kalhauge";
+      provers = ["none" "kalhauge"];
       timelimit = 36000;
       chunkSize = 10000;
       chunkOffset = 5000;
@@ -55,10 +56,27 @@ in rec {
     utils.onAllInputs surveil {};
 
   surveilRepeated =
-     utils.repeat surveilFlat {times = 10;};
+     utils.repeated {
+        times = 100;
+        tools = [python3 eject];
+        collect = ''
+          python3 ${./cyclestats.py} $name $results | tee cycles.txt | column -ts,
+        '';
+     } surveilFlat ;
 
   surveilRepeatedAll =
-   utils.onAllInputs surveilRepeated {};
+    benchmark:
+      utils.lift (joinCycles (benchmark.name))
+        (utils.onAllInputsS surveilRepeated)
+        benchmark;
+
+  joinCycles =
+    name:
+    utils.mkStatistics {
+      name = name;
+      foreach = "cat $result/cycles.txt >> cycles.txt";
+    };
+
 
   overview =
     utils.overview "deadlock" [

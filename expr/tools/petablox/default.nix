@@ -61,7 +61,7 @@ in {
     md5 = "551bebfa4016e16a909a1d697215cb0b";
     rev = "9b9d391b2863fc948b6ea0bb5b01133af0ad8b7a";
     branchName = "master";
-    # patches = [ ./reachable-methods-fix.patch ];
+    patches = [ ./deadlock-fix.patch ];
   };
   petablox-test = testPetablox {
     md5 = "49304df10ef89179c1117cf9b5da4faa";

@@ -14,8 +14,7 @@
 , eject
 }:
 let inherit (lib.lists) concatMap filter;
-    inherit (lib.debug) traceShowValMarked traceShowVal traceValSeq;
-in rec {
+in with lib.debug; rec {
   # Type: Benchmark
   #   A benchmark is a description of a java program, which is buildable
   #   and runnable. Benchmarks are parammeterized by the java version used.
@@ -157,9 +156,16 @@ in rec {
       buildInputs = [procps] ++ tools ++ [ benchmark.java.jre ];
     });
 
-  # onAllInputs : DynamicAnalysis -> Options -> Analyis
+  # onAllInputsS : Dyn a -> Analysis [a]
+  onAllInputsS =
+    dyn:
+    benchmark:
+    env:
+    map (dyn benchmark env) benchmark.inputs;
+
+  # onAllInputs : Dyn Result -> Options -> Analysis Result
   # This function changes a DynamicAnalysis to an Analysis, by running
-  # the analsis on all inputs.
+  # the analysis on all inputs.
   onAllInputs =
     analysis:
     options:
@@ -374,21 +380,38 @@ in rec {
 
   # repeat a dynamic benchmark a number of time, and combine the
   # results
+  # repeat :: Nat -> Dyn [Result]
   repeat =
-    analysis:
-    { times ? 100
-    , postprocess ? ""
+    times:
+    liftD (repeatR times);
+
+  repeatR =
+    times:
+    result:
+    builtins.genList (n:
+      lib.overrideDerivation result ( options:
+      { name = options.name + "-repeat" + toString n; }
+      )) times;
+
+
+  # repeated :: Options -> Dyn Statistics
+  repeated =
+    options @ {
+      times
+      , ...
     }:
+    mapDyn (r:
+      mkStatistics
+      ({ name = r.name + "-repeated"; } // options)
+      (repeatR times r));
+
+  mapDyn = # Dyn b
+    f: # a -> b
+    dyn: # Dyn a
     benchmark:
     env:
     input:
-    let singleRun = analysis benchmark env input;
-    in lib.overrideDerivation singleRun (options:
-       traceValSeq { name = traceShowVal options.name + "-repeated";
-         repeat_times = times;
-         repeat_postprocess = postprocess;
-         args = ["-e" ./repeat.sh];
-       });
+    f (dyn benchmark env input);
 
   # toBenchmark: Repository -> Options -> Benchmark
   toBenchmark =
@@ -416,6 +439,9 @@ in rec {
   # >> Utilities
   # This section contains small functions that might be nice to have
 
+  # fcomp :: (b -> c) -> (a -> b) -> a -> c
+  fcomp = f: g: a: f (g a);
+
   # product :: (a -> b -> c) -> [a] -> [b] -> [c]
   product = f: as: bs: concatMap (a: map (b: f a b) bs) as;
 
@@ -433,7 +459,7 @@ in rec {
     env:
       builtins.map (analyse env benchmark) analyses;
 
-  # lift: (Result -> a) -> Analysis -> Benchmark -> Env -> a
+  # lift: (a -> b) -> Analysis a -> Analysis b
   lift =
     f:
     analysis:
@@ -441,14 +467,14 @@ in rec {
     env:
       f (analysis benchmark env);
 
-  # liftD: (Result -> a) -> Analysis -> Benchmark -> Env -> Input -> a
+  # liftD: (Result -> a) -> Dyn Result -> a
   liftD =
     f:
     analysis:
     benchmark:
     env:
     input:
-      f (analysis benchmark env input);
+    f (analysis benchmark env input);
 
   # liftL: ([Result] -> a) -> [Analysis] -> Benchmark -> Env -> a
   liftL =

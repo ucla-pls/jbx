@@ -151,7 +151,7 @@ in rec {
     name = "log4j1";
     srcfolder = "versions.alt/orig";
     mainclass = "org.apache.log4j.test.UnitTestAppender";
-    tags = ["deadlock" "singlelock"];
+    tags = ["deadlock"];
   };
 
   loseNotify = sirBenchmark {
