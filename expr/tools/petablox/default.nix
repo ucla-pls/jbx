@@ -58,8 +58,8 @@ in {
     rev = "0753f868485d032403e29393382895aeafb440a6";
   };
   petablox-HEAD = testPetablox {
-    md5 = "551bebfa4016e16a909a1d697215cb0b";
-    rev = "9b9d391b2863fc948b6ea0bb5b01133af0ad8b7a";
+    md5 = "12c5fe8e22fca89f3bcb5b4ac6248a41";
+    rev = "858145766780994393596824f74d49a33a575da7";
     branchName = "master";
     # patches = [ ./reachable-methods-fix.patch ];
   };

@@ -38,6 +38,7 @@ let
       { name = "runtime.jvmargs";      value = "-Xmx40960m";                               }
       { name = "class.path";           value = "$classpath";                               }
       { name = "reflect.kind";         value = reflection;                                 }
+      { name = "src.path";             value = "${benchmark.build}/src";                   }
       { name = "run.ids";              value = concatMapStringsSep "," (x: x.name) inputs; }
       { name = "reflection.timeout";   value = "${toString reflection-timelimit}000";      }
       { name = "dynamic.timeout";      value = "${toString reflection-timelimit}000";      }

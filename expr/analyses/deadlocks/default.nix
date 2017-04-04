@@ -26,6 +26,7 @@ in rec {
     reflection = "external";
     settings = [
       { name = "deadlock.exclude.nongrded"; value = "true"; }
+      { name = "print.results"; value = "true"; }
     ];
   }) {
     tools = [ python ];
