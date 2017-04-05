@@ -59,8 +59,32 @@ in rec {
      utils.repeated {
         times = 100;
         tools = [python3 eject];
+        foreach = ''
+          tail -n +2 "$result/times.csv" | sed 's/^.*\$//' >> times-tmp.csv
+        '';
         collect = ''
+          python3 > times.csv <<EOF
+import sys
+import csv
+
+with open("times-tmp.csv", "r") as f:
+  arr = list(csv.reader(f))
+
+count = {}
+values = {}
+
+for line in arr:
+  name, *rest = line
+  count[name] = count.get(name, 0) + 1
+  values[name] = [ a + float(b) for a, b in zip(values.get(name, [0] * 5), rest) ]
+
+wrt = csv.writer(sys.stdout)
+wrt.writerow(["name", "real", "user", "kernel", "maxm", "exitcode"]) 
+for name in values:
+  wrt.writerow(["$name\$" + name] + [ "{0:.4g}".format(value / count[name]) for value in values[name]])
+EOF
           python3 ${./cyclestats.py} $name $results | tee cycles.txt | column -ts,
+          cat times.csv
         '';
      } surveilFlat ;
 
@@ -74,9 +98,15 @@ in rec {
     name:
     utils.mkStatistics {
       name = name;
-      foreach = "cat $result/cycles.txt >> cycles.txt";
+      foreach = ''
+        cat $result/cycles.txt >> cycles.txt
+        tail -n +2 $result/times.csv >> times-tmp.csv
+      '';
+      collect = ''
+	echo "name,real,user,kernel,maxm,exitcode" > times.csv
+	cat times-tmp.csv >> times.csv
+      '';
     };
-
 
   overview =
     utils.overview "deadlock" [

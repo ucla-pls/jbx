@@ -83,7 +83,6 @@ in rec {
           jaConTeBe.derby2
           jaConTeBe.derby4
           jaConTeBe.derby5
-          jaConTeBe.derby5
           jaConTeBe.log4j2
        ])
       )
