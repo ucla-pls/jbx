@@ -1,4 +1,4 @@
-{ shared, utils, petablox, emma, python, logicblox-4_3_6_3}:
+{ shared, utils, petablox, emma, python, logicblox-4_3_6_3, python3 }:
 let
   emma_ = emma;
   inherit (utils) mkDynamicAnalysis onAllInputs;
@@ -93,6 +93,15 @@ in rec {
       fi
       '';
     };
+
+  world = utils.mkAnalysis {
+    name = "reachable-methods-world";
+    tools = [ python3 ];
+    timelimit = 420;
+    analysis = ''
+      analyse "reachable-methods-world" python3 ${./worldex.py} $build/ 
+    '';
+  };
 
   overview = utils.overview "reachable-methods" [
     petabloxExternal
