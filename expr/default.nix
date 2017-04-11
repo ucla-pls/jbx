@@ -17,6 +17,7 @@ in {}:
   rec {
     inherit tools utils java;
     inherit pkgs;
+    inherit env;
     benchmarks = pkgs.callPackage ./benchmarks {};
     analyses = pkgs.callPackage ./analyses {};
     transformers = pkgs.callPackage ./transformers {};
