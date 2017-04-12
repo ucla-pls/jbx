@@ -1,4 +1,4 @@
-{ shared, utils, petablox, emma, python, logicblox-4_3_6_3, python3 }:
+{ shared, utils, petablox, emma, python, logicblox-4_3_6_3, python3, unzip}:
 let
   emma_ = emma;
   inherit (utils) mkDynamicAnalysis onAllInputs;
@@ -20,34 +20,16 @@ in rec {
 
   emmaAll = onAllInputs emma {};
 
-  wiretap = shared.wiretap {
+  wiretap = b: e: shared.wiretap {
     settings = [
       { name = "wiretappers";     value = "EnterMethod";      }
       { name = "recorder";        value = "ReachableMethods"; }
       { name = "ignoredprefixes"; value = "edu/ucla/pls/wiretap,java"; }
     ];
     postprocess = ''
-      # Remove everything before the first main called.
-      # This might miss any <clinit> in the main method.
-      sed -n '/main:(\[Ljava\/lang\/String;)V/,$p' \
-        $sandbox/_wiretap/reachable.txt | sort -u > $out/lower
+      comm -12 <(sort -u $sandbox/_wiretap/reachable.txt) "${world b e}/upper" > $out/lower
       '';
-    };
-
-  wiretapLog = shared.wiretap {
-    settings = [
-      # { name = "wiretappers";     value = "EnterMethod";      }
-      { name = "recorder";        value = "Logger"; }
-      { name = "ignoredprefixes"; value = "edu/ucla/pls/wiretap,java"; }
-      { name = "classfilesfolder"; value = "_wiretap/classes"; }
-    ];
-    # postprocess = ''
-    #   # Remove everything before the first main called.
-    #   # This might miss any <clinit> in the main method.
-    #   sed -n '/main:(\[Ljava\/lang\/String;)V/,$p' \
-    #     $sandbox/_wiretap/reachable.txt | sort -u > $out/lower
-    #   '';
-    };
+    } b e;
 
   wiretapAll = onAllInputs wiretap {};
 
@@ -65,7 +47,7 @@ in rec {
   };
 
   # Petablox with the external reflection handeling
-  petabloxExternal = shared.petablox {
+  petabloxExternal = b: e: shared.petablox {
     petablox = petablox;
     name = "external";
     reflection = "external";
@@ -74,13 +56,14 @@ in rec {
     postprocess = ''
       if [ -f $sandbox/petablox_output/reachable-methods.txt ]
       then
-        python2.7 ${./petablox-parse.py} $sandbox/petablox_output/reachable-methods.txt > $out/upper
+        comm -12 "${world b e}/upper" >"$out/upper" \
+          <(python2.7 ${./petablox-parse.py} $sandbox/petablox_output/reachable-methods.txt)
       fi
       '';
-  };
+  } b e;
 
       # Petablox with the dynamic reflection handeling
-  petabloxDynamic = shared.petablox {
+  petabloxDynamic = b: e: shared.petablox {
     petablox = petablox;
     name = "dynamic";
     reflection = "dynamic";
@@ -89,24 +72,24 @@ in rec {
     postprocess = ''
       if [ -f $sandbox/petablox_output/reachable-methods.txt ]
       then
-        python2.7 ${./petablox-parse.py} $sandbox/petablox_output/reachable-methods.txt > $out/upper
+        comm -12 "${world b e}/upper" >"$out/upper" \
+          <(python2.7 ${./petablox-parse.py} $sandbox/petablox_output/reachable-methods.txt)
       fi
       '';
-    };
+    } b e;
 
-  world = utils.mkAnalysis {
+  world = benchmark: utils.mkAnalysis {
     name = "reachable-methods-world";
-    tools = [ python3 ];
+    tools = [ python3 unzip benchmark.java.jdk];
     timelimit = 420;
     analysis = ''
-      analyse "reachable-methods-world" python3 ${./worldex.py} $build/ 
+      analyse "reachable-methods-world" python3 ${./worldex.py} $build/ | sort -u > $out/upper
     '';
-  };
+  } benchmark;
 
   overview = utils.overview "reachable-methods" [
     petabloxExternal
-    petabloxDynamic
-    petabloxTamiflex
+    world
     wiretapAll
   ];
 

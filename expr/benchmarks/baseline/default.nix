@@ -14,7 +14,7 @@ let
     installPhase = ''
       mkdir -p $out
       cp -r src $out/src
-      cp -r build $out/classes
+      cp -r build/classes $out/classes
       mkdir -p $out/share/java/
       mv build/baseline.jar $_
     '';
