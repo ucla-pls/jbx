@@ -20,16 +20,16 @@ in rec {
 
   emmaAll = onAllInputs emma {};
 
-  wiretap = b: e: shared.wiretap {
+  wiretap = shared.wiretap {
     settings = [
       { name = "wiretappers";     value = "EnterMethod";      }
       { name = "recorder";        value = "ReachableMethods"; }
       { name = "ignoredprefixes"; value = "edu/ucla/pls/wiretap,java"; }
     ];
     postprocess = ''
-      comm -12 <(sort -u $sandbox/_wiretap/reachable.txt) "${world b e}/upper" > $out/lower
+      sort -u $sandbox/_wiretap/reachable.txt > $out/lower
       '';
-    } b e;
+    };
 
   wiretapAll = onAllInputs wiretap {};
 
@@ -41,13 +41,13 @@ in rec {
     postprocess = ''
       if [ -f $sandbox/petablox_output/methods.txt ]
       then
-        python2.7 ${./petablox-parse.py} $sandbox/petablox_output/methods.txt > $out/upper
+          python2.7 ${./petablox-parse.py} $sandbox/petablox_output/methods.txt > $out/upper
       fi
     '';
   };
 
   # Petablox with the external reflection handeling
-  petabloxExternal = b: e: shared.petablox {
+  petabloxExternal = shared.petablox {
     petablox = petablox;
     name = "external";
     reflection = "external";
@@ -56,14 +56,13 @@ in rec {
     postprocess = ''
       if [ -f $sandbox/petablox_output/reachable-methods.txt ]
       then
-        comm -12 "${world b e}/upper" >"$out/upper" \
-          <(python2.7 ${./petablox-parse.py} $sandbox/petablox_output/reachable-methods.txt)
+          python2.7 ${./petablox-parse.py} $sandbox/petablox_output/reachable-methods.txt > $out/upper
       fi
       '';
-  } b e;
+  };
 
       # Petablox with the dynamic reflection handeling
-  petabloxDynamic = b: e: shared.petablox {
+  petabloxDynamic = shared.petablox {
     petablox = petablox;
     name = "dynamic";
     reflection = "dynamic";
@@ -72,11 +71,10 @@ in rec {
     postprocess = ''
       if [ -f $sandbox/petablox_output/reachable-methods.txt ]
       then
-        comm -12 "${world b e}/upper" >"$out/upper" \
-          <(python2.7 ${./petablox-parse.py} $sandbox/petablox_output/reachable-methods.txt)
+          python2.7 ${./petablox-parse.py} $sandbox/petablox_output/reachable-methods.txt > $out/upper
       fi
       '';
-    } b e;
+    };
 
   world = benchmark: utils.mkAnalysis {
     name = "reachable-methods-world";
@@ -89,8 +87,14 @@ in rec {
 
   overview = utils.overview "reachable-methods" [
     petabloxExternal
-    world
+    petabloxDynamic
+    petabloxTamiflex
     wiretapAll
+  ];
+
+  comp = utils.cappedOverview "library-reachable-method" world [
+    wiretapAll
+    petabloxExternal
   ];
 
 }

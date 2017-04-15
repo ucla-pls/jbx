@@ -63,6 +63,12 @@ class Result(object):
 
         return Info(excess, missing, stats);
 
+    def limit(self, world):
+        if not world is None:
+            self.upper = self.upper and self.upper & world
+            self.lower = self.lower & world
+        return self
+
     @classmethod
     def from_folder(cls, folder):
         name = folder.split("-", 1)[1].split("+")[0]
@@ -90,7 +96,18 @@ class Result(object):
         return "{} {} {}".format(self.name, len(self.upper) if self.upper is not None else "inf", len(self.lower))
 
 def main():
-    results = map(Result.from_folder, sys.argv[1:]);
+    argv = list(sys.argv)[1:]
+
+    if argv[0] == "-w":
+        op, worldf = argv.pop(0), argv.pop(0)
+        world = readset(worldf, None)
+
+    results = map(Result.from_folder, argv)
+
+    print(" ".join(map(str, results)))
+
+    if world:
+        results = [ r.limit(world) for r in results ]
 
     over = Result.overapproximation(results)
     under = Result.underapproximation(results)

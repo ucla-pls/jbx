@@ -329,9 +329,26 @@ in rec {
       '';
     }) analyses benchmark;
 
+  # cappedOverview: Name -> Analysis -> [Analysis] -> Benchmark -> Env -> Statistics
+  cappedOverview =
+    name:
+    world:
+    analyses:
+    benchmark:
+    env:
+    liftL (mkStatistics {
+      name = name + "+" + benchmark.name;
+      tools = [ python eject];
+      collect = ''
+        cd $out
+        python ${./overview.py} -w "${world benchmark env}/upper" $results
+        column -ts',' overview.txt
+        echo "Results from:"
+        cat $out/results
+      '';
+    }) analyses benchmark env;
+
   # usage: Name -> [Result] -> Statistics
-  # Overview creates a single table containing data about the .
-  # TODO this might not fit in here.
   usage =
     name:
     mkStatistics {
