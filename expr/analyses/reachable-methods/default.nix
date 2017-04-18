@@ -67,6 +67,7 @@ in rec {
     petablox = petablox;
     name = "dynamic";
     reflection = "dynamic";
+    timelimit = 1200;
     subanalyses = [ "reachable-methods" ];
     tools = [ python ];
     postprocess = ''
@@ -74,6 +75,7 @@ in rec {
       then
           python2.7 ${./petablox-parse.py} $sandbox/petablox_output/reachable-methods.txt > $out/upper
       fi
+      rm -r "$sandbox/petablox_output/bddbddb"
       '';
     };
 
@@ -95,7 +97,7 @@ in rec {
 
   comp = utils.cappedOverview "library-reachable-method" world [
     wiretapAll
-    petabloxExternal
+    petabloxDynamic
   ];
 
 }
