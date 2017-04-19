@@ -106,11 +106,26 @@ def main():
 
     print(" ".join(map(str, results)))
 
-    if world:
+    if world is not None:
         results = [ r.limit(world) for r in results ]
+        with open("world", "w") as f:
+            f.writelines(sorted(world))
 
     over = Result.overapproximation(results)
     under = Result.underapproximation(results)
+
+    if over is not None:
+        with open("upper", "w") as f:
+            f.writelines(sorted(over))
+
+    with open("difference", "w") as f:
+        if over is not None:
+            f.writelines(sorted(under - over))
+        else:
+            f.writelines([])
+
+    with open("lower", "w") as f:
+        f.writelines(sorted(under))
 
     with open("overview.txt", "w") as f:
         writer = csv.DictWriter(f, fieldnames=Stats._fields)

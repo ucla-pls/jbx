@@ -12,7 +12,7 @@ def run(*cmd):
 
 def readfromfile(*filepath):
     with open(os.path.join(*filepath), "r") as f:
-        return f.readlines()
+        return [line.strip() for line in f.readlines()]
 
 def getclasses(cp):
     classes = []
