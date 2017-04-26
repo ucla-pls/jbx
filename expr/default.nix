@@ -1,7 +1,5 @@
+{ env ? import ../environment.nix, nixpkgs ? import ../nixpkgs {}}:
 let
-  nixpkgs = import ../nixpkgs {};
-  env = import ../environment.nix;
-
   tools = nixpkgs.callPackage ./tools { inherit (utils) fetchprop; };
 
   # Update the packages with our tools
@@ -13,8 +11,7 @@ let
 
   utils = pkgs.callPackage ./utils { inherit env; };
   java = import ./java { inherit pkgs; };
-in {}:
-  rec {
+in rec {
     inherit tools utils java;
     inherit pkgs;
     inherit env;
