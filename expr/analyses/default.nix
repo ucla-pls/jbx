@@ -23,5 +23,8 @@ in {
     callPackage ./data-flow-graph { inherit shared; };
 
   traces =
-     callPackage ./traces {};
+    callPackage ./traces {};
+
+  reflection =
+    callPackage ./reflection {};
 }
