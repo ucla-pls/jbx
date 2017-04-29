@@ -1,14 +1,23 @@
 #!/bin/bash
 
 # Inspect the disassembled .class files in the jar for java reflection
+echo "Methods utilizing reflection:"
 javap -p -c -classpath $classpath \
     $(jar -tf $classpath | grep "class$" | sed s/\.class$//) | \
-    grep -qE "java[\.\/]lang[\.\/](reflect|Class\.newInstance)"
+    grep -oE "\/\/Method .*java\/lang\/(reflect|Class\.newInstance).*$" | \
+    sed 's/\/\/Method\s//' | tee $out/upper
+echo
 
-if [ $? -eq 0 ]; then
-    echo "yes" > $out/upper
-    echo "Benchmark $name utilizes reflection"
+# Find the number of reflection methods
+# Using grep instead of 'wc -l' since wc also prints the path of the file
+nmethods=`grep -c $ $out/upper`
+echo "Number of reflection methods: $nmethods"
+
+if [ "$nmethods" -eq 0 ]; then
+    echo "$name does not utilize reflection"
 else
-    touch $out/upper # create empty upper file
-    echo "Benchmark $name does not utilize reflection"
+    # Since this is an overapproximation, even if reflection methods are
+    # found, it cannot be definitively said that the benchmark utilizes
+    # reflection for all executions.
+    echo "$name may utilize reflection"
 fi
