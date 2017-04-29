@@ -4,7 +4,7 @@
 echo "Methods utilizing reflection:"
 javap -p -c -classpath $classpath \
     $(jar -tf $classpath | grep "class$" | sed s/\.class$//) | \
-    grep -oE "\/\/Method .*java\/lang\/(reflect|Class\.newInstance).*$" | \
+    grep -oE "\/\/Method java\/lang\/((reflect\/(Method\.invoke|Constructor\.newInstance))|(Class\.newInstance)).*$" | \
     sed 's/\/\/Method\s//' | tee $out/upper
 echo
 
