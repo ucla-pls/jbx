@@ -9,7 +9,7 @@
 {callPackage, utils}:
 let
   shared = callPackage ./shared {};
-in {
+in rec {
   run =
     callPackage ./run {};
 
@@ -26,5 +26,5 @@ in {
     callPackage ./traces {};
 
   reflection =
-    callPackage ./reflection {};
+    callPackage ./reflection { inherit reachable-methods; };
 }

@@ -1,5 +1,5 @@
-{ utils }:
-let detector = ./reflection.sh; in 
+{ utils, reachable-methods }:
+let detector = ./reflection.sh; in rec
 {
   reflection = benchmark: utils.mkAnalysis {
       name = "reflection";
@@ -8,4 +8,9 @@ let detector = ./reflection.sh; in
         analyse "reflection" bash ${detector}
       '';
   } benchmark;
+
+  comp = utils.cappedOverview "reflection-comp" reachable-methods.world [
+    reflection
+    reachable-methods.petabloxDynamic
+  ];
 }
