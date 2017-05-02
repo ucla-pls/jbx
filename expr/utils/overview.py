@@ -101,6 +101,8 @@ def main():
     if argv[0] == "-w":
         op, worldf = argv.pop(0), argv.pop(0)
         world = readset(worldf, None)
+    else:
+        world = None
 
     results = map(Result.from_folder, argv)
 
