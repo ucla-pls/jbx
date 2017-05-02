@@ -4,29 +4,34 @@
 declare -a classes
 readarray -t classes < <(jar -tf $classpath | grep "class$" | sed 's/\.class$//g')
 
-# TODO: Add classes on the classpath that are not in the jar?
-
 # For each class disassemble the file and record the output
-# Iterate through each line of output, recording the current method
-# and output a reflection method if found.
+# Iterate through each line of output, recording the current method,
+# internal type signature, and reflection methods.
 declare -a reflection_methods
-for class in ${classes[@]}; do
-    declare method
-    declare lastline
-        while IFS= read -r line; do
-            echo $line | grep -oqE "^Code:$"
-            if [ $? -eq 0 ]; then
-                # Get the method name from the last line
-                method="$lastline"
-            else
-                echo $line | grep -oqE "java\/lang\/((reflect\/(Method\.invoke|Constructor\.newInstance))|(Class\.newInstance)).*$"
-                if [ $? -eq 0 ]; then
-                    # Append method to the array of reflection methods
-                    reflection_methods+=("$method")
-                fi
-            fi
-            lastline=$line
-        done < <(javap -p -c -classpath $classpath $class)
+for class in "${classes[@]}"; do
+    cls=`echo "$class" | sed 's/\//\./g'`
+    while IFS= read -r line; do
+        # Method or constructor declaration
+        tmp_method=`echo $line | sed -n 's/(.*);$//p'`
+        if [ -n "$tmp_method" ]; then 
+            split=($tmp_method); method="${split[@]: -1:1}"
+            if [ $method == $cls ]; then method="<init>"; fi
+        fi
+
+        # Static initializer
+        echo $line | grep -qE "static \{\}"
+        if [ "$?" -eq 0 ]; then method="<clinit>"; fi
+
+        # Internal type signature
+        tmp_descr=`echo $line | sed -n 's/Signature: //p'`
+        if [ -n "$tmp_descr" ]; then signature="$tmp_descr"; fi
+
+        # Reflection method
+        echo $line | grep -qE "Method java\/lang\/((reflect\/(Method\.invoke|Constructor\.newInstance))|(Class\.newInstance)).*$"
+        if [ "$?" -eq 0 ]; then
+            reflection_methods+=("$class.$method:$signature");
+        fi
+    done < <(javap -p -c -s -classpath $classpath $class)
 done
 
 # Sort the reflection_methods and remove duplicates
