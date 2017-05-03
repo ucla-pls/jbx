@@ -13,7 +13,7 @@ for class in "${classes[@]}"; do
     while IFS= read -r line; do
         # Method or constructor declaration
         tmp_method=`echo $line | sed -n 's/(.*);$//p'`
-        if [ -n "$tmp_method" ]; then 
+        if [ -n "$tmp_method" ]; then
             split=($tmp_method); method="${split[@]: -1:1}"
             if [ $method == $cls ]; then method="<init>"; fi
         fi
