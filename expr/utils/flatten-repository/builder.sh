@@ -75,13 +75,24 @@ echo "$classpath" > info/classpath
 
 for path in $classpath; do
     echo "Copying over classpath $path..."
-    if [[ $path == *.jar ]]; then
-        mkdir _out
-        unzip -qq -o "$path" -d _out
-        path=_out
+    if [[ "$path" == *.class ]]; then
+	folder=$(dirname "$path")
+        classname=$(basename "$path")
+        classname=${classname%.class}
+        package=$(javap -classpath "$folder" "$classname" | head -1 | sed "s/.* \(\S*\)${classname}[{ ].*/\1/")
+	package=${package%.}
+        folder="$out/lib/${package/\./\/}"
+        mkdir -p "$folder"
+        cp "$path" "$folder"
+    else
+        if [[ "$path" == *.jar ]]; then
+            mkdir _out
+            unzip -qq -o "$path" -d _out
+            path=_out
+        fi
+        (cd "$path"; find . -name "*.class" | sort | cpio --quiet -updm $out/lib)
+        if [[ -e _out ]]; then rm -r _out; fi
     fi
-    (cd "$path"; find . -name "*.class" | sort | cpio --quiet -updm $out/lib)
-    if [[ -e _out ]]; then rm -r _out; fi
 done
 
 find src -name '*.java' | sort > info/sources
