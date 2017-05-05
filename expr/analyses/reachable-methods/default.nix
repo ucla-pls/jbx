@@ -76,6 +76,7 @@ in rec {
           python2.7 ${./petablox-parse.py} $sandbox/petablox_output/reachable-methods.txt > $out/upper
           rm -r "$sandbox/petablox_output/bddbddb"
       fi
+      rm -r $sandbox
       '';
     };
 

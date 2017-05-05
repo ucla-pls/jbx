@@ -34,8 +34,8 @@ let
       { name = "run.analyses";         value = concatStringsSep "," subanalyses;           }
       { name = "err.file";             value = "/dev/stderr";                              }
       { name = "out.file";             value = "/dev/stdout";                              }
-      { name = "jvmargs";              value = "-Xmx40960m";                               }
-      { name = "runtime.jvmargs";      value = "-Xmx40960m";                               }
+      { name = "jvmargs";              value = "-Xmx4096m";                               }
+      { name = "runtime.jvmargs";      value = "-Xmx4096m";                               }
       { name = "class.path";           value = "$classpath";                               }
       { name = "reflect.kind";         value = reflection;                                 }
       { name = "src.path";             value = "${benchmark.build}/src";                   }
