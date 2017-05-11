@@ -106,7 +106,7 @@ javap -classpath classes $classes > info/declarations
 
 # Finding mainclasses
 sed -e '/.*public static .*void main(java.lang.String\[\])/{g;p;}' \
-    -e 's/.*class \([[:alnum:].]*\).*/\1/;T;h' \
+    -e 's/.*class \([[:alnum:]_$.]*\).*/\1/;T;h' \
     -n info/declarations > info/mainclasses
 
 popd > /dev/null
