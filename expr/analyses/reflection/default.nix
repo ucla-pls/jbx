@@ -1,7 +1,6 @@
 { utils, reachable-methods, python3 }:
 let
   extract-methods = ./reflection-callers.sed;
-  caller-methods = ./reflection-callers.sh;
   compare = ./reflection-comp.py;
 in rec {
   reflection-caller-methods = benchmark: utils.mkAnalysis {
