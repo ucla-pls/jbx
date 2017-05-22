@@ -45,6 +45,10 @@ mkdir -p lib src classes
 
 files=$(jq -r '.javac_commands[].java_files[]' info/result.json)
 
+ENCODING=$(jq -r '.javac_commands[].javac_switches?.encoding' info/result.json)
+
+echo "Found encoding: '$ENCODING'"
+
 for file in $files; do
     path=$(sed -n '
        /^[[:space:]]*package [[:space:][:alnum:].].*;/{
@@ -55,8 +59,12 @@ for file in $files; do
          p
          q
        }' $file)
-    mkdir -p "$out/src/$path"
-    cp "$file" "$out/src/$path"
+    mkdir -p "$out/src/$path/"
+    if [ "$ENCODING" != "UTF-8" ]; then
+    	iconv -f "$ENCODING" -t "UTF-8" - <"$file" >"$out/src/$path/$(basename $file)"
+    else
+	cp "$file" "$out/src/$path"
+    fi
 done
 
 
