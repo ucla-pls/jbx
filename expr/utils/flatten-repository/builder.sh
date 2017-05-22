@@ -60,7 +60,7 @@ for file in $files; do
          q
        }' $file)
     mkdir -p "$out/src/$path/"
-    if [ "$ENCODING" != "UTF-8" ]; then
+    if [ "$ENCODING" != "null" ]; then
     	iconv -f "$ENCODING" -t "UTF-8" - <"$file" >"$out/src/$path/$(basename $file)"
     else
 	cp "$file" "$out/src/$path"
