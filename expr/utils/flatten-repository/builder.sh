@@ -88,7 +88,7 @@ for path in $classpath; do
         if [[ "$path" == *.jar ]]; then
             mkdir _out
             unzip -qq -o "$path" -d _out
-            chmod -R 555 _out
+            chmod -R 755 _out
             path=_out
         fi
         (cd "$path"; find . -name "*.class" | sort | cpio --quiet -updm $out/lib)
