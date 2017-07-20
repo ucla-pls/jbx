@@ -62,7 +62,7 @@ in rec {
       '';
   };
 
-      # Petablox with the dynamic reflection handeling
+  # Petablox with the dynamic reflection handeling
   petabloxDynamic = shared.petablox {
     petablox = petablox;
     name = "dynamic";
@@ -100,5 +100,30 @@ in rec {
     wiretapAll
     petabloxDynamic
   ];
+
+  wiretapBucket = benchmark: env: onAllInputs (shared.wiretap (rec {
+    settings = [
+      { name = "wiretappers";       value = "EnterMethod";      }
+      { name = "recorder";          value = "ReachableMethods"; }
+      { name = "ignoredprefixes";   value = "edu/ucla/pls/wiretap,java"; }
+      { name = "overapproximation"; value = "${petabloxDynamic benchmark env}/upper"; }
+      { name = "world";             value = "${world benchmark env}/upper"; }
+    ];
+    postprocess = ''
+      sort -u $sandbox/_wiretap/reachable.txt > $out/lower
+      ls -l $sandbox/_wiretap
+      if [[ -e  $sandbox/_wiretap/unsoundness.txt ]]; then
+        cp $sandbox/_wiretap/unsoundness.txt $out
+      fi
+      '';
+    })) {
+      collect = ''
+        for f in $results; do
+          if [[ -e $f/unsoundness.txt ]]; then
+            cat $f/unsoundness.txt > $out/unsoundness.txt
+          fi
+        done
+      '';
+    } benchmark env;
 
 }

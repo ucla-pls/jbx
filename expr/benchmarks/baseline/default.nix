@@ -5,8 +5,8 @@ let
     src = fetchgit {
       url = "https://github.com/ucla-pls/baseline.git";
       branchName = "master";
-      rev = "64e490bc454806b3466f4bdad29d84f5a7fe3276";
-      md5 = "39894f1170b5384f6681b3caa83268cd";
+      rev = "f67a777cd5e7363f6e30433bb1d2d99bb88267a8";
+      md5 = "9cd643999fd854626ce0b6b1b0a609ae";
     };
     phases = [ "unpackPhase" "buildPhase" "installPhase" ];
     buildInputs = [ ant java.jdk ];
@@ -50,9 +50,20 @@ in rec {
       }
     ];
   };
+  reflection_reachability = utils.mkBenchmarkTemplate {
+    name = "reflection_reachability";
+    build = baseline;
+    mainclass = "edu.ucla.pls.baseline.ReflectionReachability";
+    inputs = [
+      { name = "default";
+        args = [];
+      }
+    ];
+  };
   all = [
     transfer
     infinite
     reflection
+    reflection_reachability
   ];
 }
