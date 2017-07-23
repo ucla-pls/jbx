@@ -101,28 +101,36 @@ in rec {
     petabloxDynamic
   ];
 
-  wiretapBucket = benchmark: env: onAllInputs (shared.wiretap (rec {
+  wiretapBucket = benchmark: env: 
+    let 
+      upper_ = "${petabloxDynamic benchmark env}/upper";
+      world_ = "${world benchmark env}/upper";
+    in onAllInputs (shared.wiretap (rec {
     settings = [
       { name = "wiretappers";       value = "EnterMethod";      }
       { name = "recorder";          value = "ReachableMethods"; }
       { name = "ignoredprefixes";   value = "edu/ucla/pls/wiretap,java"; }
-      { name = "overapproximation"; value = "${petabloxDynamic benchmark env}/upper"; }
-      { name = "world";             value = "${world benchmark env}/upper"; }
+      { name = "overapproximation"; value = upper_; }
+      { name = "world";             value = world_; }
     ];
     postprocess = ''
       sort -u $sandbox/_wiretap/reachable.txt > $out/lower
-      ls -l $sandbox/_wiretap
-      if [[ -e  $sandbox/_wiretap/unsoundness.txt ]]; then
-        cp $sandbox/_wiretap/unsoundness.txt $out
+      if [[ -e  $sandbox/unsoundness ]]; then
+        cp -r $sandbox/unsoundness $out
       fi
       '';
     })) {
       collect = ''
+        var=0
         for f in $results; do
-          if [[ -e $f/unsoundness.txt ]]; then
-            cat $f/unsoundness.txt > $out/unsoundness.txt
+          if [[ -e $f/unsoundness ]]; then
+            cp -r $f/unsoundness $out/unsoundness$var
+            ((var++))
           fi
         done
+	ln -s ${benchmark.build} $out/benchmark
+      	cp ${upper_} $out/upper
+      	cp ${world_} $out/world
       '';
     } benchmark env;
 
