@@ -115,8 +115,8 @@ in rec {
     ];
     postprocess = ''
       sort -u $sandbox/_wiretap/reachable.txt > $out/lower
-      if [[ -e  $sandbox/unsoundness ]]; then
-        cp -r $sandbox/unsoundness $out
+      if [[ -e  $sandbox/_wiretap/unsoundness ]]; then
+        cp -r $sandbox/_wiretap/unsoundness $out
       fi
       '';
     })) {
@@ -125,10 +125,10 @@ in rec {
         for f in $results; do
           if [[ -e $f/unsoundness ]]; then
             cp -r $f/unsoundness $out/unsoundness$var
-            ((var++))
+            let "var=var+1"
           fi
         done
-	ln -s ${benchmark.build} $out/benchmark
+        ln -s ${benchmark.build} $out/benchmark
       	cp ${upper_} $out/upper
       	cp ${world_} $out/world
       '';
