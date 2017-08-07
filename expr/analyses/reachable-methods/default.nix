@@ -107,16 +107,16 @@ in rec {
       world_ = "${world benchmark env}/upper";
     in onAllInputs (shared.wiretap (rec {
     settings = [
-      { name = "wiretappers";       value = "EnterMethod";      }
-      { name = "recorder";          value = "ReachableMethods"; }
+      { name = "wiretappers";       value = "EnterMethod,ReturnMethod";      }
+      { name = "recorder";          value = "ReachableMethodsAnalyzer"; }
       { name = "ignoredprefixes";   value = "edu/ucla/pls/wiretap,java"; }
       { name = "overapproximation"; value = upper_; }
       { name = "world";             value = world_; }
     ];
     postprocess = ''
-      sort -u $sandbox/_wiretap/reachable.txt > $out/lower
       if [[ -e  $sandbox/_wiretap/unsoundness ]]; then
         cp -r $sandbox/_wiretap/unsoundness $out
+        cp -r $sandbox/_wiretap/log $out
       fi
       '';
     })) {
@@ -125,6 +125,7 @@ in rec {
         for f in $results; do
           if [[ -e $f/unsoundness ]]; then
             cp -r $f/unsoundness $out/unsoundness$var
+            cp -r $f/log $out/log$var
             let "var=var+1"
           fi
         done
