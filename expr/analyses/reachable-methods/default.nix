@@ -116,7 +116,6 @@ in rec {
     postprocess = ''
       if [[ -e  $sandbox/_wiretap/unsoundness ]]; then
         cp -r $sandbox/_wiretap/unsoundness $out
-        cp -r $sandbox/_wiretap/log $out
       fi
       '';
     })) {
@@ -125,13 +124,12 @@ in rec {
         for f in $results; do
           if [[ -e $f/unsoundness ]]; then
             cp -r $f/unsoundness $out/unsoundness$var
-            cp -r $f/log $out/log$var
             let "var=var+1"
           fi
         done
         ln -s ${benchmark.build} $out/benchmark
-      	cp ${upper_} $out/upper
-      	cp ${world_} $out/world
+        cp ${upper_} $out/upper
+        cp ${world_} $out/world
       '';
     } benchmark env;
 
