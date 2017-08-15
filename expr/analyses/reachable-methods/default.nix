@@ -109,13 +109,14 @@ in rec {
     settings = [
       { name = "wiretappers";       value = "EnterMethod,ReturnMethod";      }
       { name = "recorder";          value = "ReachableMethodsAnalyzer"; }
-      { name = "ignoredprefixes";   value = "edu/ucla/pls/wiretap,java"; }
+      { name = "ignoredprefixes";   value = "edu/ucla/pls/wiretap/,java/,sun/,javax/,com/sun/,com/ibm/,org/xml/,org/w3c/,apple/awt/,com/apple/"; }
       { name = "overapproximation"; value = upper_; }
       { name = "world";             value = world_; }
     ];
     postprocess = ''
       if [[ -e  $sandbox/_wiretap/unsoundness ]]; then
         cp -r $sandbox/_wiretap/unsoundness $out
+        cp -r $sandbox/_wiretap/reachable.txt $out/lower
       fi
       '';
     })) {

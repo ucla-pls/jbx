@@ -5,8 +5,8 @@ let
     src = fetchgit {
       url = "https://github.com/ucla-pls/baseline.git";
       branchName = "master";
-      rev = "f67a777cd5e7363f6e30433bb1d2d99bb88267a8";
-      md5 = "9cd643999fd854626ce0b6b1b0a609ae";
+      rev = "52ab27c90eb0853fa4bdc057473115557e863909";
+      md5 = "8bd945b3fb35852bee246b295415c0cf";
     };
     phases = [ "unpackPhase" "buildPhase" "installPhase" ];
     buildInputs = [ ant java.jdk ];
@@ -60,10 +60,21 @@ in rec {
       }
     ];
   };
+  object_arrays = utils.mkBenchmarkTemplate {
+    name = "object_arrays";
+    build = baseline;
+    mainclass = "edu.ucla.pls.baseline.ObjectArrays";
+    inputs = [
+      { name = "default";
+        args = [];
+      }
+    ];
+  };
   all = [
     transfer
     infinite
     reflection
     reflection_reachability
+    object_arrays
   ];
 }
