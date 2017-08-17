@@ -113,6 +113,7 @@ in rec {
       { name = "overapproximation"; value = upper_; }
       { name = "world";             value = world_; }
     ];
+    timelimit = 840;
     postprocess = ''
       if [[ -e  $sandbox/_wiretap/unsoundness ]]; then
         cp -r $sandbox/_wiretap/unsoundness $out
