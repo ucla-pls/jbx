@@ -5,8 +5,8 @@ let DEBUG = false; in
     name = "wiretap";
     src = fetchgit {
       url = "https://github.com/ucla-pls/wiretap.git";
-      rev = "c71293a3606e17789424aee59d5f48486fc8ff1b";
-      sha256 = "1c45038g7f4rm9v4sb0i7lhpnrqshmbcln3manlr59znw2lx7x28";
+      rev = "401ca16c37861d06a7a23629057b8d3fefa15691";
+      sha256 = "0w120k5dcd6ihisr9q4zddbgvrq3llk3gp33x8nvnfdkn59c3njz";
       branchName = "develop";
     };
     buildInputs = [ unzip ant java.jdk ];

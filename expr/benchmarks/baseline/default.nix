@@ -8,9 +8,10 @@ let
       rev = "52ab27c90eb0853fa4bdc057473115557e863909";
       md5 = "8bd945b3fb35852bee246b295415c0cf";
     };
-    phases = [ "unpackPhase" "buildPhase" "installPhase" ];
+    phases = [ "unpackPhase" "patchPhase" "buildPhase" "installPhase" ];
     buildInputs = [ ant java.jdk ];
     buildPhase = ''ant jar'';
+    patches = [ ./baseline.diff ];
     installPhase = ''
       mkdir -p $out
       cp -r src $out/src
@@ -70,11 +71,22 @@ in rec {
       }
     ];
   };
+  test = utils.mkBenchmarkTemplate {
+    name = "test";
+    build = baseline;
+    mainclass = "edu.ucla.pls.baseline.Test";
+    inputs = [
+      { name = "default";
+        args = [];
+      }
+    ];
+  };
   all = [
     transfer
     infinite
     reflection
     reflection_reachability
     object_arrays
+    test
   ];
 }
