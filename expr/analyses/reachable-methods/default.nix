@@ -49,6 +49,7 @@ in rec {
   # Petablox with the external reflection handeling
   petabloxExternal = shared.petablox {
     petablox = petablox;
+    timelimit = 1800;
     name = "external";
     reflection = "external";
     subanalyses = [ "cipa-0cfa-dlog" "reachable-methods" ];
