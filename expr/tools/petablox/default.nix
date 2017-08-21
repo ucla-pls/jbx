@@ -61,7 +61,7 @@ in {
     md5 = "1e73270e39af7ef2c79165ce2fe6fb3d";
     rev = "b95fd275fd30651b446dec9aff8fe5836614b6dc";
     branchName = "master";
-    patches = [ ./deadlock-fix.patch ];
+    # patches = [ ./deadlock-fix.patch ];
   };
   petablox-test = testPetablox {
     md5 = "49304df10ef89179c1117cf9b5da4faa";
