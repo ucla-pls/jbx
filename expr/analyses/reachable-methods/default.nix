@@ -1,4 +1,4 @@
-{ shared, utils, petablox, emma, python, logicblox-4_3_6_3, python3, unzip}:
+{ shared, utils, petablox, emma, python, logicblox-4_3_6_3, python3, unzip, javaq }:
 let
   emma_ = emma;
   inherit (utils) mkDynamicAnalysis onAllInputs;
@@ -102,8 +102,8 @@ in rec {
     petabloxDynamic
   ];
 
-  wiretapBucket = benchmark: env: 
-    let 
+  wiretapAnalyser = benchmark: env:
+    let
       upper_ = "${petabloxDynamic benchmark env}/upper";
       world_ = "${world benchmark env}/upper";
     in onAllInputs (shared.wiretap (rec {
@@ -133,7 +133,27 @@ in rec {
         ln -s ${benchmark.build} $out/benchmark
         cp ${upper_} $out/upper
         cp ${world_} $out/world
+
+        touch $out/phases
       '';
     } benchmark env;
+
+  wiretapBucket = b: utils.after wiretapAnalyser {
+    tools = [ javaq ];
+    ignoreSandbox = true;
+    java = b.java.jdk;
+    inherit (b) mainclass build libraries;
+    postprocess = ''
+       export classpath=`toClasspath $build $libraries`
+
+       sed -e 's/\..*$//' -e 's/\//./g' unsoundness0/*.stack | uniq | while IFS= read -r class
+       do
+          javaq list-indirect-methods \
+            --jre=$java/lib/openjdk/jre \
+            --classpath=$classpath \
+            $class
+       done > unsoundness0/indirect-methods.txt
+    '';
+  } b;
 
 }
