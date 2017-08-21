@@ -63,7 +63,7 @@ in rec {
       '';
   };
 
-      # Petablox with the dynamic reflection handeling
+  # Petablox with the dynamic reflection handeling
   petabloxDynamic = shared.petablox {
     petablox = petablox;
     name = "dynamic";
@@ -77,6 +77,7 @@ in rec {
           python2.7 ${./petablox-parse.py} $sandbox/petablox_output/reachable-methods.txt > $out/upper
           rm -r "$sandbox/petablox_output/bddbddb"
       fi
+      rm -r $sandbox
       '';
     };
 
@@ -100,5 +101,39 @@ in rec {
     wiretapAll
     petabloxDynamic
   ];
+
+  wiretapBucket = benchmark: env: 
+    let 
+      upper_ = "${petabloxDynamic benchmark env}/upper";
+      world_ = "${world benchmark env}/upper";
+    in onAllInputs (shared.wiretap (rec {
+    settings = [
+      { name = "wiretappers";       value = "EnterMethod,ReturnMethod";      }
+      { name = "recorder";          value = "ReachableMethodsAnalyzer"; }
+      { name = "ignoredprefixes";   value = "edu/ucla/pls/wiretap/,java/,sun/,javax/,com/sun/,com/ibm/,org/xml/,org/w3c/,apple/awt/,com/apple/"; }
+      { name = "overapproximation"; value = upper_; }
+      { name = "world";             value = world_; }
+    ];
+    timelimit = 840;
+    postprocess = ''
+      if [[ -e  $sandbox/_wiretap/unsoundness ]]; then
+        cp -r $sandbox/_wiretap/unsoundness $out
+        cp -r $sandbox/_wiretap/reachable.txt $out/lower
+      fi
+      '';
+    })) {
+      collect = ''
+        var=0
+        for f in $results; do
+          if [[ -e $f/unsoundness ]]; then
+            cp -r $f/unsoundness $out/unsoundness$var
+            let "var=var+1"
+          fi
+        done
+        ln -s ${benchmark.build} $out/benchmark
+        cp ${upper_} $out/upper
+        cp ${world_} $out/world
+      '';
+    } benchmark env;
 
 }

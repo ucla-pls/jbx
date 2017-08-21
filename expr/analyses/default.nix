@@ -9,7 +9,7 @@
 {callPackage, utils}:
 let
   shared = callPackage ./shared {};
-in {
+in rec {
   run =
     callPackage ./run {};
 
@@ -23,5 +23,8 @@ in {
     callPackage ./data-flow-graph { inherit shared; };
 
   traces =
-     callPackage ./traces {};
+    callPackage ./traces {};
+
+  reflection =
+    callPackage ./reflection { inherit reachable-methods; };
 }
