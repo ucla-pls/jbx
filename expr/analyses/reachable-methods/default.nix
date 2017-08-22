@@ -33,6 +33,37 @@ in rec {
 
   wiretapAll = onAllInputs wiretap {};
 
+  wiretapFlat = benchmark: env: input:
+    let
+      world_ = "${world benchmark env}/upper";
+    in shared.wiretap {
+    settings = [
+      { name = "wiretappers";     value = "EnterMethod";      }
+      { name = "recorder";        value = "ReachableMethods"; }
+      { name = "ignoredprefixes"; value = "edu/ucla/pls/wiretap,java"; }
+    ];
+    postprocess = ''
+      comm -12 "${world_}" <(sort -u $sandbox/_wiretap/reachable.txt) | wc -l > $out/lower
+      rm -r $out/sandbox
+      rm $out/tops
+      '';
+    } benchmark env input;
+
+
+  wiretapFlatAll = onAllInputs wiretapFlat {};
+
+  wiretapRepeated = utils.repeated {
+     times = 4;
+     foreach = ''
+        cat $result/lower >> counts
+     '';
+     collect = ''
+       awk 'BEGIN { count = 0; sum = 0} { count += 1; sum += $1 } END { print sum / count;}' counts > average
+     '';
+  } wiretapFlat;
+
+  wiretapRepeatedAll = utils.onAllInputsS wiretapRepeated;
+
   # Petablox with the external reflection handeling
   petabloxTamiflex = utils.after petabloxExternal {
     name = "tamiflex";
@@ -144,15 +175,14 @@ in rec {
     java = b.java.jdk;
     inherit (b) mainclass build libraries;
     postprocess = ''
-       export classpath=`toClasspath $build $libraries`
+       classpath=`toClasspath $build $libraries`
 
-       sed -e 's/\..*$//' -e 's/\//./g' unsoundness0/*.stack | uniq | while IFS= read -r class
-       do
-          javaq list-indirect-methods \
+       sed -e 's/\..*$//' unsoundness0/*.stack \
+         | uniq \
+         | javaq list-indirect-methods \
             --jre=$java/lib/openjdk/jre \
             --classpath=$classpath \
-            $class
-       done > unsoundness0/indirect-methods.txt
+            > unsoundness0/indirect-methods.txt
     '';
   } b;
 
