@@ -8,8 +8,8 @@ mkDerivation {
   version = "0.1.0.0";
   src = fetchgit {
     url = "https://github.com/ucla-pls/jvmhs.git";
-    sha256 = "05gzgh19brhyysx33kv7syk2shh62zv2nmzrah4j7kbd64dmd5hp";
-    rev = "7a6dc1691b9e9d277697439d36fe10969ef8277f";
+    sha256 = "1y2gg2kimk1jiyg6fqc9wg0mlw7ghbxiwgv4k19d9f9gj312gl8k";
+    rev = "e72c01d760fd790b591a292b2c4e30c48c1e0b1c";
   };
   isLibrary = true;
   isExecutable = true;
