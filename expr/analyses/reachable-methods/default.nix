@@ -182,7 +182,7 @@ in rec {
          | javaq list-indirect-methods \
             --jre=$java/lib/openjdk/jre \
             --classpath=$classpath \
-            > unsoundness0/indirect-methods.txt
+            > unsoundness0/indirect-methods.txt || true
     '';
   } b;
 
