@@ -63,7 +63,10 @@ in rec {
        echo "$results" \
          | sed 's/\(repeat[0-9]*\) */\1\/lower\n/g' \
          | xargs sort -m \
-         | uniq -d > lower
+         | uniq -c \
+         | sed 's/^ *//' > lower_counts
+
+       grep $times lower_counts | cut -d ' ' -f2 > lower
 
        comm -23 lower upper > difference
      '';
