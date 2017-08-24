@@ -42,6 +42,7 @@ in rec {
       { name = "recorder";        value = "ReachableMethods"; }
       { name = "ignoredprefixes"; value = "edu/ucla/pls/wiretap,java"; }
     ];
+    timelimit = 420; # 7 minutes
     postprocess = ''
       comm -12 "${world_}" <(sort -u $sandbox/_wiretap/reachable.txt) > $out/lower
       rm -r $out/sandbox
