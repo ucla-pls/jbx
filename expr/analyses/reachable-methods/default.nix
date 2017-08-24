@@ -43,7 +43,7 @@ in rec {
       { name = "ignoredprefixes"; value = "edu/ucla/pls/wiretap,java"; }
     ];
     postprocess = ''
-      comm -12 "${world_}" <(sort -u $sandbox/_wiretap/reachable.txt) | wc -l > $out/lower
+      comm -12 "${world_}" <(sort -u $sandbox/_wiretap/reachable.txt) > $out/lower
       rm -r $out/sandbox
       rm $out/tops
       '';
@@ -52,15 +52,28 @@ in rec {
 
   wiretapFlatAll = onAllInputs wiretapFlat {};
 
-  wiretapRepeated = utils.repeated {
-     times = 4;
+  wiretapRepeated = b: e: i:
+    let
+      upper_ = "${petabloxDynamic b e}/upper";
+      world_ = "${world b e}/upper";
+    in utils.repeated {
+     times = 10;
+     before = ''
+       comm -12 ${world_} ${upper_} > upper
+       echo "$results" \
+         | sed 's/\(repeat[0-9]*\) */\1\/lower\n/g' \
+         | xargs sort -m \
+         | uniq -d > lower
+
+       comm -23 lower upper > difference
+     '';
      foreach = ''
-        cat $result/lower >> counts
+        comm -23 $result/lower upper | wc -l >> counts
      '';
      collect = ''
-       awk 'BEGIN { count = 0; sum = 0} { count += 1; sum += $1 } END { print sum / count;}' counts > average
+        cat counts | xargs echo "${b.name}" "$(cat difference | wc -l)" > total
      '';
-  } wiretapFlat;
+  } wiretapFlat b e i;
 
   wiretapRepeatedAll = utils.onAllInputsS wiretapRepeated;
 

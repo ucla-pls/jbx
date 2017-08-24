@@ -5,6 +5,8 @@ cd $out
 
 runHook setup
 
+runHook before
+
 touch results
 for result in $results; do
     echo "$result" >> results
