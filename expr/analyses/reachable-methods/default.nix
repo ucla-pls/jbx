@@ -67,15 +67,17 @@ in rec {
          | uniq -c \
          | sed 's/^ *//' > lower_counts
 
-       grep $times lower_counts | cut -d ' ' -f2 > lower
+       grep $times lower_counts | cut -d ' ' -f2 > lower_min
+       cat lower_counts | cut -d ' ' -f2 > lower_max
 
-       comm -23 lower upper > difference
+       comm -23 lower_max upper > difference_max
+       comm -23 lower_min upper > difference_min
      '';
      foreach = ''
         comm -23 $result/lower upper | wc -l >> counts
      '';
      collect = ''
-        cat counts | xargs echo "${b.name}" "$(cat difference | wc -l)" > total
+        cat counts | xargs echo "${b.name}" "$(cat difference_max | wc -l)" "$(cat difference_min | wc -l)" > total
      '';
   } wiretapFlat b e i;
 
