@@ -1,46 +1,88 @@
-{stdenv, fetchurl, logicblox3, makeWrapper, jre, coreutils, gnused, time}:
-let
-doop160133 = stdenv.mkDerivation {
-  name = "doop";
-  version = "r160113";
+{ souffle
+, gradle
+, gnumake
+, cmake
+, zlib
+, sqlite
+, glibcLocales
+, ncurses
+, openjdk
+, stdenv
+, fetchurl
+, libtool
+, makeWrapper
+}:
+stdenv.mkDerivation rec { 
+  name = "doop-${version}";
+  version = "3.2.13";
   src = fetchurl {
-    url = "http://doop.program-analysis.org/software/doop-r160113-bin.tar.gz";
-    md5 = "90b14b77b818f149e77406d17a9751c3";
+    url = "file:///home/nodnerb/jbx/expr/tools/newDoop/${name}.tar";
+    sha256 = "12jw7byd6905kd2m36jg13i4iay6903sls1rabgdqzg71sxadf5m";
   };
-  patches = [ ./relative.patch ];
-  buildInputs = [ makeWrapper ];
+
+  buildInputs = [
+     gradle
+     gnumake
+  #   souffle
+     cmake
+     libtool
+     openjdk
+     makeWrapper
+   ];
+
+  propagatedBuildInputs = [
+     zlib
+     sqlite
+     glibcLocales
+     ncurses
+     souffle
+     cmake
+  ];
+
+  phases = [ "unpackPhase" "installPhase" ];
+
   installPhase = ''
-    mkdir -p $out/doop
-    cp -r * $out/doop
-    mkdir -p $out/bin
-    makeWrapper $out/doop/run $out/bin/doop \
-      --prefix PATH : ${time}/bin \
-      --prefix PATH : ${jre}/bin \
-      --prefix PATH : ${coreutils}/bin \
-      --prefix PATH : ${gnused}/bin \
-      --set LOGICBLOX_HOME ${logicblox3} \
-      --set DOOP_HOME $out/doop \
-      --set LD_LIBRARY_PATH ""
+    mkdir -p $out
+    cp -r bin/ $out/bin
+    mkdir -p $out/share/java
+    cp -r lib/* $out/share/java
+    cp -r logic $out/logic
+    cp -r souffle-logic $out/souffle-logic
+    ln -s $out/share/java $out/lib
+    mv $out/bin/doop $out/bin/doop_unwrapped
+
+    makeWrapper $out/bin/doop_unwrapped $out/bin/doop \
+      --set DOOP_HOME $out/ \
+      --prefix PATH : ${souffle}/bin \
+      --set NIX_LDFLAGS '-L${zlib}/lib -L${sqlite}/lib -L${ncurses}/lib' \
+      --set NIX_CFLAGS_COMPILE '-isystem ${zlib.out}/include -isystem ${sqlite.out}/include -isystem ${ncurses.out}/include'
   '';
-};
-doop5459247Beta = stdenv.mkDerivation {
-  name = "doop";
-  version = "r5459247-beta";
-  src = fetchurl {
-    url = "http://doop.program-analysis.org/software/doop-r5459247-beta-bin.tar.gz";
-    md5 = "0a3d12132fc3649611aa4197febeb227";
-  };
-  buildInputs = [ makeWrapper ];
-  installPhase = ''
-    mkdir -p $out/doop
-    cp -r * $out/doop
-    mkdir -p $out/bin
-    makeWrapper $out/doop/run $out/bin/doop \
-      --prefix PATH : ${jre}/bin \
-      --prefix PATH : ${coreutils}/bin \
-      --set LOGICBLOX_HOME ${logicblox3} \
-      --set DOOP_HOME $out/doop \
-      --set LD_LIBRARY_PATH ""
-  '';
-};
-in doop160133
+
+}
+#stdenv.mkDerivation rec {
+#   name = "doop";
+#   src = fetchgit {
+#     url = "https://bitbucket.org/yanniss/doop.git";
+#     rev = "517d75584d6d6db799c7d12ef6a4600070b9d8b0";
+#     sha256 = "01x63biajll9npcs5wsan6ldx8acvkf4z3ikjrfjc7c96a30fm2n";
+#     branchName = "master";
+#   };
+#   buildInputs = [
+#     gradle
+#     gnumake
+#     souffle
+#     cmake
+#     zlib
+#     sqlite
+#     glibcLocales
+#     ncurses
+#     libtool
+#     openjdk
+#   ];
+#
+#   phases = [ "unpackPhase" "buildPhase" ];
+# 
+#   buildPhase = ''
+#    gradle distTar
+#   '';
+# }

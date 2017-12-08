@@ -1,5 +1,4 @@
 { fetchurl
-, fetchgit
 , libtool
 , automake
 , cmake
@@ -20,8 +19,6 @@
 , stdenv
 , gradle
 , makeWrapper
-, glibcLocales
-, gnumake
 }:
 stdenv.mkDerivation rec {
   version = "1.2.0";
@@ -50,4 +47,10 @@ stdenv.mkDerivation rec {
 
     sh ./bootstrap
    '';
+ 
+  #  postInstall = ''
+  #  mv $out/bin/souffle $out/bin/souffle_unwrapped
+  #  makeWrapper $out/bin/souffle_unwrapped $out/bin/souffle \
+  #    --suffix-each LD_LIBRARY_PATH : $(zlib)/lib
+  #  '';
 }

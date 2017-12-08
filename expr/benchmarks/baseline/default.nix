@@ -6,7 +6,7 @@ let
       url = "https://github.com/ucla-pls/baseline.git";
       branchName = "master";
       rev = "52ab27c90eb0853fa4bdc057473115557e863909";
-      md5 = "8bd945b3fb35852bee246b295415c0cf";
+      sha256 = "1rhrrk462cjn6jmz3923h78a0pvlrp4mqm063dv7vlzb9d673d0p";
     };
     phases = [ "unpackPhase" "patchPhase" "buildPhase" "installPhase" ];
     buildInputs = [ ant java.jdk ];
@@ -81,12 +81,26 @@ in rec {
       }
     ];
   };
+  objectarrays = utils.mkBenchmarkTemplate {
+    name = "objectarrays";
+    build = baseline;
+    mainclass = "edu.ucla.pls.baseline.ObjectArrays";
+    inputs = [
+      { name = "one";
+        args = [];
+      }
+    ];
+  };
   all = [
     transfer
+<<<<<<< HEAD
     infinite
     reflection
     reflection_reachability
     object_arrays
     test
+=======
+    objectarrays
+>>>>>>> Almost working doop
   ];
 }

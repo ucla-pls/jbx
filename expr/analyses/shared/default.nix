@@ -11,4 +11,5 @@ rec {
     surveilFlat
     wiretapSurveil
     ;
+  doop = callPackage ./doop {};
 }

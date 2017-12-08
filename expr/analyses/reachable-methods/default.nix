@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 { shared, utils, petablox, emma, python, logicblox-4_3_6_3, python3, unzip, javaq }:
+=======
+{ shared, utils, petablox, doop, emma, python, logicblox-4_3_6_3}:
+>>>>>>> Almost working doop
 let
   emma_ = emma;
   inherit (utils) mkDynamicAnalysis onAllInputs;
@@ -19,6 +23,11 @@ in rec {
   };
 
   emmaAll = onAllInputs emma {};
+
+  doopCI = shared.doop { 
+    subanalysis = "context-insensitive-plusplus";
+    doop = doop;
+  };
 
   wiretap = shared.wiretap {
     settings = [
