@@ -93,14 +93,10 @@ in rec {
   };
   all = [
     transfer
-<<<<<<< HEAD
     infinite
     reflection
     reflection_reachability
     object_arrays
     test
-=======
-    objectarrays
->>>>>>> Almost working doop
   ];
 }

@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-{ shared, utils, petablox, emma, python, logicblox-4_3_6_3, python3, unzip, javaq }:
-=======
-{ shared, utils, petablox, doop, emma, python, logicblox-4_3_6_3}:
->>>>>>> Almost working doop
+{ shared, utils, petablox, doop, emma, python, logicblox-4_3_6_3, python3, unzip, javaq }:
 let
   emma_ = emma;
   inherit (utils) mkDynamicAnalysis onAllInputs;
@@ -168,6 +164,7 @@ in rec {
   comp = utils.cappedOverview "library-reachable-method" world [
     wiretapAll
     petabloxDynamic
+    doopCI
   ];
 
   wiretapAnalyser = benchmark: env:
