@@ -15,11 +15,11 @@
 }:
 stdenv.mkDerivation rec {
    name = "doop-${version}";
-   version = "3.2.13";
+   version = "3.3.1";
    src = fetchgit {
      url = "https://bitbucket.org/yanniss/doop.git";
-     rev = "517d75584d6d6db799c7d12ef6a4600070b9d8b0";
-     sha256 = "01x63biajll9npcs5wsan6ldx8acvkf4z3ikjrfjc7c96a30fm2n";
+     rev = "c34adb68a1ce588e943ff35a0f8395d1e8fb251b";
+     sha256 = "01bkj1w4h2msqfi0d3ar5jkjzsjf4azdl962j0mdd595abk25nd6";
      branchName = "master";
    };
 
@@ -41,9 +41,11 @@ stdenv.mkDerivation rec {
      makeWrapper
    ];
 
-   phases = [ "unpackPhase" "buildPhase" "installPhase" ];
- 
-   buildPhase = ''
+   phases = [ "unpackPhase" "patchPhase" "buildPhase" "installPhase" ];
+
+   patches = [ ./nobash.patch ];
+
+   buildPhase = '' 
     gradle -g /tmp distTar
     tar -xf build/distributions/${name}.tar
     cd ${name}

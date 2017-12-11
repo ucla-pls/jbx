@@ -27,7 +27,16 @@ in rec {
   doopCI = shared.doop { 
     subanalysis = "context-insensitive-plusplus";
     doop = doop;
+    ignoreSandbox = true;
+    tools = [ python ];
+    postprocess = ''
+      if [ -f $sandbox/out/context-insensitive-plusplus/0/database/Reachable.csv ]
+      then
+        python2.7 ${./petablox-parse.py} $sandbox/out/context-insensitive-plusplus/0/database/Reachable.csv > $out/upper
+      fi
+    '';
   };
+  
 
   wiretap = shared.wiretap {
     settings = [
