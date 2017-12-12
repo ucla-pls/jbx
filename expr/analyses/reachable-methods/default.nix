@@ -30,6 +30,7 @@ in rec {
       then
         python2.7 ${./petablox-parse.py} $sandbox/out/context-insensitive-plusplus/0/database/Reachable.csv > $out/upper
       fi
+      rm -r "$sandbox"
     '';
   };
   
