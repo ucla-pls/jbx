@@ -58,7 +58,7 @@ in rec {
     options @
     { name ? "surveil"
     , cmd ? "parse"
-    , provers ? ["kalhauge"]
+    , provers ? ["dirk"]
     , filter ? "unique,lockset"
     , chunkSize ? 10000
     , chunkOffset ? 5000

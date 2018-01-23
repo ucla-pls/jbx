@@ -20,7 +20,7 @@ let
       inherit mainclass inputs;
       build = java: {
         src = base;
-        phases = "unpackPhase buildPhase installPhase";
+        phases = "unpackPhase patchPhase buildPhase installPhase";
         buildInputs = [ java.jdk unzip cpio];
         patches = [ ./derby4.patch ];
         unpackPhase = ''

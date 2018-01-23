@@ -11,6 +11,7 @@ mkDerivation {
     sha256 = "05z22iy02h6nyil6n17ybcmfjdvyvr8gbf21mibrjn7i0s0q28gi";
     rev = "b2b81935cf7fbf16bc8386338a8be4b2152dfe6a";
   };
+  patches = [ ./hotfix.patch ];
   isLibrary = false;
   isExecutable = true;
   executableHaskellDepends = [
