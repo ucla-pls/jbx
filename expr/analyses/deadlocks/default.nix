@@ -41,7 +41,7 @@ in rec {
       logging = loggingSettings;
       cmd = "deadlocks";
       filter = "unique,lockset";
-      provers = ["none" "free" "dirk" "rvpredict" "said" ];
+      provers = ["none" "free" "nobranch" "branchonly" "dirk" "rvpredict" "said" ];
       timelimit = 36000;
       chunkSize = 10000;
       chunkOffset = 5000;

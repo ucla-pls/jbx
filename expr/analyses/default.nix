@@ -19,6 +19,9 @@ in rec {
   deadlocks =
     callPackage ./deadlocks { inherit shared; };
 
+  dataraces =
+    callPackage ./dataraces { inherit shared; };
+
   data-flow-graph =
     callPackage ./data-flow-graph { inherit shared; };
 

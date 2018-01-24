@@ -1,26 +1,64 @@
+diff --git a/.gitignore b/.gitignore
+index 209d6da..1182292 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -7,3 +7,6 @@ dist/
+ 
+ # Ignore the biggest tests
+ benchmark/
++
++.stack-work
++test/
+diff --git a/src/Data/Unique.hs b/src/Data/Unique.hs
+index eb9e561..e4f933e 100644
+--- a/src/Data/Unique.hs
++++ b/src/Data/Unique.hs
+@@ -4,12 +4,18 @@ import           Data.Function    (on)
+ import qualified Data.IntMap      as M
+ import           Data.Traversable
+ 
++import Data.PartialOrder
++
+ {-| Takes elements and make them unique by assigning an identifier -}
+ data Unique e = Unique
+  { idx    :: !Int
+  , normal :: e
+  } deriving (Show)
+ 
++instance PartialOrder e => PartialOrder (Unique e) where
++  cmp (Unique _ a) (Unique _ b) = cmp a b
++
++
+ toPair :: Unique e -> (Int, e)
+ toPair e = (idx e, normal e)
+ 
 diff --git a/src/Main.hs b/src/Main.hs
-index e3f9b98..dcd2c11 100644
+index e3f9b98..84287da 100644
 --- a/src/Main.hs
 +++ b/src/Main.hs
-@@ -90,12 +90,13 @@ Filters are applicable to dataraces and deadlock analyses.
+@@ -90,12 +90,15 @@ Filters are applicable to dataraces and deadlock analyses.
  Provers:
  A prover is an algorithm turns a history into a constraint.
  
 -  said:      The prover used in [Said 2011].
 -  free:      A prover that only uses must-happen-before constraints, and sequential
 -             consistency.
-   none:      No constraints except that the candidate has to be placed next to
-              each other.
+-  none:      No constraints except that the candidate has to be placed next to
+-             each other.
 -  kalhauge:  The data flow sentisive control-flow consistency alogrithm [default].
-+  free:      A prover that only uses must-happen-before constraints, and sequential
-+             consistency.
-+  said:      The prover used in Said et. al. 2011.
-+  rvpredict: A prover based on Huang et. al. 2014.
-+  dirk:      The data flow sentisive control-flow consistency alogrithm [default].
++  none:       No constraints except that the candidate has to be placed next to
++              each other.
++  free:       A prover that only uses must-happen-before constraints, and sequential
++              consistency.
++  nobranch:   A unsound prover that does not take branch events into account.
++  branchonly: A unsound prover that only take branch events into account.
++  dirk:       The data flow sentisive control-flow consistency alogrithm [default].
++  rvpredict:  A prover based on Huang et. al. 2014.
++  said:       The prover used in Said et. al. 2011.
  |]
  
  data Config = Config
-@@ -133,7 +134,7 @@ readConfig args = do
+@@ -133,7 +136,7 @@ readConfig args = do
      { verbose = isPresent args $ longOption "verbose"
      , filters = splitOn ','
          $ getArgWithDefault args "unique,lockset" (longOption "filter")
@@ -29,7 +67,7 @@ index e3f9b98..dcd2c11 100644
      , outputProof = getLongOption "proof"
      , program = getLongOption "program"
      , history = getArgument "history"
-@@ -387,10 +388,11 @@ proveCandidates config p generator toString events =
+@@ -387,10 +390,13 @@ proveCandidates config p generator toString events =
  
      getProver lm name =
        case name of
@@ -41,15 +79,77 @@ index e3f9b98..dcd2c11 100644
 +        "dirk"      -> dirk lm
 +        "rvpredict" -> rvpredict lm
 +        "free"      -> free lm
++        "nobranch"      -> noBranch lm
++        "branchonly"      -> branchOnly lm
 +        "none"      -> none
          _          -> error $ "Unknown prover: '" ++ name ++ "'"
  
  runAll :: (Monad m') => a -> [a -> m' a] -> m' a
+diff --git a/src/Wiretap/Analysis/LIA.hs b/src/Wiretap/Analysis/LIA.hs
+index f6a6368..1d0487f 100644
+--- a/src/Wiretap/Analysis/LIA.hs
++++ b/src/Wiretap/Analysis/LIA.hs
+@@ -10,6 +10,8 @@ module Wiretap.Analysis.LIA
+   , toCNF
+   , solve
+   , toZ3
++
++  , liaSize
+   )
+ where
+ 
+@@ -35,6 +37,14 @@ data LIA e
+   | Or [LIA e]
+   deriving (Show)
+ 
++liaSize :: LIA e -> Integer
++liaSize lia =
++  case lia of
++    Order _ _ -> 1
++    Eq _ _ -> 1
++    And ls -> 1 + sum (map liaSize ls)
++    Or ls -> 1 + sum (map liaSize ls)
++
+ infixl 8 ~>
+ (~>) :: e -> e -> LIA e
+ (~>) = Order
+diff --git a/src/Wiretap/Analysis/Lock.hs b/src/Wiretap/Analysis/Lock.hs
+index cd711d5..7322ebc 100644
+--- a/src/Wiretap/Analysis/Lock.hs
++++ b/src/Wiretap/Analysis/Lock.hs
+@@ -11,6 +11,9 @@ module Wiretap.Analysis.Lock
+   , nonreentrant
+   , LockMap
+   , Deadlock(..)
++
++  , LockEdgeLabel (..)
++  , DeadlockEdge (..)
+   )
+ where
+ 
+@@ -32,7 +35,7 @@ import           Control.Monad
+ import           Control.Monad.State.Strict
+ import           Control.Monad.Trans.Either
+ 
+-import           Debug.Trace
++-- import           Debug.Trace
+ 
+ 
+ type LockMap = UniqueMap (M.Map Ref UE)
+@@ -152,7 +155,7 @@ edge lockmap e (req, l) = do
+   return $ LockEdgeLabel l acq
+ 
+ edge' :: LockMap -> (UE, Ref) -> (UE, Ref) -> Maybe LockEdgeLabel
+-edge' lockmap a@(req', l) b = do
++edge' lockmap (req', l) b = do
+   guard $ l /= snd b;
+   edge lockmap req' b
+ 
 diff --git a/src/Wiretap/Analysis/Permute.hs b/src/Wiretap/Analysis/Permute.hs
-index 95cc8c1..6a35088 100644
+index 95cc8c1..ca5cb8a 100644
 --- a/src/Wiretap/Analysis/Permute.hs
 +++ b/src/Wiretap/Analysis/Permute.hs
-@@ -3,7 +3,8 @@
+@@ -3,12 +3,16 @@
  {-# LANGUAGE FlexibleContexts #-}
  {-# LANGUAGE TemplateHaskell  #-}
  module Wiretap.Analysis.Permute
@@ -59,76 +159,269 @@ index 95cc8c1..6a35088 100644
    , said
    , free
    , none
-@@ -176,59 +177,130 @@ controlFlow h u@(Unique _ e) =
+   , permute
  
++  , noBranch
++  , branchOnly
++
+   , Candidate(..)
+   , Proof(..)
+ 
+@@ -27,10 +31,12 @@ import qualified Data.List              as L
+ import qualified Data.Map               as M
+ import qualified Data.Set               as S
+ import           Data.Unique
++
+ import           Data.Maybe (catMaybes)
+ import           Control.Monad
+ 
+ import           Wiretap.Analysis.LIA
++import           Data.PartialOrder
+ 
+ import           Wiretap.Data.Event
+ import           Wiretap.Data.Proof
+@@ -40,6 +46,8 @@ import           Wiretap.Analysis.Lock
+ 
+ import           Wiretap.Utils
+ 
++import           Debug.Trace
++
+ sc :: PartialHistory h => h -> LIA UE
+ sc h =
+   And [ totalOrder es | es <- M.elems $ byThread h ]
+@@ -79,77 +87,77 @@ TODO: Re-entreant locks.
+ TODO: RWC for the lock.
+ TODO: Remainders, what do we use them for.
+ -}
+-lc :: PartialHistory h => h -> LIA UE
+-lc h =
+-  And
+-  [ And
+-    [ And
+-      [ Or [ r ~> a',  r' ~> a ]
+-      | ((a, r), (a', r')) <-
+-          combinations lockPairs
+-      , a ~/> r', r' ~/> a
+-      ]
+-    , And
+-      [ r ~> a
+-      | ((_, r), a) <-
+-          crossproduct lockPairs (def [] $ M.lookup l remainders)
+-      , r ~/> a
+-      ]
+-    ]
+-  | (l, lockPairs) <- lockPairsSet
+-  ]
+-  where
+-    (allLocks, allRemainder) =
+-      unpair . M.elems $ simulate step M.empty h
+-
+-    lockPairsSet =
+-      groupUnsortedOnFst $ concat allLocks
+-
+-    remainders =
+-      mapOnFst $ concat allRemainder
+-
+-    step u@(Unique _ e) =
+-      case operation e of
+-        Acquire l -> update (acqf l) (thread e)
+-        Release _ -> update relf (thread e)
+-        _         -> id
+-      where
+-        acqf l (pairs, stack) =
+-          (pairs, (l,u):stack)
+-        relf (pairs, stack) =
+-          case stack of
+-            (l, acq):stack' -> ((l, (acq, u)):pairs, stack')
+-            [] -> error "Can't release a lock that has not been acquired"
+-
+-    update = updateDefault ([], [])
+-
+-rwc :: PartialHistory h => h -> LIA UE
+-rwc h =
+-  And
+-  [ Or
+-    [ And $
+-      [ Or [ w' ~> w, r ~> w']
+-      | (_, w') <- writes
+-      , w' /= w , w' ~/> w, r ~/> w'
+-      ]
+-      ++ if w ~/> r then [w ~> r] else []
+-    | (v', w) <- writes
+-    , v' == v
+-    , r ~/> w
+-    ]
+-  | (reads, writes) <- readAndWritesBylocation
+-  , (v, r) <- reads
+-  , not . L.null $ (filter ((v ==) . fst )) writes
+-  ]
+-  where
+-    readAndWritesBylocation =
+-      M.elems $ simulate step M.empty h
+-    step u@(Unique _ e) =
+-      case operation e of
+-        Read l v  -> update (v, u) _1 l
+-        Write l v -> update (v, u) _2 l
+-        _         -> id
+-    update u f = updateDefault ([], []) (over f (u:))
++-- lc :: PartialHistory h => h -> LIA UE
++-- lc h =
++--   And
++--   [ And
++--     [ And
++--       [ Or [ r ~> a',  r' ~> a ]
++--       | ((a, r), (a', r')) <-
++--           combinations lockPairs
++--       , a ~/> r', r' ~/> a
++--       ]
++--     , And
++--       [ r ~> a
++--       | ((_, r), a) <-
++--           crossproduct lockPairs (def [] $ M.lookup l remainders)
++--       , r ~/> a
++--       ]
++--     ]
++--   | (l, lockPairs) <- lockPairsSet
++--   ]
++--   where
++--     (allLocks, allRemainder) =
++--       unpair . M.elems $ simulate step M.empty h
++
++--     lockPairsSet =
++--       groupUnsortedOnFst $ concat allLocks
++
++--     remainders =
++--       mapOnFst $ concat allRemainder
++
++--     step u@(Unique _ e) =
++--       case operation e of
++--         Acquire l -> update (acqf l) (thread e)
++--         Release _ -> update relf (thread e)
++--         _         -> id
++--       where
++--         acqf l (pairs, stack) =
++--           (pairs, (l,u):stack)
++--         relf (pairs, stack) =
++--           case stack of
++--             (l, acq):stack' -> ((l, (acq, u)):pairs, stack')
++--             [] -> error "Can't release a lock that has not been acquired"
++
++--     update = updateDefault ([], [])
++
++-- rwc :: PartialHistory h => h -> LIA UE
++-- rwc h =
++--   And
++--   [ Or
++--     [ And $
++--       [ Or [ w' ~> w, r ~> w']
++--       | (_, w') <- writes
++--       , w' /= w , w' ~/> w, r ~/> w'
++--       ]
++--       ++ if w ~/> r then [w ~> r] else []
++--     | (v', w) <- writes
++--     , v' == v
++--     , r ~/> w
++--     ]
++--   | (reads, writes) <- readAndWritesBylocation
++--   , (v, r) <- reads
++--   , not . L.null $ (filter ((v ==) . fst )) writes
++--   ]
++--   where
++--     readAndWritesBylocation =
++--       M.elems $ simulate step M.empty h
++--     step u@(Unique _ e) =
++--       case operation e of
++--         Read l v  -> update (v, u) _1 l
++--         Write l v -> update (v, u) _2 l
++--         _         -> id
++--     update u f = updateDefault ([], []) (over f (u:))
+ 
+ -- | Returns the control flow to a single event, this flow jumps threads, with
+ -- | the Join and Fork events.
+@@ -174,63 +182,212 @@ controlFlow h u@(Unique _ e) =
+         (threads, u':events)
+       _ -> s
+ 
++data ValueSet = ValueSet
++  { vsRefs :: S.Set Ref
++  , vsValues :: Bool
++  , vsBranch :: Bool
++  } deriving (Eq, Show)
++
++instance Monoid ValueSet where
++  mempty = ValueSet S.empty False False
++  mappend x y =
++    ValueSet
++      (vsRefs x `S.union` vsRefs y)
++      (vsValues x || vsValues y)
++      (vsBranch x || vsBranch y)
++
++fromRef :: Ref -> ValueSet
++fromRef r =
++  ValueSet (S.singleton r) False False
++
++fromLocation :: Location -> ValueSet
++fromLocation l =
++  case l of
++    Dynamic r _ -> fromRef r
++    Array r _ -> (fromRef r) { vsValues = True }
++    _ -> mempty
++
++fromValue :: Value -> ValueSet
++fromValue v =
++  case v of
++    Object r -> fromRef (Ref r)
++    _ -> mempty { vsValues = True }
++
++fromBranch :: ValueSet
++fromBranch =
++  mempty { vsBranch = True }
++
  -- | Get all refs known by the event at the moment of execution.
  -- TODO: Fix problem with write
 -knownRefs :: UE -> S.Set Ref
 -knownRefs (Unique _ e) =
-+valuesOf :: UE -> (S.Set Ref, Bool)
++valuesOf :: UE -> ValueSet
 +valuesOf (Unique _ e) =
    case operation e of
 -    Write l (Object v) ->
 -      maybe S.empty S.singleton (ref l) `S.union` S.singleton (Ref v)
 +    Write l _ ->
-+      valueL l
++      fromLocation l
      Read l _ ->
 -      maybe S.empty S.singleton (ref l)
-+      valueL l
++      fromLocation l
      Acquire r ->
 -      S.singleton r
-+      (S.singleton r, False)
++      fromRef r
      Release r ->
 -      S.singleton r
-+      (S.singleton r, False)
++      fromRef r
      Request r ->
 -      S.singleton r
 -    Enter r _ ->
 -      S.singleton r
-+      (S.singleton r, False)
++      fromRef r
 +    Branch ->
-+      (S.empty, True)
-+    Enter r _ | pointer r  /= 0->
-+      (S.singleton r, False)
++      fromBranch
++    Enter r _ | pointer r /= 0 ->
++      fromRef r
      _ ->
 -      S.empty
-+      (S.empty, False)
-+  where
-+    valueL :: Location -> (S.Set Ref, Bool)
-+    valueL l =
-+      case l of
-+        Dynamic r _ -> (S.singleton r, False)
-+        Array r _ -> (S.singleton r, True)
-+        _ -> (S.empty, False)
-+
-+cfdFree
-+  :: PartialHistory h
-+  => h
-+  -> (S.Set Ref, Bool)
-+  -> UE
-+  -> [UE]
-+cfdFree h v u =
-+  simulateReverse step [] (controlFlow h u)
-+  where
-+    step u'@(Unique _ e') events =
-+      case operation e' of
-+        Acquire r ->
-+          u':events
-+        _ ->
-+          events
++      mempty
  
 --- | For a given event, choose all the reads, and locks, that needs to be
 --- | consistent for this event to also be consistent.
 -controlFlowDependencies
-+cfdSaid
++cfdFree
    :: PartialHistory h
    => h
-+  -> (S.Set Ref, Bool)
++  -> ValueSet
    -> UE
    -> [UE]
 -controlFlowDependencies h u =
 - simulateReverse step ([], knownRefs u, False) (controlFlow h u)  ^. _1
-+cfdSaid h v u =
++cfdFree h _ u =
 +  simulateReverse step [] (controlFlow h u)
    where
 -    step u'@(Unique _ e') s@(events, refs, branch) =
@@ -138,17 +431,34 @@ index 95cc8c1..6a35088 100644
 -          over _1 (u':) s
 -        Read _ (Object v) | Ref v `S.member` refs  ->
 -          over _1 (u':) s
-+        Read _ _ ->
-+          u':events
-         Acquire r ->
+-        Acquire r ->
 -          (u':events, r `S.insert` refs, branch)
 -        Branch ->
 -          set _3 True s
 -        Enter r _ | pointer r /= 0 ->
 -          over _2 (S.insert r) s
++        Acquire _ ->
 +          u':events
          _ ->
 -          s
++          events
++
++cfdSaid
++  :: PartialHistory h
++  => h
++  -> ValueSet
++  -> UE
++  -> [UE]
++cfdSaid h _ u =
++  simulateReverse step [] (controlFlow h u)
++  where
++    step u'@(Unique _ e') events =
++      case operation e' of
++        Read _ _ ->
++          u':events
++        Acquire _ ->
++          u':events
++        _ ->
 +          events
 +
 +-- | For a given event, choose all the reads, and locks, that needs to be
@@ -156,99 +466,254 @@ index 95cc8c1..6a35088 100644
 +cfdDirk
 +  :: PartialHistory h
 +  => h
-+  -> (S.Set Ref, Bool)
++  -> ValueSet
 +  -> UE
 +  -> [UE]
 +cfdDirk h v u =
-+  simulateReverse step ([], valuesOf u `join` v) (controlFlow h u)  ^. _1
++  simulateReverse step ([], valuesOf u `joinV` (v `joinV` (S.empty, False))) (controlFlow h u)  ^. _1
 +  where
-+    step u'@(Unique _ e') s@(events, vs@(refs, branch)) =
++    step u'@(Unique _ e') (events, vs@(refs, branch)) =
 +      let events' =
 +            case operation e' of
 +              Read _ _ | branch ->
 +                u':events
-+              Read _ (Object v) | Ref v `S.member` refs  ->
++              Read _ (Object v') | Ref v' `S.member` refs  ->
 +                u':events
-+              Acquire r ->
++              Acquire _ ->
 +                u':events
 +              _ ->
 +                events
-+      in (events', valuesOf u' `join` vs)
++      in (events', valuesOf u' `joinV` vs)
 +
-+    join (r, b) (r2, b2) =
-+      (r `S.union` r2, b || b2)
++    joinV (ValueSet r1 vs b) (r2, b2) =
++      (r1 `S.union` r2, vs || b || b2)
++
++cfdNoBranch
++  :: PartialHistory h
++  => h
++  -> ValueSet
++  -> UE
++  -> [UE]
++cfdNoBranch h v u =
++  simulateReverse step ([], valuesOf u `joinV` (v `joinV` (S.empty, False))) (controlFlow h u)  ^. _1
++  where
++    step u'@(Unique _ e') (events, vs@(refs, branch)) =
++      let events' =
++            case operation e' of
++              Read _ _ | branch ->
++                u':events
++              Read _ (Object v') | Ref v' `S.member` refs  ->
++                u':events
++              Acquire _ ->
++                u':events
++              _ ->
++                events
++      in (events', valuesOf u' `joinV` vs)
++
++    joinV (ValueSet r1 vs _) (r2, b2) =
++      (r1 `S.union` r2, b2)
++
++cfdBranchOnly
++  :: PartialHistory h
++  => h
++  -> ValueSet
++  -> UE
++  -> [UE]
++cfdBranchOnly h v u =
++  simulateReverse step ([], valuesOf u `joinV` (v `joinV` False)) (controlFlow h u)  ^. _1
++  where
++    step u'@(Unique _ e') (events, branch) =
++      let events' =
++            case operation e' of
++              Read _ _ | branch ->
++                u':events
++              Acquire _ ->
++                u':events
++              _ ->
++                events
++      in (events', valuesOf u' `joinV` branch)
++
++    joinV (ValueSet r vs b) b2 =
++      (b || b2)
 +
 +-- | For a given event, choose all the reads, and locks, that needs to be
 +-- | consistent for this event to also be consistent.
 +cfdRVPredict
 +  :: PartialHistory h
 +  => h
-+  -> (S.Set Ref, Bool)
++  -> ValueSet
 +  -> UE
 +  -> [UE]
 +cfdRVPredict h v u =
-+  simulateReverse step ([], (valuesOf u `join` (v `join` False))) (controlFlow h u)  ^. _1
++  simulateReverse step ([], (valuesOf u `joinV` (v `joinV` False))) (controlFlow h u)  ^. _1
 +  where
-+    step u'@(Unique _ e') s@(events, branch) =
++    step u'@(Unique _ e') (events, branch) =
 +      let events' =
 +            case operation e' of
 +                Read _ _ | branch ->
 +                  u':events
-+                Acquire r ->
++                Acquire _ ->
 +                  u':events
 +                _ ->
 +                  events
-+      in (events', valuesOf u' `join` branch)
++      in (events', valuesOf u' `joinV` branch)
 +
-+    join (r, b) b2 =
-+      (not (S.null r)) || b || b2
++    joinV (ValueSet r vs b) b2 =
++      (not (S.null r)) || vs || b || b2
  
  controlFlowConsistency
    :: PartialHistory h
    => LockMap
-+  -> (h -> (S.Set Ref, Bool) -> UE -> [UE])
++  -> (h -> ValueSet -> UE -> [UE])
    -> S.Set UE
    -> h
    -> LIA UE
 -controlFlowConsistency lm us h =
 -  consistent (S.empty) (S.unions [ cfc u | u <- S.toList us ])
 +controlFlowConsistency lm cfd us h =
-+  consistent (S.empty) (S.unions [ cfc (S.empty, False) u | u <- S.toList us ])
++  consistent (S.empty) (S.toList us) (S.unions [ cfc mempty u | u <- S.toList us ])
    where
 -  cfc u = S.fromAscList (controlFlowDependencies h u)
-+  cfc v u = S.fromAscList (cfd h v u)
  
-   consistent visited deps =
+-  consistent visited deps =
++  cfc v u =
++    S.fromAscList (cfd h v u)
++
++  consistent visited path deps =
      And [ And $ onReads readConsitency depends
-@@ -258,13 +330,17 @@ controlFlowConsistency lm us h =
+         , And $ onNonReentrantAcquires lockConsitency depends
+         ]
+@@ -239,9 +396,9 @@ controlFlowConsistency lm us h =
+       deps S.\\ visited
+ 
+     visited' =
+-      visited `S.union` depends
++      visited `S.union` deps
+ 
+-    readConsitency r (l, v) =
++    readConsitency r (l, v) = -- | trace ("read: " ++ (ppEvent $ normal r) ++ " - " ++ show (length path)) True =
+       -- Make sure that location has any writes
+       case M.lookup l writes of
+         Nothing ->
+@@ -249,7 +406,15 @@ controlFlowConsistency lm us h =
+           -- is supposed to.
+           And []
+         Just rwrites ->
+-          case [ w | (v', w) <- rwrites, v' == v, r ~/> w ] of
++          case
++            [ w
++            | (v', w) <- rwrites
++            , v' == v
++            , r ~/> w
++            , not $ any (!< w) (r:path)
++            -- ^ If the write is after any of things in the path, then we know that
++            -- it cannot be the write.
++            ] of
+             [] ->
+               -- If there is no writes with the same value, that not is ordered
+               -- after the read, then assume that the read must be reading
+@@ -258,7 +423,7 @@ controlFlowConsistency lm us h =
                And [ r ~> w' | (_, w') <- rwrites ]
              rvwrites ->
                Or
 -              [ And $ consistent visited' (cfc w) : w ~> r :
-+              [ And $ consistent visited' (cfc (val v) w) : w ~> r :
++              [ And $ consistent visited' (r:path) (cfc (fromValue v) w) : w ~> r :
                  [ Or [ w' ~> w, r ~> w']
                  | (_, w') <- rwrites
                  , w' /= w , w' ~/> w, r ~/> w'
-                 ]
-               | w <- rvwrites
-               ]
-+    val v =
-+      case v of
-+        Object r -> (S.singleton (Ref r), False)
-+        _ -> (S.empty, True)
- 
+@@ -269,31 +434,46 @@ controlFlowConsistency lm us h =
      lockConsitency a ref' =
        -- Any acquire we test is already controlFlowConsistent, covered by the
-@@ -273,7 +349,7 @@ controlFlowConsistency lm us h =
-         Just r ->
-           And $
-           [ Or
+       -- dependencies in the controlFlowConsistencies.
+-      case M.lookup a releaseFromAcquire of
+-        Just r ->
+-          And $
+-          [ Or
 -            [ r' ~> a
-+            [ And [ r' ~> a, consistent visited' (cfc (S.empty, False) r') ]
-               -- ^ Either the other pair has to come before the the current pair
-             , r ~> a'
-               -- ^ Or it happened afterwards
-@@ -352,20 +428,25 @@ permute prover h a = do
+-              -- ^ Either the other pair has to come before the the current pair
+-            , r ~> a'
+-              -- ^ Or it happened afterwards
+-            ]
+-          | (a', r') <- pairs
+-          , a' `S.member` visited'
+-          , a' /= a, a' ~/> a, a' ~/> a
+-          ] ++ map (~> a) dr
+-            -- ^ This might be superfluous.
+-            ++ map (r ~>) da
+-            -- ^ If we do not have an release, make sure that we are ordered after all
+-            -- other locks.
+-        Nothing ->
+-          And
+-          [ r' ~> a
+-          | (a', r') <- pairs, r' ~/> a
+-          , a' `S.member` visited'
+-          ]
++      And $
++      [ Or $ [ a ~> a' ]
++        ++ if not $ any (!< r') (a:path)
++           then [ And [ r' ~> a
++                      , consistent visited' (a:path) (cfc mempty r')
++                      ]
++                ]
++           else []
++      | (a', r') <- pairs
++      , a' /= a, a' ~/> a, a' ~/> a
++      ] ++
++      [ a ~> a'
++      | a' <- da
++      , a' /= a, a' ~/> a, a' ~/> a
++      ]
++      -- case M.lookup a releaseFromAcquire of
++      --   Just r ->
++      --     And $
++      --     [ Or
++      --       [ And [ r' ~> a, consistent visited' (cfc (S.empty, False) r') ]
++      --         -- ^ Either the other pair has to come before the the current pair
++      --       , r ~> a'
++      --         -- ^ Or it happened afterwards
++      --       ]
++      --     | (a', r') <- pairs
++      --     , a' `S.member` visited'
++      --     , a' /= a, a' ~/> a, a' ~/> a
++      --     ] ++ map (~> a) dr
++      --       -- ^ This might be superfluous.
++      --       ++ map (r ~>) da
++      --       -- ^ If we do not have an release, make sure that we are ordered after all
++      --       -- other locks.
++      --   Nothing ->
++      --     And
++      --     [ r' ~> a, consistent visited' (cfc (S.empty, False) r')
++      --     | (a', r') <- pairs, r' ~/> a
++      --     , a' `S.member` visited'
++      --     ]
+       where
+-        (dr, pairs, da) = case M.lookup ref' lockPairsWithRef of
++        (_, pairs, da) = case M.lookup ref' lockPairsWithRef of
+           Just pairs' -> pairs'
+           Nothing ->
+             error $ "The ref " ++ show ref'
+@@ -314,9 +494,9 @@ controlFlowConsistency lm us h =
+       filter' (Release l) = Just l
+       filter' _           = Nothing
+ 
+-  releaseFromAcquire :: M.Map UE UE
+-  releaseFromAcquire =
+-    M.fromList . concatMap (^. _2) $ M.elems lockPairsWithRef
++  -- releaseFromAcquire :: M.Map UE UE
++  -- releaseFromAcquire =
++  --   M.fromList . concatMap (^. _2) $ M.elems lockPairsWithRef
+ 
+   lockPairsWithRef :: M.Map Ref ([UE], [(UE, UE)], [UE])
+   lockPairsWithRef =
+@@ -342,6 +522,7 @@ permute
+   -> a
+   -> EitherT (LIA UE) m (Proof a)
+ permute prover h a = do
++  -- traceM $ "Solving: " ++ show (liaSize cnts)
+   solution <- solve (enumerate h) cnts
+   case solution of
+     Just hist ->
+@@ -352,20 +533,35 @@ permute prover h a = do
      es = (candidateSet a)
      cnts = prover h es
  
@@ -272,6 +737,16 @@ index 95cc8c1..6a35088 100644
    And $ (equate es):
 -    ([ sc, mhb, controlFlowConsistency lm es] <*> [h])
 +    ([ sc, mhb, controlFlowConsistency lm cfdRVPredict es] <*> [h])
++
++noBranch :: LockMap -> Prover
++noBranch lm h es =
++  And $ (equate es) :
++    ([ sc, mhb, controlFlowConsistency lm cfdNoBranch es] <*> [h])
++
++branchOnly :: LockMap -> Prover
++branchOnly lm h es =
++  And $ (equate es) :
++    ([ sc, mhb, controlFlowConsistency lm cfdBranchOnly es] <*> [h])
  
 -free :: Prover
 -free h es =
@@ -283,3 +758,26 @@ index 95cc8c1..6a35088 100644
  
  none :: h -> CandidateSet -> LIA UE
  none _ es =
+diff --git a/src/Wiretap/Data/Event.hs b/src/Wiretap/Data/Event.hs
+index db6b3a3..89526b8 100644
+--- a/src/Wiretap/Data/Event.hs
++++ b/src/Wiretap/Data/Event.hs
+@@ -42,6 +42,9 @@ data Event = Event
+   , operation :: !Operation
+   } deriving (Show, Eq, Ord)
+ 
++ppEvent :: Event -> String
++ppEvent e = 't' : (show (threadId $ thread e) ++ '.' : show (order e))
++
+ instance PartialOrder Event where
+   cmp a b | thread a == thread b =
+     Just $ on compare order a b
+diff --git a/src/Wiretap/Data/Proof.hs b/src/Wiretap/Data/Proof.hs
+index 6cc102d..3394eb1 100644
+--- a/src/Wiretap/Data/Proof.hs
++++ b/src/Wiretap/Data/Proof.hs
+@@ -1,3 +1,4 @@
++{-# LANGUAGE FlexibleInstances #-}
+ {-# LANGUAGE RankNTypes #-}
+ {-# LANGUAGE DeriveFunctor #-}
+ module Wiretap.Data.Proof
