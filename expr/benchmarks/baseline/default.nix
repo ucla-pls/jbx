@@ -11,7 +11,6 @@ let
     phases = [ "unpackPhase" "patchPhase" "buildPhase" "installPhase" ];
     buildInputs = [ ant java.jdk ];
     buildPhase = ''ant jar'';
-    patches = [ ./baseline.diff ];
     installPhase = ''
       mkdir -p $out
       cp -r src $out/src
