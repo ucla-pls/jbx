@@ -41,7 +41,7 @@ in rec {
       logging = loggingSettings;
       cmd = "deadlocks";
       filter = "unique,lockset";
-      provers = ["none" "kalhauge"];
+      provers = ["none" "free" "valuesonly" "branchonly" "refsonly" "dirk" "rvpredict" "said" ];
       timelimit = 36000;
       chunkSize = 10000;
       chunkOffset = 5000;
@@ -58,36 +58,15 @@ in rec {
 
   surveilRepeated =
      utils.repeated {
-        times = 100;
+        times = 1;
         tools = [python3 eject];
         foreach = ''
           tail -n +2 "$result/times.csv" | sed 's/^.*\$//' >> times-tmp.csv
         '';
         collect = ''
-          python3 > times.csv <<EOF
-import sys
-import csv
-
-with open("times-tmp.csv", "r") as f:
-  arr = list(csv.reader(f))
-
-count = {}
-values = {}
-
-for line in arr:
-  name, *rest = line
-  count[name] = count.get(name, 0) + 1
-  values[name] = [ a + float(b) for a, b in zip(values.get(name, [0] * 5), rest) ]
-
-wrt = csv.writer(sys.stdout)
-wrt.writerow(["name", "real", "user", "kernel", "maxm", "exitcode"]) 
-for name in values:
-  wrt.writerow(["$name\$" + name] + [ "{0:.4g}".format(value / count[name]) for value in values[name]])
-EOF
-          python3 ${./cyclestats.py} $name $results | tee cycles.txt | column -ts,
-          cat times.csv
+          python3 ${./cyclestats.py} $name ${builtins.concatStringsSep "," surveilOptions.provers} $results | tee cycles.txt | column -ts,
         '';
-     } surveilFlat ;
+     } (shared.surveilFlat surveilOptions);
 
   surveilRepeatedAll =
     benchmark:
@@ -99,14 +78,9 @@ EOF
     name:
     utils.mkStatistics {
       name = name;
-      foreach = ''
-        cat $result/cycles.txt >> cycles.txt
-        tail -n +2 $result/times.csv >> times-tmp.csv
-      '';
-      collect = ''
-	echo "name,real,user,kernel,maxm,exitcode" > times.csv
-	cat times-tmp.csv >> times.csv
-      '';
+      tools = [eject];
+      foreach = "cat $result/cycles.txt >> cycles.txt.tmp";
+      collect = "sort -u cycles.txt.tmp | tee cycles.txt | column -ts,";
     };
 
   overview =

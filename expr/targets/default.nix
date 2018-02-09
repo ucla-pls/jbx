@@ -79,14 +79,22 @@ in rec {
           sir.account
           jaConTeBe.dbcp1
           jaConTeBe.dbcp2
-          jaConTeBe.derby1
+          # jaConTeBe.derby1
           jaConTeBe.derby2
-          jaConTeBe.derby4
-          jaConTeBe.derby5
+          # jaConTeBe.derby4
+          # jaConTeBe.derby5
           jaConTeBe.log4j2
        ])
       )
       env);
+
+  test = (versionize [java.java6]
+		  ( with benchmarks; [
+		    jaConTeBe.derby1
+		    jaConTeBe.derby4
+		    jaConTeBe.derby5
+		  ])
+	 );
 
   reachable-methods =
     onAll
