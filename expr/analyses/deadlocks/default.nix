@@ -47,6 +47,20 @@ in rec {
       chunkOffset = 5000;
     };
 
+  surveilOptions2 = {
+      name = "deadlock";
+      logging = loggingSettings;
+      cmd = "deadlocks";
+      filter = "unique,lockset";
+      provers = ["none" "dirk"  ];
+      timelimit = 120;
+      chunkSize = 1000;
+      chunkOffset = 500;
+    };
+  
+  surveil2FlatAll = 
+    utils.onAllInputs (shared.surveilFlat surveilOptions2) {};
+
   surveil = shared.surveil surveilOptions;
   surveilFlat = shared.surveilFlat surveilOptions;
 
