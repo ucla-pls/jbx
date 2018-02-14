@@ -52,10 +52,11 @@ in rec {
       logging = loggingSettings;
       cmd = "deadlocks";
       filter = "unique,lockset";
-      provers = ["none" "dirk"  ];
+      provers = ["none"];
       timelimit = 120;
       chunkSize = 1000;
       chunkOffset = 500;
+      ignoreSandbox = true;
     };
   
   surveil2FlatAll = 

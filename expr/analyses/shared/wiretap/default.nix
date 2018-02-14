@@ -86,7 +86,7 @@ in rec {
             } -f ${filter} $sandbox/_wiretap/wiretap.hist > "$prover.${cmd}.txt"
             cat "$prover.${cmd}.txt"
         done | sort -u > lower
-
+	rm -r $sandbox
       '';
     };
 }
