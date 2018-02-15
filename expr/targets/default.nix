@@ -79,12 +79,9 @@ in rec {
           sir.account
           jaConTeBe.dbcp1
           jaConTeBe.dbcp2
-          # jaConTeBe.derby1
           jaConTeBe.derby2
-          # jaConTeBe.derby4
-          # jaConTeBe.derby5
           jaConTeBe.log4j2
-       ])
+       ]) ++ (versionize [java.java8] benchmarks.byTag.njr)
       )
       env);
 

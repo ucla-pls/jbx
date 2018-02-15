@@ -42,9 +42,10 @@ in rec {
       cmd = "deadlocks";
       filter = "unique,lockset";
       provers = ["none" "free" "valuesonly" "branchonly" "refsonly" "dirk" "rvpredict" "said" ];
-      timelimit = 36000;
-      chunkSize = 10000;
-      chunkOffset = 5000;
+      timelimit = 120;
+      chunkSize = 1000;
+      chunkOffset = 500;
+      ignoreSandbox = true;
     };
 
   surveilOptions2 = {
