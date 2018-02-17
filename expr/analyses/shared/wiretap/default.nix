@@ -63,7 +63,7 @@ in rec {
     , chunkSize ? 10000
     , chunkOffset ? 5000
     , timelimit ? 3600  # 1 hours.
-    , verbose ? true
+    , verbose ? false
     , logging ? {}
     , ignoreSandbox ? true
     }:

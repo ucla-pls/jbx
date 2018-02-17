@@ -42,7 +42,7 @@ in rec {
       cmd = "deadlocks";
       filter = "unique,lockset";
       provers = ["none" "free" "valuesonly" "branchonly" "refsonly" "dirk" "rvpredict" "said" ];
-      timelimit = 120;
+      timelimit = 600;
       chunkSize = 1000;
       chunkOffset = 500;
       ignoreSandbox = true;
@@ -54,7 +54,7 @@ in rec {
       cmd = "deadlocks";
       filter = "unique,lockset";
       provers = ["none"];
-      timelimit = 120;
+      timelimit = 600;
       chunkSize = 1000;
       chunkOffset = 500;
       ignoreSandbox = true;
@@ -74,7 +74,7 @@ in rec {
 
   surveilRepeated =
      utils.repeated {
-        times = 1;
+        times = 400;
         tools = [python3 eject];
         foreach = ''
           tail -n +2 "$result/times.csv" | sed 's/^.*\$//' >> times-tmp.csv

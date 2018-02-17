@@ -8,9 +8,6 @@ mkdir -p "$sandbox"
 export BASE_FOLDER="$out"
 touch $BASE_FOLDER/phases
 
-top -b -U $UID -d 10 > $BASE_FOLDER/tops &
-tpid=$!
-
 cd $out/sandbox
 
 export classpath=`toClasspath $build $libraries`
@@ -31,7 +28,5 @@ runHook analysis
 cd $out
 
 runHook postprocess
-
-kill $tpid
 
 compose $BASE_FOLDER `cat $BASE_FOLDER/phases`
