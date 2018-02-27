@@ -20,13 +20,13 @@ total_cmds = set()
 for rep_folder in folders:
     reps = {}
     for name in provers:
-        f_file = os.path.join(rep_folder, name + ".deadlocks.txt")
+        f_file = os.path.join(rep_folder, name + ".bugs.txt")
         reps[name] = get_deadlocks(f_file);
         total_cmds.add(name)
         total_cycles |= reps[name]
 
     deadlock = os.path.join(rep_folder, "runtime-deadlock.txt")
-    reps["actual"] = get_deadlocks(deadlock)
+    reps["actual"] = { "DL:" + x for x in get_deadlocks(deadlock) }
 
     repeats.append(reps)
 

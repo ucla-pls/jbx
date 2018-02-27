@@ -39,8 +39,8 @@ in rec {
   surveilOptions = {
       name = "deadlock";
       logging = loggingSettings;
-      cmd = "deadlocks";
-      filter = "unique,lockset";
+      cmd = "bugs";
+      filter = "unique,mhb,lockset";
       provers = ["none" "free" "valuesonly" "branchonly" "refsonly" "dirk" "rvpredict" "said" ];
       timelimit = 600;
       chunkSize = 1000;
@@ -74,7 +74,7 @@ in rec {
 
   surveilRepeated =
      utils.repeated {
-        times = 400;
+        times = 1;
         tools = [python3 eject];
         foreach = ''
           tail -n +2 "$result/times.csv" | sed 's/^.*\$//' >> times-tmp.csv

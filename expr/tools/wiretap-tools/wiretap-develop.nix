@@ -8,8 +8,8 @@ mkDerivation {
   version = "0.1.0.0";
   src = fetchgit {
     url = "http://github.com/ucla-pls/wiretap-tools.git";
-    sha256 = "0dydqda5dly1693wrq0fgxznnyn04g8smgz3nl5h9s4j48qsb52z";
-    rev = "ad961c1da328c96d949ed6cf117bd8c91e7499db";
+    sha256 = "0rpdp98b0d1jf3yrar319ciyq3bd98ja80w6m4pb4igp2w7jnqyi";
+    rev = "ba497c57f87fecceda36be7c13bfe929bb3db8dc";
   };
   # patches = [ ./hotfix.patch ];
   isLibrary = false;

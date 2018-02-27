@@ -81,9 +81,11 @@ in rec {
           jaConTeBe.dbcp2
           jaConTeBe.derby2
           jaConTeBe.log4j2
-       ]) ++ (versionize [java.java8] benchmarks.byTag.njr)
+       ]) 
       )
       env);
+
+# ++ (versionize [java.java8] benchmarks.byTag.njr)
 
   test = (versionize [java.java6]
 		  ( with benchmarks; [
