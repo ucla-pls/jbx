@@ -38,7 +38,7 @@ no_repeats = len(repeats)
 def count_cycles(name):
     return sum(1 for reps in repeats if cycle in reps[name])
 
-writer = csv.DictWriter(sys.stdout, ["00-program"] + cmds + ["cycle"])
+writer = csv.DictWriter(sys.stdout, ["00-program"] + cmds + ["cycle"], quoting=csv.QUOTE_NONE, quotechar="|")
 writer.writeheader()
 for cycle in cycles:
     row = { name: 100 * count_cycles(name) / no_repeats for name in cmds }
