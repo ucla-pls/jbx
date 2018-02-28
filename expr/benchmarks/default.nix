@@ -7,6 +7,7 @@ rec {
   java-grande = callPackage ./java-grande {};
   sir = callPackage ./sir {};
   jaConTeBe = callPackage ./JaConTeBe {};
+  rvpredict = callPackage ./rvpredict {};
 
   autogen = callPackage ./auto-generated {};
 
@@ -18,6 +19,7 @@ rec {
       ++ jaConTeBe.all
       ++ autogen.all
       ++ njr-deadlocks.all
+      ++ rvpredict.all
   ;
 
   byName = utils.byName all;
