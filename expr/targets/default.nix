@@ -79,9 +79,9 @@ in rec {
           sir.account
           sir.airline
           sir.alarmclock
-          sir.piper 
-          sir.readerswriters
-          sir.replicatedworkers
+          # sir.piper
+          # sir.readerswriters
+          # sir.replicatedworkers
           jaConTeBe.dbcp1
           jaConTeBe.dbcp2
           jaConTeBe.derby2

@@ -3,7 +3,7 @@ let
   jchord_ = jchord-2_0;
   petablox_ = petablox;
   loggingSettings = {
-      depth = 0;
+      depth = 10000;
       timelimit = 122;
       ignoredprefixes = "org/mockito,org/powermock,edu/ucla/pls/wiretap,java,sun";
   };
@@ -42,7 +42,7 @@ in rec {
       cmd = "bugs";
       filter = "unique,mhb,lockset";
       provers = ["none" "free" "valuesonly" "branchonly" "refsonly" "dirk" "rvpredict" "said" ];
-      timelimit = 600;
+      timelimit = 6000;
       chunkSize = 1000;
       chunkOffset = 500;
       ignoreSandbox = true;
@@ -54,7 +54,7 @@ in rec {
       cmd = "deadlocks";
       filter = "unique,lockset";
       provers = ["none"];
-      timelimit = 600;
+      timelimit = 6000;
       chunkSize = 1000;
       chunkOffset = 500;
       ignoreSandbox = true;
@@ -74,7 +74,7 @@ in rec {
 
   surveilRepeated =
      utils.repeated {
-        times = 1;
+        times = 400;
         tools = [python3 eject];
         foreach = ''
           tail -n +2 "$result/times.csv" | sed 's/^.*\$//' >> times-tmp.csv
