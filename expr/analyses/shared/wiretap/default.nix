@@ -2,10 +2,10 @@
 let wiretap_ = wiretap;
 in rec {
   wiretap =
+    timelimit:
     options @ {
       postprocess ? ""
       , settings ? []
-      , timelimit ? 1800
       , ...
     }:
     benchmark:
@@ -18,10 +18,13 @@ in rec {
       settings = ppsettings ( [
         ] ++ settings );
       analysis = ''
+        let tmp_timelimit=$timelimit
+        export timelimit=${toString timelimit}
         analyse "wiretap-run" java -javaagent:$wiretap/share/java/wiretap.jar \
           $settings -cp $classpath $mainclass $args < $stdin
+        export timelimit=$tmp_timelimit
       '';
-      inherit postprocess timelimit;
+      inherit postprocess;
     } // removeAttrs options ["settings"]) benchmark;
 
   wiretapSurveil =
@@ -29,9 +32,9 @@ in rec {
     logging @ {
       depth ? 100000
     , ignoredprefixes ? "edu/ucla/pls/wiretap,java,sun"
-    , ...
+    , timelimit ? 120
     }:
-    wiretap (options // {
+    wiretap timelimit (options // {
       settings = [
         { name = "recorder";         value = "BinaryHistoryLogger"; }
         { name = "ignoredprefixes";  value = ignoredprefixes; }

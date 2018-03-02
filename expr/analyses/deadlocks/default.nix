@@ -4,7 +4,7 @@ let
   petablox_ = petablox;
   loggingSettings = {
       depth = 10000;
-      timelimit = 122;
+      timelimit = 10;
       ignoredprefixes = "org/mockito,org/powermock,edu/ucla/pls/wiretap,java,sun";
   };
 in rec {
@@ -41,8 +41,8 @@ in rec {
       logging = loggingSettings;
       cmd = "bugs";
       filter = "unique,mhb,lockset";
-      provers = ["none" "free" "valuesonly" "branchonly" "refsonly" "dirk" "rvpredict" "said" ];
-      timelimit = 6000;
+      provers = ["none" "free" "dirk" "rvpredict" "said" ];
+      timelimit = 120;
       chunkSize = 1000;
       chunkOffset = 500;
       ignoreSandbox = true;
@@ -74,7 +74,7 @@ in rec {
 
   surveilRepeated =
      utils.repeated {
-        times = 400;
+        times = 100;
         tools = [python3 eject];
         foreach = ''
           tail -n +2 "$result/times.csv" | sed 's/^.*\$//' >> times-tmp.csv

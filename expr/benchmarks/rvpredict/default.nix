@@ -2,7 +2,7 @@
 let 
   base = utils.fetchprop {
     url = "rvpredict-benchmarks.tar.gz";
-    sha256 = "09xfm3j8jj6q55h0arlfd7girbykbk1ff576zzkfvjm3739qbd7i";
+    sha256 = "0hnclhgwl64i24g3n8xcp8i2x9msmriqdapq8fcpmi64nh5dyjnw";
   };
 
   rvp = 
@@ -21,7 +21,8 @@ let
         buildInputs = [ java.jdk cpio ];
         buildPhase = ''
           mkdir -p "$out/info" "$out/classes" "$out/lib"
-          cp -r "$src" "$out/src"
+          cp -r "." "$out/src"
+	  cd $out
           
           find src -name '*.java' | sort > info/sources
           javac -encoding UTF-8 -cp classes:lib -d classes @info/sources
