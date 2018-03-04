@@ -59,4 +59,8 @@ rec {
   inherit (callPackage ./javaq {})
     javaq
   ;
+  
+  inherit (callPackage ./rvpredict { inherit fetchprop;})
+    rvpredict
+  ;
 }

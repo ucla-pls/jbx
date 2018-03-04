@@ -7,6 +7,7 @@ let
     inherit utils;
     callPackage = pkgs.lib.callPackageWith pkgs;
     java = java;
+    tools = tools;
   };
 
   utils = pkgs.callPackage ./utils { inherit env; };
