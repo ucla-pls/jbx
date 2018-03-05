@@ -1,7 +1,7 @@
 {shared, stdenv, z3, tools, utils, python, python3, eject}:
 let
   loggingSettings = {
-      depth = 1000;
+      depth = 0;
       timelimit = 122;
       ignoredprefixes = "org/mockito,org/powermock,edu/ucla/pls/wiretap,java,sun";
   };
@@ -60,7 +60,7 @@ in rec {
         chmod +w RVDatabase.h2.db
         analyse "rv-record" java $OPTIONS \
            -cp $inst/record:$RVL:$RVE edu.uiuc.run.Main $mainclass $args < $stdin
-        analyse "rv-predict" java $OPTIONS -cp $RVE NewRVPredict $mainclass
+        analyse "rv-predict" java $OPTIONS -cp $RVE NewRVPredict -maxlen 10000 $mainclass
         grep "Race" ../rv-predict/stderr > ../lower || touch ../lower
       '';
       postprocess = ''
@@ -75,7 +75,7 @@ in rec {
   repeatedAll =
     times:
     benchmark:
-    utils.lift (collectAll benchmark.name)
+    utils.lift (averageAll benchmark.name)
       (utils.onAllInputsS (repeated times)) benchmark;
 
   # Repeat the exercise a couple of times.
@@ -84,18 +84,20 @@ in rec {
     utils.repeated' {
       name = "datarace-repeated";
       times = times;
-      tools = [python3 eject];
+      tools = [python eject];
       foreach = ''
         tail -n +2 "$result/times.csv" | sed 's/^.*\$//' >> times.csv
         cat $result/output.csv >> output.csv
       '';
       collect = ''
-        column -ts, output.csv
+        python ${./average.py} < output.csv > average.csv
+        column -ts, average.csv
       '';
     } (benchmark: env: input: n:
       stdenv.mkDerivation {
         name = "datarace-repeat" + toString n;
         buildInputs = [];
+        benchmark = benchmark.build;
         rvp = utils.repeatedF (rvpredict benchmark env input) n;
         dirk = utils.repeatedF (surveilFlat benchmark env input) n;
         bname = benchmark.name;
@@ -116,15 +118,4 @@ in rec {
         column -ts, average.csv
       '';
     };
-
-  collectAll =
-    name:
-    utils.mkStatistics {
-      name = name;
-      tools = [eject];
-      foreach = "cat $result/output.csv >> output.csv";
-      # collect = '''';
-    };
-
-
 }

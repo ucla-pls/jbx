@@ -92,6 +92,8 @@ in rec {
 
   dataraces1 =
     dataraces 1;
+  dataraces2 =
+    dataraces 2;
   dataraces10 =
     dataraces 10;
   dataraces100 =

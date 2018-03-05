@@ -20,3 +20,8 @@ none_time=`grep none times.csv | cut -f2 -d','`
 dirk_time=`grep dirk times.csv | cut -f2 -d','`
 
 echo "$bname,$length,$none_races,$dirk_races,$rvp_races,$run_time,$rv_record_time,$dirk_time,$rv_predict_time" | tee output.csv
+
+echo "$rvp" >> results
+echo "$dirk" >> results
+
+ln -s $benchmark/src src
