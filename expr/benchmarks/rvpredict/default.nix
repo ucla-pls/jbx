@@ -57,7 +57,7 @@ in rec {
   JGFMonteCarloBenchSizeA = rvp { name = "JGFMonteCarloBenchSizeA"; mainclass = "benchmarks.JGFMonteCarloBenchSizeA";};
   JGFRayTracerBenchSizeA = rvp { name = "JGFRayTracerBenchSizeA"; mainclass = "benchmarks.JGFRayTracerBenchSizeA";};
 
-  all = [
+  small = [
     bufwriter 
     account 
     airlinetickets 
@@ -66,11 +66,15 @@ in rec {
     mergesort 
     pingpong 
     critical 
+  ];
 
+  large = [
     JGFMolDynBenchSizeA 
     JGFMonteCarloBenchSizeA 
     JGFRayTracerBenchSizeA 
   ];
+
+  all = small ++ large;
 }
 
 

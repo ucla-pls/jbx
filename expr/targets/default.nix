@@ -86,7 +86,7 @@ in rec {
           jaConTeBe.dbcp2
           jaConTeBe.derby2
           jaConTeBe.log4j2
-       ] ++ rvpredict.all)
+       ] ++ rvpredict.small )
       )
       env);
 
