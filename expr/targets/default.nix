@@ -90,13 +90,23 @@ in rec {
       )
       env);
 
+  dataraces1 =
+    dataraces 1;
+  dataraces10 =
+    dataraces 10;
+  dataraces100 =
+    dataraces 100;
+  dataraces1000 =
+    dataraces 1000;
+
   dataraces =
-    analyses.dataraces.collectAll "dataraces"
+    n:
+    analyses.dataraces.averageAll "dataraces"
     (onAll
-       (analyses.dataraces.repeated 1)
+       (analyses.dataraces.repeatedAll n)
        (versionize [java.java6]
         ( with benchmarks; rvpredict.small)
-       ) env );
+       ) env);
 
 # ++ (versionize [java.java8] benchmarks.byTag.njr)
 

@@ -72,6 +72,12 @@ in rec {
 
   repeat2 = repeated 2;
 
+  repeatedAll =
+    times:
+    benchmark:
+    utils.lift (collectAll benchmark.name)
+      (utils.onAllInputsS (repeated times)) benchmark;
+
   # Repeat the exercise a couple of times.
   repeated =
     times:
@@ -97,13 +103,27 @@ in rec {
      }
   );
 
+  averageAll =
+    name:
+    utils.mkStatistics {
+      name = name;
+      tools = [python eject];
+      foreach = ''
+        cat $result/output.csv >> output.csv
+        '';
+      collect = ''
+        python ${./average.py} < output.csv > average.csv
+        column -ts, average.csv
+      '';
+    };
+
   collectAll =
     name:
     utils.mkStatistics {
-      name = toString name;
+      name = name;
       tools = [eject];
       foreach = "cat $result/output.csv >> output.csv";
- #     collect = "";
+      # collect = '''';
     };
 
 
