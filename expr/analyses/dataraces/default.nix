@@ -72,6 +72,8 @@ in rec {
 
   repeat2 = repeated 2;
 
+  repeat1 = repeated 1;
+
   repeatedAll =
     times:
     benchmark:
