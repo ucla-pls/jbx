@@ -1,4 +1,4 @@
-{shared, z3, tools, utils, python, python3, eject}:
+{shared, stdenv, z3, tools, utils, python, python3, eject}:
 let
   loggingSettings = {
       depth = 1000;
@@ -10,12 +10,13 @@ in rec {
       name = "datarace";
       logging = loggingSettings;
       cmd = "dataraces";
-      filter = "unique,lockset";
-      provers = ["none" "free" "weak" "dirk" "rvpredict" "said" ];
+      filter = "mhb,lockset,unique";
+      provers = ["none" "dirk"];
       timelimit = 36000;
       chunkSize = 10000;
       chunkOffset = 5000;
     };
+
 
   surveil = shared.surveil surveilOptions;
   surveilFlat = shared.surveilFlat surveilOptions;
@@ -60,7 +61,50 @@ in rec {
         analyse "rv-record" java $OPTIONS \
            -cp $inst/record:$RVL:$RVE edu.uiuc.run.Main $mainclass $args < $stdin
         analyse "rv-predict" java $OPTIONS -cp $RVE NewRVPredict $mainclass
-        grep "Race" ../rv-predict/stderr > ../lower
+        grep "Race" ../rv-predict/stderr > ../lower || touch ../lower
+      '';
+      postprocess = ''
+        rm -r sandbox
       '';
     } benchmark env;
+
+  repeat10 = repeated 10;
+
+  repeat2 = repeated 2;
+
+  # Repeat the exercise a couple of times.
+  repeated =
+    times:
+    utils.repeated' {
+      name = "datarace-repeated";
+      times = times;
+      tools = [python3 eject];
+      foreach = ''
+        tail -n +2 "$result/times.csv" | sed 's/^.*\$//' >> times.csv
+        cat $result/output.csv >> output.csv
+      '';
+      collect = ''
+        column -ts, output.csv
+      '';
+    } (benchmark: env: input: n:
+      stdenv.mkDerivation {
+        name = "datarace-repeat" + toString n;
+        buildInputs = [];
+        rvp = utils.repeatedF (rvpredict benchmark env input) n;
+        dirk = utils.repeatedF (surveilFlat benchmark env input) n;
+        bname = benchmark.name;
+        builder = ./both.sh;
+     }
+  );
+
+  collectAll =
+    name:
+    utils.mkStatistics {
+      name = toString name;
+      tools = [eject];
+      foreach = "cat $result/output.csv >> output.csv";
+ #     collect = "";
+    };
+
+
 }

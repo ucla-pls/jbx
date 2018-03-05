@@ -395,21 +395,17 @@ in with lib.debug; rec {
        '';
     };
 
-  # repeat a dynamic benchmark a number of time, and combine the
-  # results
-  # repeat :: Nat -> Dyn [Result]
-  repeat =
-    times:
-    liftD (repeatR times);
-
   repeatR =
+    f: # Nat -> Result
     times:
-    result:
-    builtins.genList (n:
-      lib.overrideDerivation result ( options:
-      { name = options.name + "-repeat" + toString n; }
-      )) times;
+    builtins.genList f times;
 
+  rename =
+    f:
+    result:
+    lib.overrideDerivation result ( options: { name = f options.name; });
+
+  repeatedF = r: n: rename (name: name + "-repeat" + toString n) r;
 
   # repeated :: Options -> Dyn Statistics
   repeated =
@@ -420,7 +416,16 @@ in with lib.debug; rec {
     mapDyn (r:
       mkStatistics
       ({ name = r.name + "-repeated"; } // options)
-      (repeatR times r));
+      (repeatR (repeatedF r) times));
+
+  # repeated :: Options -> Dyn Statistics
+    repeated' =
+      options @ {
+          name
+        , times
+        , ...
+      }:
+      mapDyn (f: mkStatistics (options) (repeatR f times));
 
   mapDyn = # Dyn b
     f: # a -> b

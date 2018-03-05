@@ -86,9 +86,17 @@ in rec {
           jaConTeBe.dbcp2
           jaConTeBe.derby2
           jaConTeBe.log4j2
-       ] ++ rvpredict.all ) 
+       ] ++ rvpredict.all)
       )
       env);
+
+  dataraces =
+    analyses.dataraces.collectAll "dataraces"
+    (onAll
+       (analyses.dataraces.repeated 1)
+       (versionize [java.java6]
+        ( with benchmarks; rvpredict.small)
+       ) env );
 
 # ++ (versionize [java.java8] benchmarks.byTag.njr)
 

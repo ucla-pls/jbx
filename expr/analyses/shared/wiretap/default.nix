@@ -80,6 +80,7 @@ in rec {
              sed "$((i + 1))q;d" "$sandbox/_wiretap/instructions.txt"
            done | sort | sed 'N;s/\n/ /' > "runtime-deadlock.txt"
         fi
+        wiretap-tools size $sandbox/_wiretap/wiretap.hist > history.size.txt
         for prover in $provers; do
           analyse "wiretap-tools-$prover" wiretap-tools \
               ${cmd} ${if verbose then "-v" else ""} -p $prover \
