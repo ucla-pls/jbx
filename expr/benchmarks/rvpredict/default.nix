@@ -68,6 +68,17 @@ in rec {
     critical 
   ];
 
+  smaller = [
+    #bufwriter 
+    account 
+    airlinetickets 
+    array 
+    #boundedbuffer 
+    #mergesort 
+    #pingpong 
+    critical 
+  ];
+
   large = [
     JGFMolDynBenchSizeA 
     JGFMonteCarloBenchSizeA 

@@ -66,6 +66,8 @@ in rec {
     , chunkSize ? 10000
     , chunkOffset ? 5000
     , timelimit ? 3600  # 1 hours.
+    , solve-time ? 120000 # in milis
+    , solver ? "z3:qf_lra"
     , verbose ? false
     , logging ? {}
     , ignoreSandbox ? true
@@ -85,8 +87,8 @@ in rec {
         for prover in $provers; do
           analyse "wiretap-tools-$prover" wiretap-tools \
               ${cmd} ${if verbose then "-v" else ""} -p $prover \
-              ${if (cmd == "deadlocks" || cmd == "dataraces") && chunkSize > 0
-                          then "--chunk-size ${toString chunkSize} --chunk-offset ${toString chunkOffset}"
+              ${if (cmd == "deadlocks" || cmd == "dataraces" || cmd == "bugs") 
+                then "--chunk-size ${toString chunkSize} --chunk-offset ${toString chunkOffset} --solve-time ${toString solve-time} --solver ${solver}"
               else ""
             } -f ${filter} $sandbox/_wiretap/wiretap.hist > "$prover.${cmd}.txt"
             cat "$prover.${cmd}.txt"

@@ -1,7 +1,7 @@
 {shared, stdenv, z3, tools, utils, python, python3, eject}:
 let
   loggingSettings = {
-      depth = 0;
+      depth = 20000;
       timelimit = 122;
       ignoredprefixes = "org/mockito,org/powermock,edu/ucla/pls/wiretap,java,sun";
   };
@@ -10,9 +10,10 @@ in rec {
       name = "datarace";
       logging = loggingSettings;
       cmd = "dataraces";
-      filter = "mhb,lockset,unique";
+      filter = "mhb,lockset";
       provers = ["none" "dirk"];
-      timelimit = 36000;
+      timelimit = 600; # ten minutes timeout
+      solve-time = 60000;
       chunkSize = 10000;
       chunkOffset = 5000;
     };
