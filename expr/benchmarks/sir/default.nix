@@ -14,14 +14,16 @@ let
     , folder ? null
     , srcfolder ? "versions.alt/"
     , tags ? []
+    , patches ? []
     }:
     utils.mkBenchmarkTemplate {
       name = "sir-${name}";
       inherit mainclass inputs tags;
       build = java: {
         src = base;
-        phases = "unpackPhase buildPhase installPhase";
+        phases = "unpackPhase patchPhase buildPhase installPhase";
         buildInputs = [ java.jdk unzip cpio];
+        inherit patches; 
         srcfolder = srcfolder;
         unpackPhase = ''
           tar -xzf $src
@@ -139,6 +141,7 @@ in rec {
     name = "diningPhilosophers";
     mainclass = "DiningPhilosophers";
     tags = ["deadlock" "multilock"];
+    patches = [ ./DiningPhilosophers.patch ];
   };
 
   groovy = sirBenchmark {

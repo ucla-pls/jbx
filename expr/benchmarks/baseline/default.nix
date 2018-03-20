@@ -5,8 +5,8 @@ let
     src = fetchgit {
       url = "https://github.com/ucla-pls/baseline.git";
       branchName = "master";
-      rev = "52ab27c90eb0853fa4bdc057473115557e863909";
-      md5 = "8bd945b3fb35852bee246b295415c0cf";
+      rev = "c3f56a5cd3ad4e5fc0602eefef51cdb6912b8f6b";
+      sha256 = "1icr0p0gkb4zcv3m4bnpic7ss9ga24pfm21slc0k42h18c9v9lbq";
     };
     phases = [ "unpackPhase" "patchPhase" "buildPhase" "installPhase" ];
     buildInputs = [ ant java.jdk ];
@@ -19,6 +19,19 @@ let
       mv build/baseline.jar $_
     '';
   };
+  mkBaseline = 
+    { name 
+    , mainclass
+    }: 
+    utils.mkBenchmarkTemplate {
+       inherit name mainclass;
+       build = baseline;
+       inputs = [
+         { name = "default";
+           args = [];
+         }
+       ];
+     };
 in rec {
   transfer = utils.mkBenchmarkTemplate {
     name = "transfer";
@@ -80,6 +93,14 @@ in rec {
       }
     ];
   };
+  bensalem = mkBaseline {
+    name = "bensalem";
+    mainclass = "edu.ucla.pls.baseline.Bensalem";
+  };
+  dependent_datarace = mkBaseline {
+    name = "dependent_datarace";
+    mainclass = "edu.ucla.pls.baseline.DependentDatarace";
+  };
   all = [
     transfer
     infinite
@@ -87,5 +108,7 @@ in rec {
     reflection_reachability
     object_arrays
     test
+    bensalem
+    dependent_datarace
   ];
 }

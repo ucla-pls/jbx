@@ -14,82 +14,54 @@ let
   withInputs = builtins.filter (b: builtins.length b.inputs > 0);
   dacapo-harness = benchmarks.byTag.dacapo-harness;
 in rec {
+
+  both = stdenv.mkDerivation {
+    name = "both"; 
+    phases = "installPhase";
+    installPhase = ''
+      mkdir $out
+      cd $out
+      ln -s ${deadlocks1000} deadlocks
+      ln -s ${dataraces100} dataraces
+    '';
+  };
+
+  deadlocks1 =
+    deadlocks 1;
+  deadlocks2 =
+    deadlocks 2;
+  deadlocks10 =
+    deadlocks 10;
+  deadlocks100 =
+    deadlocks 100;
+  deadlocks1000 =
+    deadlocks 1000;
+
   deadlocks =
-    onAll
-      analyses.deadlocks.petablox
-      (versionize [java.java6] benchmarks.byTag.reflection-free)
-      env;
-
-  wiretap-deadlocks =
-    onAll
-      analyses.deadlocks.surveilAll
-      (versionize [java.java6] (withInputs benchmarks.byTag.singlelock))
-      env;
-
-  wiretap-deadlocks-table =
-    mkStatistics {
-      tools = [eject];
-      name = "deadlocks-table";
-      setup = ''echo "name,count" >> table.csv'';
-      foreach = ''
-        if [ -e "$result/lower" ]
-        then
-          v=`wc -l $result/lower | cut -f1 -sd' '`
-        else
-          v="Err"
-        fi
-        name=''${result#*-}
-        echo "$name,$v" >> table.csv
-      '';
-      collect = ''
-        column -ts, table.csv
-      '';
-    } wiretap-deadlocks;
-
-  deadlocks-table =
-    mkStatistics {
-      tools = [eject];
-      name = "deadlocks-table";
-      setup = ''echo "name,count" >> table.csv'';
-      foreach = ''
-        if [ -e "$result/upper" ]
-        then
-          v=`wc -l $result/upper | cut -f1 -sd' '`
-        else
-          v="Err"
-        fi
-        name=''${result#*-}
-        echo "$name,$v" >> table.csv
-      '';
-      collect = ''
-        column -ts, table.csv
-      '';
-    } deadlocks;
-
-  wiretap-cycles =
-    analyses.deadlocks.joinCycles "wiretap-cycles" wdc;
-
-  wdc =
-    (onAll
-      analyses.deadlocks.surveilRepeatedAll
-      (versionize [java.java6]
-       ( with benchmarks; [
-          baseline.transfer
-          sir.deadlock
-          sir.account
-          sir.airline
-          sir.alarmclock
-          sir.piper
-          sir.readerswriters
-          sir.replicatedworkers
-          jaConTeBe.dbcp1
-          jaConTeBe.dbcp2
-          jaConTeBe.derby2
-          jaConTeBe.log4j2
-       ] ++ rvpredict.small )
-      )
-      env);
-
+    n:
+    analyses.deadlocks.joinCycles "wiretap-cycles"
+       (onAll
+         (analyses.deadlocks.surveilRepeatedAll n)
+         (versionize [java.java6]
+          ( with benchmarks; [
+             baseline.transfer
+             baseline.bensalem
+             sir.deadlock
+             sir.account
+             # sir.airline
+             sir.diningPhilosophers
+             # sir.alarmclock
+             # sir.piper
+             # sir.readerswriters
+             # sir.replicatedworkers
+             jaConTeBe.dbcp1
+             jaConTeBe.dbcp2
+             jaConTeBe.derby2
+             jaConTeBe.log4j2
+          ])
+         )
+         env);
+   
   dataraces1 =
     dataraces 1;
   dataraces2 =
@@ -107,7 +79,7 @@ in rec {
     (onAll
        (analyses.dataraces.repeatedAll n)
        (versionize [java.java6]
-        ( with benchmarks; rvpredict.small)
+        ( with benchmarks; [ baseline.dependent_datarace ] ++ rvpredict.all)
        ) env);
 
 # ++ (versionize [java.java8] benchmarks.byTag.njr)

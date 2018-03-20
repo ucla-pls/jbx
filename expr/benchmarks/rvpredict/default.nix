@@ -19,6 +19,7 @@ let
         src = base;
         phases = "unpackPhase patchPhase buildPhase installPhase";
         buildInputs = [ java.jdk cpio ];
+        patches = [ ./JGFTimer.patch ];	
         buildPhase = ''
           mkdir -p "$out/info" "$out/classes" "$out/lib"
           cp -r "." "$out/src"

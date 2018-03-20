@@ -39,12 +39,13 @@ in rec {
   surveilOptions = {
       name = "deadlock";
       logging = loggingSettings;
-      cmd = "bugs";
-      filter = "unique,mhb,lockset";
+      cmd = "deadlocks";
+      filter = "mhb,lockset";
       provers = ["none" "free" "dirk" "rvpredict" "said" ];
-      timelimit = 120;
-      chunkSize = 1000;
-      chunkOffset = 500;
+      timelimit = 600;
+      solve-time = 60000;
+      chunkSize = 10000;
+      chunkOffset = 5000;
       ignoreSandbox = true;
     };
 
@@ -55,8 +56,9 @@ in rec {
       filter = "unique,lockset";
       provers = ["none"];
       timelimit = 6000;
-      chunkSize = 1000;
-      chunkOffset = 500;
+      solve-time = 60000;
+      chunkSize = 10000;
+      chunkOffset = 5000;
       ignoreSandbox = true;
     };
   
@@ -73,8 +75,9 @@ in rec {
     utils.onAllInputs surveil {};
 
   surveilRepeated =
+     n:
      utils.repeated {
-        times = 100;
+        times = n;
         tools = [python3 eject];
         foreach = ''
           tail -n +2 "$result/times.csv" | sed 's/^.*\$//' >> times-tmp.csv
@@ -85,9 +88,10 @@ in rec {
      } (shared.surveilFlat surveilOptions);
 
   surveilRepeatedAll =
+    n:
     benchmark:
       utils.lift (joinCycles (benchmark.name))
-        (utils.onAllInputsS surveilRepeated)
+        (utils.onAllInputsS (surveilRepeated n))
         benchmark;
 
   joinCycles =

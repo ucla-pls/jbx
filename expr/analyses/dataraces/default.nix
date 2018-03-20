@@ -1,7 +1,7 @@
 {shared, stdenv, z3, tools, utils, python, python3, eject}:
 let
   loggingSettings = {
-      depth = 20000;
+      depth = 500000;
       timelimit = 122;
       ignoredprefixes = "org/mockito,org/powermock,edu/ucla/pls/wiretap,java,sun";
   };
@@ -12,7 +12,7 @@ in rec {
       cmd = "dataraces";
       filter = "mhb,lockset";
       provers = ["none" "dirk"];
-      timelimit = 600; # ten minutes timeout
+      timelimit = 1800; # thirty minutes timeout
       solve-time = 60000;
       chunkSize = 10000;
       chunkOffset = 5000;
@@ -52,6 +52,7 @@ in rec {
       rvpredict = tools.rvpredict benchmark.java;
       inst = rvp-instrument benchmark env;
       tools = [ z3 ];
+      timeout = 1800;
       analysis = ''
         echo $PWD
         OPTIONS="-Xmx32g -Duser.dir=$PWD -Duser.home=$PWD"
@@ -61,7 +62,7 @@ in rec {
         chmod +w RVDatabase.h2.db
         analyse "rv-record" java $OPTIONS \
            -cp $inst/record:$RVL:$RVE edu.uiuc.run.Main $mainclass $args < $stdin
-        analyse "rv-predict" java $OPTIONS -cp $RVE NewRVPredict -maxlen 10000 $mainclass
+        analyse "rv-predict" java $OPTIONS -cp $RVE NewRVPredict -solver_timeout 60000 -maxlen 10000 $mainclass
         grep "Race" ../rv-predict/stderr > ../lower || touch ../lower
       '';
       postprocess = ''
