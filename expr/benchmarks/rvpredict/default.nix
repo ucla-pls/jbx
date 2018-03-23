@@ -24,6 +24,9 @@ let
           mkdir -p "$out/info" "$out/classes" "$out/lib"
           cp -r "." "$out/src"
 	  cd $out
+
+	  substituteInPlace src/benchmarks/montecarlo/CallAppDemo.java \
+            --replace "hitData" "${./hitData}"
           
           find src -name '*.java' | sort > info/sources
           javac -encoding UTF-8 -cp classes:lib -d classes @info/sources

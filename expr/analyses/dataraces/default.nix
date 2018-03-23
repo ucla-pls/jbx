@@ -1,8 +1,8 @@
 {shared, stdenv, z3, tools, utils, python, python3, eject}:
 let
   loggingSettings = {
-      depth = 500000;
-      timelimit = 122;
+      depth = 0;
+      timelimit = 120;
       ignoredprefixes = "org/mockito,org/powermock,edu/ucla/pls/wiretap,java,sun";
   };
 in rec {
