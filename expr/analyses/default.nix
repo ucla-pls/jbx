@@ -13,6 +13,9 @@ in rec {
   run =
     callPackage ./run {};
 
+  stats =
+    callPackage ./stats {};
+
   reachable-methods =
     callPackage ./reachable-methods { inherit shared; };
 

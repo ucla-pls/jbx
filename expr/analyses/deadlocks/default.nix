@@ -80,10 +80,12 @@ in rec {
         times = n;
         tools = [python3 eject];
         foreach = ''
-          tail -n +2 "$result/times.csv" | sed 's/^.*\$//' >> times-tmp.csv
+          tail -n +2 "$result/times.csv" | sed 's/^.*\$//' >> times.csv
+          cat "$result/history.size.txt" >> sizes.txt
         '';
         collect = ''
           python3 ${./cyclestats.py} $name ${builtins.concatStringsSep "," surveilOptions.provers} $results | tee cycles.txt | column -ts,
+          python3 ${./average.py} $name sizes.txt times.csv > dyndata.csv
         '';
      } (shared.surveilFlat surveilOptions);
 
@@ -98,9 +100,15 @@ in rec {
     name:
     utils.mkStatistics {
       name = name;
-      tools = [eject];
-      foreach = "cat $result/cycles.txt >> cycles.txt.tmp";
-      collect = "sort -u cycles.txt.tmp | tee cycles.txt | column -ts,";
+      tools = [eject python3];
+      foreach = ''
+        cat $result/cycles.txt >> cycles.txt.tmp
+        cat $result/dyndata.csv >> dyndata.csv.tmp
+      '';
+      collect = ''
+        sort -u cycles.txt.tmp | tee cycles.txt | column -ts,
+        sort -u dyndata.csv.tmp > dyndata.csv
+      '';
     };
 
   overview =
