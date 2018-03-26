@@ -37,30 +37,36 @@ in rec {
   deadlocks1000 =
     deadlocks 1000;
 
+  deadlock-benchmarks = 
+   (versionize [java.java6]
+    ( with benchmarks; [
+       baseline.transfer
+       baseline.bensalem
+       sir.deadlock
+       sir.account
+       # sir.airline
+       sir.diningPhilosophers
+       # sir.alarmclock
+       # sir.piper
+       # sir.readerswriters
+       # sir.replicatedworkers
+       jaConTeBe.dbcp1
+       jaConTeBe.dbcp2
+       jaConTeBe.derby2
+       jaConTeBe.log4j2
+    ]));
+
   deadlocks =
     n:
     analyses.deadlocks.joinCycles "wiretap-cycles"
        (onAll
          (analyses.deadlocks.surveilRepeatedAll n)
-         (versionize [java.java6]
-          ( with benchmarks; [
-             baseline.transfer
-             baseline.bensalem
-             sir.deadlock
-             sir.account
-             # sir.airline
-             sir.diningPhilosophers
-             # sir.alarmclock
-             # sir.piper
-             # sir.readerswriters
-             # sir.replicatedworkers
-             jaConTeBe.dbcp1
-             jaConTeBe.dbcp2
-             jaConTeBe.derby2
-             jaConTeBe.log4j2
-          ])
-         )
+         deadlock-benchmarks
          env);
+
+  deadlock-stats = 
+    analyses.stats.statsJoin 
+      (onAll (analyses.stats.stats) deadlock-benchmarks env);
    
   dataraces1 =
     dataraces 1;
