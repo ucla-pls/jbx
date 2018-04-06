@@ -3,15 +3,21 @@ source $stdenv/setup
 mkdir $out
 cd $out
 
-
 runHook setup
 
-none_races=`wc -l $dirk/none.dataraces.txt | cut -f1 -d' '`
-dirk_races=`wc -l $dirk/dirk.dataraces.txt | cut -f1 -d' '`
+none_races=`awk '!/<clinit>/' $dirk/none.dataraces.txt | wc -l  | cut -f1 -d' '`
+dirk_races=`awk '!/<clinit>/' $dirk/dirk.dataraces.txt | wc -l | cut -f1 -d' '`
 rvp_races=`wc -l $rvp/lower | cut -f1 -d' '`
+cat "$rvp/lower" "$dirk/dirk.dataraces.txt" | sort > lower
 dirk_length=`cat $dirk/history.size.txt`
+set +e
 rvp_length=`grep "Trace Size: " $rvp/rv-predict/stdout | cut -d' ' -f3`
+set -e
 
+if [ -z "$rvp_length" ]; 
+then
+	rvp_length=0
+fi
 
 cat $dirk/times.csv $rvp/times.csv > times.csv
 

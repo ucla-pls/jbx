@@ -20,7 +20,7 @@ in rec {
       analysis = ''
         let tmp_timelimit=$timelimit
         export timelimit=${toString timelimit}
-        analyse "wiretap-run" java -javaagent:$wiretap/share/java/wiretap.jar \
+        analyse "wiretap-run" java -Xms32g -Xmx32g -javaagent:$wiretap/share/java/wiretap.jar \
           $settings -cp $classpath $mainclass $args < $stdin
         export timelimit=$tmp_timelimit
       '';
@@ -86,7 +86,7 @@ in rec {
         wiretap-tools count $sandbox/_wiretap/wiretap.hist > history.count.txt
         for prover in $provers; do
           analyse "wiretap-tools-$prover" wiretap-tools \
-              ${cmd} ${if verbose then "-v" else ""} -p $prover \
+              ${cmd} ${if verbose then "-v" else ""} -h -p $prover \
               ${if (cmd == "deadlocks" || cmd == "dataraces" || cmd == "bugs") 
                 then "--chunk-size ${toString chunkSize} --chunk-offset ${toString chunkOffset} --solve-time ${toString solve-time} --solver ${solver}"
               else ""

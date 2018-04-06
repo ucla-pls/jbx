@@ -91,11 +91,13 @@ in rec {
       tools = [python eject];
       foreach = ''
         tail -n +2 "$result/times.csv" | sed 's/^.*\$//' >> times.csv
+	cat $result/lower >> lower.tmp
         cat $result/output.csv >> output.csv
       '';
       collect = ''
         python ${./average.py} < output.csv > average.csv
         column -ts, average.csv
+        sort -u lower.tmp > lower
       '';
     } (benchmark: env: input: n:
       stdenv.mkDerivation {
@@ -116,10 +118,12 @@ in rec {
       tools = [python eject];
       foreach = ''
         cat $result/output.csv >> output.csv
+	cat $result/lower >> lower.tmp
         '';
       collect = ''
         python ${./average.py} < output.csv > average.csv
         column -ts, average.csv
+        sort -u lower.tmp > lower
       '';
     };
 }

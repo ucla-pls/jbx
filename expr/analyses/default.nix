@@ -10,6 +10,11 @@
 let
   shared = callPackage ./shared {};
 in rec {
+  build = benchmark: utils.mkAnalysis {
+    name = "build";
+    analysis = ''ln -s ${benchmark.build} $out/build'';
+  } benchmark;
+
   run =
     callPackage ./run {};
 

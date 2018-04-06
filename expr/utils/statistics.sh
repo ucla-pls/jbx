@@ -7,9 +7,9 @@ runHook setup
 
 runHook before
 
-touch results
+mkdir results
 for result in $results; do
-    echo "$result" >> results
+    ln -s "$result" results/${result#*-} 
     runHook foreach
 done
 

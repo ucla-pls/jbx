@@ -23,6 +23,19 @@ in rec {
       cd $out
       ln -s ${deadlocks1000} deadlocks
       ln -s ${dataraces100} dataraces
+      ln -s ${deadlock-stats} deadlock-stats
+    '';
+  }; 
+
+  both1 = stdenv.mkDerivation {
+    name = "both"; 
+    phases = "installPhase";
+    installPhase = ''
+      mkdir $out
+      cd $out
+      ln -s ${deadlocks1} deadlocks
+      ln -s ${dataraces1} dataraces
+      ln -s ${deadlock-stats} deadlock-stats
     '';
   };
 
@@ -72,6 +85,10 @@ in rec {
     dataraces 1;
   dataraces2 =
     dataraces 2;
+  dataraces3 =
+    dataraces 3;
+  dataraces5 =
+    dataraces 5;
   dataraces10 =
     dataraces 10;
   dataraces100 =

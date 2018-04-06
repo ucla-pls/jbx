@@ -19,7 +19,7 @@ let
         src = base;
         phases = "unpackPhase patchPhase buildPhase installPhase";
         buildInputs = [ java.jdk cpio ];
-        patches = [ ./JGFTimer.patch ];	
+        # patches = [ ./JGFTimer.patch ];	
         buildPhase = ''
           mkdir -p "$out/info" "$out/classes" "$out/lib"
           cp -r "." "$out/src"
@@ -50,26 +50,28 @@ let
 in rec {
   bufwriter = rvp { name = "bufwriter"; mainclass = "bufwriter.BufWriter";};
   account = rvp { name = "account"; mainclass = "account.Account";};
-  airlinetickets = rvp { name = "airlinetickets"; mainclass = "airlinetickets.Airlinetickets ";};
+  airlinetickets = rvp { name = "airline"; mainclass = "airlinetickets.Airlinetickets ";};
   array = rvp { name = "array"; mainclass = "array.Test ";};
-  boundedbuffer = rvp { name = "boundedbuffer"; mainclass = "boundedbuffer.BoundedBuffer";};
+  bubblesort = rvp { name = "bubblesort"; mainclass = "bubblesort.BubbleSort";};
+  boundedbuffer = rvp { name = "bbuffer"; mainclass = "boundedbuffer.BoundedBuffer";};
   mergesort = rvp { name = "mergesort"; mainclass = "mergesort.MergeSort";};
   pingpong = rvp { name = "pingpong"; mainclass = "pingpong.PingPong";};
   critical = rvp { name = "critical"; mainclass = "critical.Critical";};
 
-  JGFMolDynBenchSizeA = rvp { name = "JGFMolDynBenchSizeA"; mainclass = "benchmarks.JGFMolDynBenchSizeA";};
-  JGFMonteCarloBenchSizeA = rvp { name = "JGFMonteCarloBenchSizeA"; mainclass = "benchmarks.JGFMonteCarloBenchSizeA";};
-  JGFRayTracerBenchSizeA = rvp { name = "JGFRayTracerBenchSizeA"; mainclass = "benchmarks.JGFRayTracerBenchSizeA";};
+  JGFMolDynBenchSizeA = rvp { name = "moldyn"; mainclass = "benchmarks.JGFMolDynBenchSizeA";};
+  JGFMonteCarloBenchSizeA = rvp { name = "montecarlo"; mainclass = "benchmarks.JGFMonteCarloBenchSizeA";};
+  JGFRayTracerBenchSizeA = rvp { name = "raytracer"; mainclass = "benchmarks.JGFRayTracerBenchSizeA";};
 
   small = [
-    bufwriter 
-    account 
-    airlinetickets 
     array 
-    boundedbuffer 
-    mergesort 
-    pingpong 
     critical 
+    airlinetickets 
+    account
+    pingpong 
+    boundedbuffer 
+    bubblesort 
+    bufwriter 
+    mergesort 
   ];
 
   smaller = [
