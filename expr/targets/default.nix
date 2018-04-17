@@ -55,6 +55,8 @@ in rec {
     ( with benchmarks; [
        baseline.transfer
        baseline.bensalem
+       baseline.picklock
+       baseline.notadeadlock
        sir.deadlock
        sir.account
        # sir.airline

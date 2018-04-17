@@ -88,14 +88,14 @@ in rec {
     utils.repeated' {
       name = "datarace-repeated";
       times = times;
-      tools = [python eject];
+      tools = [python3 eject];
       foreach = ''
         tail -n +2 "$result/times.csv" | sed 's/^.*\$//' >> times.csv
 	cat $result/lower >> lower.tmp
         cat $result/output.csv >> output.csv
       '';
       collect = ''
-        python ${./average.py} < output.csv > average.csv
+        python3 ${./average.py} < output.csv > average.csv
         column -ts, average.csv
         sort -u lower.tmp > lower
       '';
@@ -115,13 +115,13 @@ in rec {
     name:
     utils.mkStatistics {
       name = name;
-      tools = [python eject];
+      tools = [python3 eject];
       foreach = ''
         cat $result/output.csv >> output.csv
 	cat $result/lower >> lower.tmp
         '';
       collect = ''
-        python ${./average.py} < output.csv > average.csv
+        python3 ${./average.py} < output.csv > average.csv
         column -ts, average.csv
         sort -u lower.tmp > lower
       '';

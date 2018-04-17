@@ -1,5 +1,6 @@
 import csv
 import sys
+import statistics
 
 rows = list(csv.reader(sys.stdin))
 
@@ -12,10 +13,12 @@ for row in rows:
     byname[row[0]] = deflt
 
 w = csv.writer(sys.stdout)
-w.writerow(["Program","Length", "RVP Length", "Cand", "Dirk", "RVP", "Logging (s)", "RVP Logging (s)", "Solving (s)", "RVP Solving (s)"])
+titles = [ "Length", "RVP Length", "Cand", "Dirk", "RVP", "Logging (s)", "RVP Logging (s)", "Solving (s)", "RVP Solving (s)"]
+w.writerow(["Program"] + sum(([t + " (mean)", t + " (SD)"] for t in titles), []) )
 for name in byname:
-    sums = map(sum,zip(*byname[name]))
-    averages = [s / len(byname[name]) for s in sums]
     lst = [name]
-    lst.extend([format(a, '.4g') for a in averages])
+    for col in zip(*byname[name]): 
+        mean = statistics.mean(col)
+        stdev = statistics.stdev(col)
+        lst.extend([format(mean, '.4g'), format(stdev, '.4g')])
     w.writerow(lst)

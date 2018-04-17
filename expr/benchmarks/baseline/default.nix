@@ -5,8 +5,8 @@ let
     src = fetchgit {
       url = "https://github.com/ucla-pls/baseline.git";
       branchName = "master";
-      rev = "c3f56a5cd3ad4e5fc0602eefef51cdb6912b8f6b";
-      sha256 = "1icr0p0gkb4zcv3m4bnpic7ss9ga24pfm21slc0k42h18c9v9lbq";
+      rev = "7948c458411570ad4eb44a082d418c7dfa3f5afa";
+      sha256 = "1xycbrn02v7kymr430jhdqr1l5qp17car8hjda04x297j82105s6";
     };
     phases = [ "unpackPhase" "patchPhase" "buildPhase" "installPhase" ];
     buildInputs = [ ant java.jdk ];
@@ -24,7 +24,8 @@ let
     , mainclass
     }: 
     utils.mkBenchmarkTemplate {
-       inherit name mainclass;
+       inherit mainclass;
+       name = "baseline-${name}";
        build = baseline;
        inputs = [
          { name = "default";
@@ -33,65 +34,29 @@ let
        ];
      };
 in rec {
-  transfer = utils.mkBenchmarkTemplate {
+  transfer = mkBaseline {
     name = "transfer";
-    build = baseline;
     mainclass = "edu.ucla.pls.baseline.Transfer";
-    inputs = [
-      { name = "default";
-        args = [];
-      }
-    ];
   };
-  infinite = utils.mkBenchmarkTemplate {
+  infinite = mkBaseline {
     name = "infinite";
-    build = baseline;
     mainclass = "edu.ucla.pls.baseline.Infinite";
-    inputs = [
-      { name = "default";
-        args = [];
-      }
-    ];
   };
-  reflection = utils.mkBenchmarkTemplate {
+  reflection = mkBaseline {
     name = "reflection";
-    build = baseline;
     mainclass = "edu.ucla.pls.baseline.Reflection";
-    inputs = [
-      { name = "default";
-        args = [];
-      }
-    ];
   };
-  reflection_reachability = utils.mkBenchmarkTemplate {
+  reflection_reachability = mkBaseline {
     name = "reflection_reachability";
-    build = baseline;
     mainclass = "edu.ucla.pls.baseline.ReflectionReachability";
-    inputs = [
-      { name = "default";
-        args = [];
-      }
-    ];
   };
-  object_arrays = utils.mkBenchmarkTemplate {
+  object_arrays = mkBaseline {
     name = "object_arrays";
-    build = baseline;
     mainclass = "edu.ucla.pls.baseline.ObjectArrays";
-    inputs = [
-      { name = "default";
-        args = [];
-      }
-    ];
   };
-  test = utils.mkBenchmarkTemplate {
+  test = mkBaseline {
     name = "test";
-    build = baseline;
     mainclass = "edu.ucla.pls.baseline.Test";
-    inputs = [
-      { name = "default";
-        args = [];
-      }
-    ];
   };
   bensalem = mkBaseline {
     name = "bensalem";
@@ -100,6 +65,14 @@ in rec {
   dependent_datarace = mkBaseline {
     name = "dependent_datarace";
     mainclass = "edu.ucla.pls.baseline.DependentDatarace";
+  };
+  picklock = mkBaseline {
+    name = "picklock";
+    mainclass = "edu.ucla.pls.baseline.PickLock";
+  };
+  notadeadlock = mkBaseline {
+    name = "notadeadlock";
+    mainclass = "edu.ucla.pls.baseline.NotADeadlock";
   };
   all = [
     transfer
@@ -110,5 +83,7 @@ in rec {
     test
     bensalem
     dependent_datarace
+    picklock
+    notadeadlock
   ];
 }
