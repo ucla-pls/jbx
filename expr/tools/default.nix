@@ -47,6 +47,8 @@ rec {
   inherit (callPackage ./daikon {})
     daikon
   ;
+  
+  calfuzzer = (callPackage ./calfuzzer {});
 
   inherit (callPackage ./wiretap {})
     wiretap

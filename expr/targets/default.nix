@@ -71,6 +71,14 @@ in rec {
        jaConTeBe.log4j2
     ]));
 
+  deadlockfuzzer = 
+    mkStatistics {
+      name = "deadlockfuzzer-table";
+      foreach = ''
+        cp -r $result ''${result##*+}
+      '';
+    } (onAll analyses.deadlocks.deadlockfuzzerAll deadlock-benchmarks env);
+
   deadlocks =
     n:
     analyses.deadlocks.joinCycles "wiretap-cycles"

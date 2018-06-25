@@ -1,4 +1,4 @@
-{shared, jchord-2_0, petablox, utils, python, python3, eject}:
+{shared, jchord-2_0, petablox, utils, python, python3, eject, calfuzzer }:
 let
   jchord_ = jchord-2_0;
   petablox_ = petablox;
@@ -8,6 +8,42 @@ let
       ignoredprefixes = "org/mockito,org/powermock,edu/ucla/pls/wiretap,java,sun";
   };
 in rec {
+
+  deadlockfuzzer = 
+    benchmark:
+    let cf = calfuzzer benchmark.java; in
+    utils.mkDynamicAnalysis {
+	name = "deadlockfuzzer";
+       	timelimit = 420;
+        analysis = ''
+           analyse "inst" java -cp ${cf}/shared/java/calfuzzer.jar:${cf}/shared/java/sootall-2.3.0.jar:$classpath \
+               javato.activetesting.instrumentor.InstrumentorForActiveTesting \
+               -keep-line-number -process-dir inst -d tmpclasses -x javato \
+               -x edu.berkeley.cs.detcheck --app $mainclass
+          
+           analyse "igoodlock" java -cp tmpclasses:${cf}/shared/java/calfuzzer.jar \
+               -Djavato.ignore.methods=true \
+               -Djavato.ignore.fields=true \
+               -Djavato.ignore.allocs=true \
+               -Djavato.activetesting.errorlist.file=error.list \
+               -Djavato.activetesting.analysis.class=javato.activetesting.IGoodlockAnalysis \
+               $mainclass
+             
+           for line in $(sed 's/,/ /g' error.list); do
+             analyse "deadlockfuzzer-$line" java -cp tmpclasses:${cf}/shared/java/calfuzzer.jar \
+                 -Djavato.ignore.methods=true \
+                 -Djavato.ignore.fields=true \
+                 -Djavato.ignore.allocs=true \
+                 -Djavato.activetesting.errorid="$line" \
+                 -Djavato.activetesting.analysis.class=javato.activetesting.DeadlockFuzzerAnalysis \
+                 $mainclass
+           done
+        '';
+    } benchmark;
+
+  deadlockfuzzerAll =
+    utils.onAllInputs deadlockfuzzer {};
+
   jchord = utils.after (shared.jchord {
     name = "deadlock";
     jchord = jchord_;
