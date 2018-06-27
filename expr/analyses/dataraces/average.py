@@ -19,6 +19,9 @@ for name in byname:
     lst = [name]
     for col in zip(*byname[name]): 
         mean = statistics.mean(col)
-        stdev = statistics.stdev(col)
+        try: 
+            stdev = statistics.stdev(col)
+        except statistics.StatisticsError: 
+            stdev = 0
         lst.extend([format(mean, '.4g'), format(stdev, '.4g')])
     w.writerow(lst)

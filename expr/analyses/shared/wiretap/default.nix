@@ -20,7 +20,7 @@ in rec {
       analysis = ''
         let tmp_timelimit=$timelimit
         export timelimit=${toString timelimit}
-        analyse "wiretap-run" java -Xms32g -Xmx32g -javaagent:$wiretap/share/java/wiretap.jar \
+        analyse "wiretap-run" java -javaagent:$wiretap/share/java/wiretap.jar \
           $settings -cp $classpath $mainclass $args < $stdin
         export timelimit=$tmp_timelimit
       '';
@@ -93,7 +93,9 @@ in rec {
             } -f ${filter} $sandbox/_wiretap/wiretap.hist > "$prover.${cmd}.txt"
             cat "$prover.${cmd}.txt"
         done | sort -u > lower
-	rm -r $sandbox
+        if [ "$ignoreSandbox" == "0" ]; then
+           rm -r $sandbox
+        fi
       '';
     };
 }

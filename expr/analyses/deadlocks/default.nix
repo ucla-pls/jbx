@@ -49,22 +49,22 @@ in rec {
       ignoreSandbox = true;
     };
 
-  surveilOptions2 = {
+  dirkOptions = {
       name = "deadlock";
       logging = loggingSettings;
       cmd = "deadlocks";
-      filter = "unique,lockset";
-      provers = ["none"];
-      timelimit = 6000;
+      filter = "mhb,lockset";
+      provers = ["dirk"];
+      timelimit = 600;
       solve-time = 60000;
       chunkSize = 10000;
       chunkOffset = 5000;
-      ignoreSandbox = true;
+      ignoreSandbox = false;
     };
   
-  surveil2FlatAll = 
-    utils.onAllInputs (shared.surveilFlat surveilOptions2) {};
-
+  dirk = 
+    utils.onAllInputs (shared.surveil dirkOptions) {};
+  
   surveil = shared.surveil surveilOptions;
   surveilFlat = shared.surveilFlat surveilOptions;
 
