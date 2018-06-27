@@ -75,6 +75,10 @@ in rec {
   repeat2 = repeated 2;
 
   repeat1 = repeated 1;
+  
+  repeatAll1 = repeatedAll 1;
+  repeatAll2 = repeatedAll 2;
+  repeatAll10 = repeatedAll 10;
 
   repeatedAll =
     times:
