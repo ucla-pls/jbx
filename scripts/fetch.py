@@ -1,4 +1,4 @@
-#!/usr/bin/evn python3
+#!/usr/bin/env python3
 
 """
 This this module enables us to download repositories.
@@ -61,22 +61,24 @@ def nixexpr(obj):
         expr = nixutils.App("fetchmuse", only(obj, "name", "url", "sha256"))
     return expr
 
+def url_to_name(url):
+    return url.strip("/").rsplit("/",1)[1].replace(".", "_");
 
 GIT_REGEX = re.compile("(?P<url>https:[^:]*):(?P<rev>.*)")
 def parse_git(string):
     match = GIT_REGEX.match(string);
     if match is None:
-        info = { "url": string }
+        info = { "url": string, "rev": "refs/heads/master"}
     else:
         info = match.groupdict()
-    info["name"] = info['url'].strip("/").rsplit("/",1)[1];
+    info["name"] = url_to_name(info['url']);
     info["type"] = "git"
 
     return info;
 
 def parse_url(string):
     return {
-        "name": string.strip("/").rsplit("/",1)[1],
+        "name": url_to_name(string),
         "url": string,
         "type": "url"
     }

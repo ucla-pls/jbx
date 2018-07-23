@@ -9,19 +9,33 @@
 {callPackage, utils}:
 let
   shared = callPackage ./shared {};
-in {
+in rec {
+  build = benchmark: utils.mkAnalysis {
+    name = "build";
+    analysis = ''ln -s ${benchmark.build} $out/build'';
+  } benchmark;
+
   run =
     callPackage ./run {};
+
+  stats =
+    callPackage ./stats {};
 
   reachable-methods =
     callPackage ./reachable-methods { inherit shared; };
 
-  deadlock =
-    callPackage ./deadlock { inherit shared; };
+  deadlocks =
+    callPackage ./deadlocks { inherit shared; };
+
+  dataraces =
+    callPackage ./dataraces { inherit shared; };
 
   data-flow-graph =
     callPackage ./data-flow-graph { inherit shared; };
 
   traces =
-     callPackage ./traces {};
+    callPackage ./traces {};
+
+  reflection =
+    callPackage ./reflection { inherit reachable-methods; };
 }

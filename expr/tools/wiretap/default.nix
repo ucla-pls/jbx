@@ -1,14 +1,17 @@
 { stdenv, fetchgit, unzip, ant}:
+let DEBUG = false; in
 {
   wiretap = java: stdenv.mkDerivation {
     name = "wiretap";
     src = fetchgit {
       url = "https://github.com/ucla-pls/wiretap.git";
-      rev = "eb60ed0abade59c882df879185a92336e63f32fb";
-      sha256 = "0gq2bk7gxpf2psb75g2yb7hgyhkqi0cwrz8f95w910cbkav2lahz";
+      rev = "7add1d6d518c2f68e66cc71c6dbf72231ef8ae5e";
+      sha256 = "02idfcr92vjfxvps2vjyn3az381rrcsql84a416qnpgzh092wxzi";
+      branchName = "develop";
     };
     buildInputs = [ unzip ant java.jdk ];
-    phases = "unpackPhase buildPhase installPhase";
+    phases = "unpackPhase patchPhase buildPhase installPhase";
+    patches = if DEBUG then [ ./wiretap.diff ] else [];
     buildPhase = ''
       ant
     '';

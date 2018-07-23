@@ -14,7 +14,7 @@
 , eject
 }:
 let inherit (lib.lists) concatMap filter;
-in rec {
+in with lib.debug; rec {
   # Type: Benchmark
   #   A benchmark is a description of a java program, which is buildable
   #   and runnable. Benchmarks are parammeterized by the java version used.
@@ -156,9 +156,16 @@ in rec {
       buildInputs = [procps] ++ tools ++ [ benchmark.java.jre ];
     });
 
-  # onAllInputs : DynamicAnalysis -> Options -> Analyis
+  # onAllInputsS : Dyn a -> Analysis [a]
+  onAllInputsS =
+    dyn:
+    benchmark:
+    env:
+    map (dyn benchmark env) benchmark.inputs;
+
+  # onAllInputs : Dyn Result -> Options -> Analysis Result
   # This function changes a DynamicAnalysis to an Analysis, by running
-  # the analsis on all inputs.
+  # the analysis on all inputs.
   onAllInputs =
     analysis:
     options:
@@ -231,6 +238,7 @@ in rec {
       name ? "pp",
       tools ? [],
       ignoreSandbox ? false,
+      timelimit ? 3600,
       ...
     }:
     result:
@@ -240,7 +248,9 @@ in rec {
       analysisName = (builtins.elemAt nameList 0);
     in mkResult (options // {
       inherit result;
+      inherit timelimit;
       name = analysisName + "-" + name + "+" + benchmarkName;
+      utils = ./utils.sh;
       inherit time coreutils ignoreSandbox;
       buildInputs = [procps] ++ tools;
       builder = ./postprocess.sh;
@@ -253,6 +263,13 @@ in rec {
     options:
       lift (postprocess ({ name = "after"; } // options)) analysis;
 
+  # afterD : DynamicAnalysis -> Options -> DynamicAnalysis
+  # perform postprocessing after an dynamic analysis has run
+  afterD =
+    danalysis:
+    options:
+      liftD (postprocess ({ name = "after"; } // options))
+           danalysis;
 
   # liftpp : (Result -> Result) -> Analysis -> Analysis
   # liftpp =
@@ -319,9 +336,26 @@ in rec {
       '';
     }) analyses benchmark;
 
+  # cappedOverview: Name -> Analysis -> [Analysis] -> Benchmark -> Env -> Statistics
+  cappedOverview =
+    name:
+    world:
+    analyses:
+    benchmark:
+    env:
+    liftL (mkStatistics {
+      name = name + "+" + benchmark.name;
+      tools = [ python eject];
+      collect = ''
+        cd $out
+        python ${./overview.py} -w "${world benchmark env}/upper" $results
+        column -ts',' overview.txt
+        echo "Results from:"
+        cat $out/results
+      '';
+    }) analyses benchmark env;
+
   # usage: Name -> [Result] -> Statistics
-  # Overview creates a single table containing data about the .
-  # TODO this might not fit in here.
   usage =
     name:
     mkStatistics {
@@ -361,6 +395,46 @@ in rec {
        '';
     };
 
+  repeatR =
+    f: # Nat -> Result
+    times:
+    builtins.genList f times;
+
+  rename =
+    f:
+    result:
+    lib.overrideDerivation result ( options: { name = f options.name; });
+
+  repeatedF = r: n: rename (name: name + "-repeat" + toString n) r;
+
+  # repeated :: Options -> Dyn Statistics
+  repeated =
+    options @ {
+      times
+      , ...
+    }:
+    mapDyn (r:
+      mkStatistics
+      ({ name = r.name + "-repeated"; } // options)
+      (repeatR (repeatedF r) times));
+
+  # repeated :: Options -> Dyn Statistics
+    repeated' =
+      options @ {
+          name
+        , times
+        , ...
+      }:
+      mapDyn (f: mkStatistics (options) (repeatR f times));
+
+  mapDyn = # Dyn b
+    f: # a -> b
+    dyn: # Dyn a
+    benchmark:
+    env:
+    input:
+    f (dyn benchmark env input);
+
   # toBenchmark: Repository -> Options -> Benchmark
   toBenchmark =
     repository:
@@ -387,6 +461,9 @@ in rec {
   # >> Utilities
   # This section contains small functions that might be nice to have
 
+  # fcomp :: (b -> c) -> (a -> b) -> a -> c
+  fcomp = f: g: a: f (g a);
+
   # product :: (a -> b -> c) -> [a] -> [b] -> [c]
   product = f: as: bs: concatMap (a: map (b: f a b) bs) as;
 
@@ -404,13 +481,22 @@ in rec {
     env:
       builtins.map (analyse env benchmark) analyses;
 
-  # lift: (Result -> a) -> Analysis -> Benchmark -> Env -> a
+  # lift: (a -> b) -> Analysis a -> Analysis b
   lift =
     f:
     analysis:
     benchmark:
     env:
       f (analysis benchmark env);
+
+  # liftD: (Result -> a) -> Dyn Result -> a
+  liftD =
+    f:
+    analysis:
+    benchmark:
+    env:
+    input:
+    f (analysis benchmark env input);
 
   # liftL: ([Result] -> a) -> [Analysis] -> Benchmark -> Env -> a
   liftL =

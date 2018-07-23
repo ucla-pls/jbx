@@ -1,4 +1,4 @@
-#!/usr/bin/evn python3
+#!/usr/bin/env python3
 
 """
 This module handles new benchmarks.
@@ -8,14 +8,10 @@ import collections
 import json
 import os.path
 import sys
-import logging
 
 from funcparse import *
 import nixutils
 import fetch
-
-logger = logging.getLogger("jbx.benchmark")
-
 
 def getfile(path, filename):
     try:
@@ -133,7 +129,7 @@ INPUT_FORMAT = """        {{
 
 def nixexpr(info):
     return NIX_EXPR.format(
-        fetchexpr = fetch.fetchexpr(info["repo"]),
+        fetchexpr = nixutils.dumps(fetch.nixexpr(info["repo"])),
         bms = "\n".join(
             BM_FORMAT.format(
                 inputs_ = "\n".join(
@@ -178,7 +174,7 @@ def populate(benchmark, **opts):
     path = pop["path"];
 
     pop["classes"] = getfile(path, "info/classes")
-    name = pop["name"] = pop.get("name") or path.split("-", 1)[1].replace("-", "_");
+    name = pop["name"] = pop.get("name") or path.split("-", 1)[1].replace("-", "_").replace(".","_");
     pop["buildwith"] = getfile(path, "info/buildwith")[0]
     pop["mainclasses"] = sorted(set(getfile(path, "info/mainclasses")));
 

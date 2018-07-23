@@ -1,0 +1,24 @@
+diff -ruN src/benchmarks/jgfutil/JGFInstrumentor.java src/benchmarks/jgfutil/JGFInstrumentor.java
+--- src/benchmarks/jgfutil/JGFInstrumentor.java	2014-02-10 14:51:44.000000000 -0800
++++ src/benchmarks/jgfutil/JGFInstrumentor.java	2018-03-14 19:12:56.007913064 -0700
+@@ -72,7 +72,7 @@
+ 
+   public static synchronized void startTimer(String name){
+     if (timers.containsKey(name)) {
+-      ((JGFTimer) timers.get(name)).start();
++      ((JGFTimer) timers.get(name)).start2();
+     }
+     else {
+       System.out.println("JGFInstrumentor.startTimer: failed -  timer " + name + 
+diff -ruN src/benchmarks/jgfutil/JGFTimer.java src/benchmarks/jgfutil/JGFTimer.java
+--- src/benchmarks/jgfutil/JGFTimer.java	2014-02-10 14:51:44.000000000 -0800
++++ src/benchmarks/jgfutil/JGFTimer.java	2018-03-14 19:12:37.777048508 -0700
+@@ -52,7 +52,7 @@
+ 
+ 
+ 
+-  public void start(){
++  public void start2(){
+     if (on) System.out.println("Warning timer " + name + " was already turned on");
+     on = true; 
+     start_time = System.currentTimeMillis();

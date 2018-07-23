@@ -11,6 +11,20 @@ import logging
 
 logger = logging.getLogger("jbx.nixutils")
 
+def quote(item):
+    return '"{}"'.format(item)
+
+def to_nix_list(list):
+    return "[{}]".format(" ".join(map(quote, list)))
+
+def from_attrset_list(attrset):
+    def from_attrset(list):
+        return "lib.attrsets.attrVals {list} {attrset}".format(
+            attrset = attrset,
+            list = to_nix_list(list)
+        )
+    return from_attrset
+
 def build(string,
           dry_run=True,
           keep_failed=False,
@@ -30,25 +44,7 @@ def build(string,
         [t]
     )
     logger.debug(string);
-    print(timeout)
     return call(cmd, dry_run=dry_run, timeout=timeout)
-
-    (f, t) = tempfile.mkstemp()
-    with open(t, "w") as f:
-        f.write(string);
-
-    cmd = ( ["nix-build"] +
-        (["--show-trace"] if debug else []) +
-        (["--keep-failed"] if keep_failed else []) +
-        (["--keep-going"] if keep_going else []) +
-        [t]
-    )
-    if debug:
-        logger.debug(string);
-    result = run(cmd, timeout=timeout);
-
-    if result.returncode != 0:
-        return hashfetchre.search(result.stderr).group(1);
 
 def shell(string, dry_run=True, **kwargs):
     return call(["nix-shell", "--expr", string], dry_run)
@@ -98,11 +94,14 @@ def hash(path):
 def prefetch_git(url, rev, sha256 = None):
     env = os.environ.copy()
     env["GIT_TERMINAL_PROMPT"] = "0"
-    return check_json(
-    	["nix-prefetch-git", url, rev]
-        + ([sha256] if sha256 else []),
-        env=env
-    )
+    if sha256:
+        obj = check_json(["nix-prefetch-git", url, rev, sha256 ], env=env)
+        # Assume that the user knows the revision and the date.
+        del obj["rev"]
+        del obj["date"]
+    else:
+        obj = check_json(["nix-prefetch-git", url, rev], env=env)
+    return obj
 
 def prefetch_url(url, sha256 = None):
     return {
@@ -181,7 +180,6 @@ def verify(method, obj, **kwargs):
         arg["sha256"] = "0000000000000000000000000000000000000000000000000000"
 
     cmd = method.format(dumps(arg), **kwargs);
-
     result = raw_build(cmd, **kwargs);
 
     if result.returncode == 0:

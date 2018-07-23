@@ -7,6 +7,7 @@ in rec {
       name = "run";
       timelimit = 300; # 5 minutes
       analysis = ''
+        echo "'$args'"
         analyse "run" java -cp $classpath $mainclass $args < $stdin
       '';
       postprocess = ''

@@ -1,0 +1,25 @@
+diff -ur JaConTeBe-old/versions.alt/derby4/orig/org/apache/derby/impl/services/reflect/Derby764.java JaConTeBe-new/versions.alt/derby4/orig/org/apache/derby/impl/services/reflect/Derby764.java
+--- JaConTeBe-old/versions.alt/derby4/orig/org/apache/derby/impl/services/reflect/Derby764.java	2014-08-20 03:55:54.000000000 -0500
++++ JaConTeBe-new/versions.alt/derby4/orig/org/apache/derby/impl/services/reflect/Derby764.java	2018-01-22 16:33:50.000000000 -0600
+@@ -59,9 +59,9 @@
+ 
+     @Test
+     public void run() throws StandardException, InterruptedException {
+-        Reporter.reportStart("derby764", 0, "deadlock");
+-        DeadlockMonitor monitor = new DeadlockMonitor();
+-        monitor.start();
++        // Reporter.reportStart("derby764", 0, "deadlock");
++        // DeadlockMonitor monitor = new DeadlockMonitor();
++        // monitor.start();
+ 
+         Thread th1 = new Thread1();
+         Thread th2 = new Thread2();
+@@ -72,7 +72,7 @@
+         th2.join();
+         // If test comes to this line, it means no deadlock happens.So we need
+         // to report the failure of bug reproduction.
+-        Reporter.reportEnd(false);
++        // Reporter.reportEnd(false);
+     }
+ 
+     @Before

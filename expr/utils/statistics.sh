@@ -5,9 +5,11 @@ cd $out
 
 runHook setup
 
-touch results
+runHook before
+
+mkdir results
 for result in $results; do
-    echo "$result" >> results
+    ln -s "$result" results/${result#*-} 
     runHook foreach
 done
 

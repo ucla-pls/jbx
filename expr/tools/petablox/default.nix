@@ -21,13 +21,13 @@ let
     '';
   };
   testPetablox = options@{
-    rev,  
+    rev,
     branchName ? "gt-develop",
     md5 ? "ba3d91bd803350a3879d229549042fcd",
     owner ? "petablox-project",
     patches ? []
   }:
-  stdenv.mkDerivation { 
+  stdenv.mkDerivation {
     name = "petablox";
     version = "${branchName}-${rev}";
     src = fetchgit {
@@ -57,15 +57,15 @@ in {
     md5 = "d04713260148c7e7f05e95b039f28d38";
     rev = "0753f868485d032403e29393382895aeafb440a6";
   };
+  petablox-HEAD = testPetablox {
+    md5 = "1e73270e39af7ef2c79165ce2fe6fb3d";
+    rev = "b95fd275fd30651b446dec9aff8fe5836614b6dc";
+    branchName = "master";
+    # patches = [ ./deadlock-fix.patch ];
+  };
   petablox-test = testPetablox {
     md5 = "49304df10ef89179c1117cf9b5da4faa";
     rev = "058ffa2ebc9874e8a1664de640bbbac916bf9841";
     branchName = "develop";
-  };
-  petablox-fix = testPetablox {
-    md5 = "4a395040aff93a85db5519974f09bd3b";
-    rev = "bb1e8b99dc5bb30368dcd299f64480e7667f7323";
-    branchName = "deadlocks";
-    patches = [ ./reachable-methods-fix.patch ];
   };
 }

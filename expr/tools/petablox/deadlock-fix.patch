@@ -1,0 +1,169 @@
+diff --git a/src/petablox/analyses/alloc/DomH.java b/src/petablox/analyses/alloc/DomH.java
+index 972263e..8e05932 100755
+--- a/src/petablox/analyses/alloc/DomH.java
++++ b/src/petablox/analyses/alloc/DomH.java
+@@ -14,6 +14,7 @@ import soot.jimple.internal.JNewMultiArrayExpr;
+ import soot.jimple.internal.JAssignStmt;
+ import soot.tagkit.LineNumberTag;
+ import soot.tagkit.SourceFileTag;
++import soot.tagkit.Tag;
+ import soot.toolkits.graph.Block;
+ import petablox.analyses.method.DomM;
+ import petablox.program.PhantomClsVal;
+@@ -161,8 +162,16 @@ public class DomH extends ProgramDom<Object> {
+             Unit u = (Unit) o;
+             Type t = getType(u);
+             String type = (t != null) ? t.toString() : "null";
+-            SootMethod m = SootUtilities.getMethod(u);                            
+-            String file = ((SourceFileTag)m.getDeclaringClass().getTags().get(0)).getSourceFile();
++            SootMethod m = SootUtilities.getMethod(u);            
++            //String file = ((SourceFileTag)m.getDeclaringClass().getTags().get(0)).getSourceFile();
++            List<Tag> tags = m.getDeclaringClass().getTags();
++            String file = null;
++            for(Tag x : tags) {
++            	if( x instanceof SourceFileTag) {
++            		file = ((SourceFileTag)x).getSourceFile();
++            		break;
++            	}
++            }
+             int line = ((LineNumberTag)u.getTag("LineNumberTag")).getLineNumber();
+             int mIdx = domM.indexOf(m);
+             return "file=\"" + file + "\" " + "line=\"" + line + "\" " +
+diff --git a/src/petablox/analyses/deadlock/DeadlockAnalysis.java b/src/petablox/analyses/deadlock/DeadlockAnalysis.java
+index 988ad62..3878e5f 100644
+--- a/src/petablox/analyses/deadlock/DeadlockAnalysis.java
++++ b/src/petablox/analyses/deadlock/DeadlockAnalysis.java
+@@ -100,8 +100,9 @@ public class DeadlockAnalysis extends JavaAnalysis {
+             ClassicProject.g().runTask("deadlock-nongrded-include-dlog");
+         ClassicProject.g().runTask("deadlock-dlog");
+ 
+-        if (Config.printResults){}
+-            //printResults();
++        if (Config.printResults){
++            printResults();
++        }
+     }
+ 
+     private CIObj getPointsTo(int lIdx) {
+diff --git a/src/petablox/analyses/invk/DomI.java b/src/petablox/analyses/invk/DomI.java
+index c15af78..afeb820 100755
+--- a/src/petablox/analyses/invk/DomI.java
++++ b/src/petablox/analyses/invk/DomI.java
+@@ -4,10 +4,14 @@ import soot.SootClass;
+ import soot.SootMethod;
+ import soot.Unit;
+ import soot.tagkit.SourceFileTag;
++import soot.tagkit.Tag;
+ import soot.jimple.DynamicInvokeExpr;
+ import soot.jimple.InvokeExpr;
+ import soot.jimple.internal.JAssignStmt;
+ import soot.tagkit.LineNumberTag;
++
++import java.util.List;
++
+ import petablox.analyses.method.DomM;
+ import petablox.program.visitors.IInvokeInstVisitor;
+ import petablox.project.Petablox;
+@@ -72,13 +76,24 @@ public class DomI extends ProgramDom<Unit> implements IInvokeInstVisitor {
+     
+     @Override
+     public String toXMLAttrsString(Unit u) {
++    	// this piece of code seems to be copied from DomE.java
++    	// which does not make much sense here
+         SootMethod m = SootUtilities.getMethod(u);
+-        JAssignStmt as = (JAssignStmt)u;
+-        String file = ((SourceFileTag)m.getDeclaringClass().getTags().get(0)).getSourceFile();              
+-        int line = ((LineNumberTag)u.getTag("LineNumberTag")).getLineNumber();
++        //JAssignStmt as = (JAssignStmt)u;
++        //String file = ((SourceFileTag)m.getDeclaringClass().getTags().get(0)).getSourceFile();              
++        List<Tag> tags = m.getDeclaringClass().getTags();
++        String file = null;
++        for(Tag x : tags) {
++        	if( x instanceof SourceFileTag) {
++        		file = ((SourceFileTag)x).getSourceFile();
++        		break;
++        	}
++        }
++        //int line = ((LineNumberTag)u.getTag("LineNumberTag")).getLineNumber();
+         int mIdx = domM.indexOf(m);
+-        return "file=\"" + file + "\" " + "line=\"" + line + "\" " +
+-            "Mid=\"M" + mIdx + "\"" +
+-            " rdwr=\"" + ((SootUtilities.isFieldStore(as) || SootUtilities.isStaticPut(as) || SootUtilities.isStoreInst(as)) ? "Wr" : "Rd") + "\"";
++		return "file=\"" + file + "\" " + "Mid=\"M" + mIdx + "\" ";
++        //return "file=\"" + file + "\" " + "line=\"" + line + "\" " +
++        //   "Mid=\"M" + mIdx + "\"" ;
++            //" rdwr=\"" + ((SootUtilities.isFieldStore(as) || SootUtilities.isStaticPut(as) || SootUtilities.isStoreInst(as)) ? "Wr" : "Rd") + "\"";
+     }
+ }
+diff --git a/src/petablox/analyses/lock/DomL.java b/src/petablox/analyses/lock/DomL.java
+index 7ae20e0..c712000 100755
+--- a/src/petablox/analyses/lock/DomL.java
++++ b/src/petablox/analyses/lock/DomL.java
+@@ -73,9 +73,13 @@ public class DomL extends ProgramDom<Unit> implements IAcqLockInstVisitor {
+     @Override
+     public String toXMLAttrsString(Unit u) {
+         SootMethod m = SootUtilities.getMethod(u);    
+-        String file = ((SourceFileTag)m.getDeclaringClass().getTags().get(0)).getSourceFile();
+-        int line = ((LineNumberTag)u.getTag("LineNumberTag")).getLineNumber();
++        //String file = ((SourceFileTag)m.getDeclaringClass().getTags().get(0)).getSourceFile();
++		LineNumberTag tag = (LineNumberTag)u.getTag("LineNumberTag");
++		int line = -1;
++		if(tag != null) line = tag.getLineNumber();
++        //int line = ((LineNumberTag)u.getTag("LineNumberTag")).getLineNumber();
+         int mIdx = domM.indexOf(m);
+-        return "file=\"" + file + "\" " + "line=\"" + line + "\" " + "Mid=\"M" + mIdx + "\"";
++        //return "file=\"" + file + "\" " + "line=\"" + line + "\" " + "Mid=\"M" + mIdx + "\"";
++        return  "line=\"" + line + "\" " + "Mid=\"M" + mIdx + "\"";
+     }
+ }
+diff --git a/src/petablox/analyses/method/DomM.java b/src/petablox/analyses/method/DomM.java
+index 3161dfa..30d9d4d 100755
+--- a/src/petablox/analyses/method/DomM.java
++++ b/src/petablox/analyses/method/DomM.java
+@@ -111,15 +111,15 @@ public class DomM extends ProgramDom<SootMethod> implements IMethodVisitor {
+         else
+             sign += methName;
+         String desc = m.getBytecodeParms().toString();
+-        String args = desc.substring(1, desc.indexOf(')'));
+-        sign += "(" + Program.typesToStr(args) + ")";
++        //String args = desc.substring(1, desc.indexOf(')'));
++        //sign += "(" + Program.typesToStr(args) + ")";
+         String file = "null";
+         SourceFileTag sft = (SourceFileTag)m.getTag("SourceFileTag");
+         if(sft!=null){
+         	file = sft.getSourceFile();
+         }
+         int line = m.getNumber(); 
+-        return "sign=\"" + sign + "\" file=\"" + file + "\" line=\"" + line + "\"";
++        return "sign=\"" + sign + "desc=" + desc + "\" file=\"" + file + "\" line=\"" + line + "\"";
+     }
+     
+     public void parseAnnotations(SootMethod m, int indx){
+diff --git a/src/petablox/analyses/point/RelMPtail.java b/src/petablox/analyses/point/RelMPtail.java
+index d7cfbd0..d944b2c 100755
+--- a/src/petablox/analyses/point/RelMPtail.java
++++ b/src/petablox/analyses/point/RelMPtail.java
+@@ -3,6 +3,10 @@ package petablox.analyses.point;
+ import soot.SootClass;
+ import soot.SootMethod;
+ import soot.Unit;
++import soot.toolkits.graph.Block;
++
++import java.util.List;
++
+ import petablox.program.visitors.IMethodVisitor;
+ import petablox.project.Petablox;
+ import petablox.project.analyses.ProgramRel;
+@@ -21,7 +25,10 @@ public class RelMPtail extends ProgramRel implements IMethodVisitor {
+         if (m.isAbstract())
+             return;
+         ICFG cfg = SootUtilities.getCFG(m);
+-        Unit bx = cfg.getTails().get(0).getHead();
+-        add(m, bx);
++        List<Block> ls =  cfg.getTails();
++        if(!ls.isEmpty()) {
++        	Unit bx = cfg.getTails().get(0).getHead();
++        	add(m, bx);
++        }
+     }
+ }

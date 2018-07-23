@@ -11,33 +11,119 @@
 let
   inherit (utils) versionize usage onAll mkStatistics;
   all = versionize benchmarks.all java.all;
+  withInputs = builtins.filter (b: builtins.length b.inputs > 0);
   dacapo-harness = benchmarks.byTag.dacapo-harness;
 in rec {
-  deadlocks =
-    onAll
-      analyses.deadlock.petablox
-      (versionize [java.java6] benchmarks.byTag.reflection-free)
-      env;
 
-  deadlocks-table =
+  both = stdenv.mkDerivation {
+    name = "both"; 
+    phases = "installPhase";
+    installPhase = ''
+      mkdir $out
+      cd $out
+      ln -s ${deadlocks1000} deadlocks
+      ln -s ${dataraces100} dataraces
+      ln -s ${deadlock-stats} deadlock-stats
+    '';
+  }; 
+
+  both1 = stdenv.mkDerivation {
+    name = "both"; 
+    phases = "installPhase";
+    installPhase = ''
+      mkdir $out
+      cd $out
+      ln -s ${deadlocks1} deadlocks
+      ln -s ${dataraces1} dataraces
+      ln -s ${deadlock-stats} deadlock-stats
+    '';
+  };
+
+  deadlocks1 =
+    deadlocks 1;
+  deadlocks2 =
+    deadlocks 2;
+  deadlocks10 =
+    deadlocks 10;
+  deadlocks100 =
+    deadlocks 100;
+  deadlocks1000 =
+    deadlocks 1000;
+
+  deadlock-benchmarks = 
+   (versionize [java.java6]
+    ( with benchmarks; [
+       baseline.transfer
+       baseline.bensalem
+       baseline.picklock
+       baseline.notadeadlock
+       sir.deadlock
+       sir.account
+       # sir.airline
+       sir.diningPhilosophers
+       # sir.alarmclock
+       # sir.piper
+       # sir.readerswriters
+       # sir.replicatedworkers
+       jaConTeBe.dbcp1
+       jaConTeBe.dbcp2
+       jaConTeBe.derby2
+       jaConTeBe.log4j2
+    ]));
+
+  deadlockfuzzer = 
     mkStatistics {
-      tools = [eject];
-      name = "deadlocks-table";
-      setup = ''echo "name,count" >> table.csv'';
+      name = "deadlockfuzzer-table";
       foreach = ''
-        if [ -e "$result/upper" ]
-        then
-          v=`wc -l $result/upper | cut -f1 -sd' '`
-        else
-          v="Err"
-        fi
-        name=''${result#*-}
-        echo "$name,$v" >> table.csv
+        cp -r $result ''${result##*+}
       '';
-      collect = ''
-        column -ts, table.csv
-      '';
-    } deadlocks;
+    } (onAll analyses.deadlocks.deadlockfuzzerAll deadlock-benchmarks env);
+
+  deadlocks =
+    n:
+    analyses.deadlocks.joinCycles "wiretap-cycles"
+       (onAll
+         (analyses.deadlocks.surveilRepeatedAll n)
+         deadlock-benchmarks
+         env);
+
+  deadlock-stats = 
+    analyses.stats.statsJoin 
+      (onAll (analyses.stats.stats) deadlock-benchmarks env);
+   
+  dataraces1 =
+    dataraces 1;
+  dataraces2 =
+    dataraces 2;
+  dataraces3 =
+    dataraces 3;
+  dataraces5 =
+    dataraces 5;
+  dataraces10 =
+    dataraces 10;
+  dataraces100 =
+    dataraces 100;
+  dataraces1000 =
+    dataraces 1000;
+
+  dataraces =
+    n:
+    analyses.dataraces.averageAll "dataraces"
+    (onAll
+       (analyses.dataraces.repeatedAll n)
+       (versionize [java.java6]
+        ( with benchmarks; [ baseline.dependent_datarace ] ++ rvpredict.all)
+       ) env);
+
+# ++ (versionize [java.java8] benchmarks.byTag.njr)
+
+  test = (versionize [java.java6]
+		  ( with benchmarks; [
+		    jaConTeBe.derby1
+		    jaConTeBe.derby4
+		    jaConTeBe.derby5
+		  ])
+	 );
 
   reachable-methods =
     onAll
