@@ -10,7 +10,7 @@
 , alsaLib
 , fontconfig
 , freetype
-, gnome
+, gnome2
 , cairo
 , gdk_pixbuf
 , atk
@@ -21,11 +21,11 @@ stdenv.mkDerivation rec {
   version = "6u45";
   src = fetchprop {
     url = "jdk-6u45-linux-x64.bin";
-    md5 = "40c1a87563c5c6a90a0ed6994615befe";
+    sha256 = "1s0j1pdr6y8c816d9i86rx4zp12nbhmas1rxksp0r53cn7m3ljbb";
   };
   buildInputs = [ coreutils ];
   phases = [ "buildPhase" "installPhase" "fixupPhase" ];
-  libraries = [stdenv.cc.libc glib libxml2 libav_0_8 ffmpeg libxslt mesa_noglu xorg.libXxf86vm alsaLib fontconfig freetype gnome.pango gnome.gtk cairo gdk_pixbuf atk]; 
+  libraries = [stdenv.cc.libc glib libxml2 libav_0_8 ffmpeg libxslt mesa_noglu xorg.libXxf86vm alsaLib fontconfig freetype gnome2.pango gnome2.gtk cairo gdk_pixbuf atk]; 
   architecture =
     if stdenv.system == "i686-linux" then
       "i386"

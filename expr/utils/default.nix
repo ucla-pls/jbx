@@ -474,14 +474,22 @@ in with lib.debug; rec {
     env:
       builtins.map (b: analysis b env) benchmarks;
 
-  # withAll: [Analysis] -> Benchmark -> Env -> [Result]
+  # withAll: [StaAnalysis] -> Sta [Result]
   withAll =
     analyses:
     benchmark:
     env:
       builtins.map (analyse env benchmark) analyses;
+  
+  # withAllD: [DynAnalysis] -> Dyn [Result]
+  withAllD =
+    analyses:
+    benchmark:
+    env:
+    input:
+      builtins.map (a: a benchmark env input) analyses;
 
-  # lift: (a -> b) -> Analysis a -> Analysis b
+  # lift: (a -> b) -> Sta a -> Sta b
   lift =
     f:
     analysis:
@@ -489,7 +497,7 @@ in with lib.debug; rec {
     env:
       f (analysis benchmark env);
 
-  # liftD: (Result -> a) -> Dyn Result -> a
+  # liftD: (a -> b) -> Dyn a -> Dyn b
   liftD =
     f:
     analysis:

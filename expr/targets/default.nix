@@ -7,6 +7,7 @@
 , env
 , lib
 , eject
+, python
 }:
 let
   inherit (utils) versionize usage onAll mkStatistics;
@@ -116,6 +117,17 @@ in rec {
 		    jaConTeBe.derby5
 		  ])
 	 );
+
+  deadlockPerf = 
+    mkStatistics { 
+      name = "deadlockPerf"; 
+      tools = [python];
+      foreach = "python ${./pref.py} $result/times.csv >> $out/times.csv";
+    }
+    (onAll
+      (b: e: analyses.deadlockPerf b e (utils.getInput b "small"))
+      (versionize [java.java8] dacapo-harness)
+      env);
 
   reachable-methods =
     onAll

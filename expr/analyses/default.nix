@@ -38,4 +38,10 @@ in rec {
 
   reflection =
     callPackage ./reflection { inherit reachable-methods; };
+
+  deadlockPerf =
+    b: 
+    utils.liftD (utils.compose { 
+	name = "performance+" + b.name;
+    }) (utils.withAllD [run.run deadlocks.dirkOne]) b;
 }
