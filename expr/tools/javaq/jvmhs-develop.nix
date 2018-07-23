@@ -1,30 +1,32 @@
-{ mkDerivation, aeson, base, binary, bytestring, containers
-, directory, docopt, fetchgit, filepath, free, lens, process
-, stdenv, tasty, tasty-discover, tasty-hspec, tasty-quickcheck
-, text, vector, zip-archive
+{ mkDerivation, aeson, base, bytestring, containers, deepseq
+, directory, fetchgit, fgl, fgl-visualize, filepath, generic-random
+, hpack, hspec-expectations-pretty-diff, jvm-binary, lens
+, lens-action, mtl, process, QuickCheck, stdenv, tasty
+, tasty-discover, tasty-hspec, tasty-hunit, tasty-quickcheck, text
+, vector, zip-archive, src
 }:
 mkDerivation {
   pname = "jvmhs";
-  version = "0.1.0.0";
-  src = fetchgit {
-    url = "https://github.com/ucla-pls/jvmhs.git";
-    sha256 = "1y2gg2kimk1jiyg6fqc9wg0mlw7ghbxiwgv4k19d9f9gj312gl8k";
-    rev = "e72c01d760fd790b591a292b2c4e30c48c1e0b1c";
-  };
-  isLibrary = true;
-  isExecutable = true;
+  version = "0.0.1";
+  inherit src;
+  postUnpack = "sourceRoot+=/jvmhs; echo source root reset to $sourceRoot";
   libraryHaskellDepends = [
-    aeson base binary bytestring containers directory filepath free
-    lens process text vector zip-archive
+    aeson base bytestring containers deepseq directory fgl
+    fgl-visualize filepath jvm-binary lens lens-action mtl process text
+    vector zip-archive
   ];
-  executableHaskellDepends = [
-    aeson base bytestring containers docopt lens text
-  ];
+  libraryToolDepends = [ hpack ];
   testHaskellDepends = [
-    base binary bytestring containers directory filepath process tasty
-    tasty-discover tasty-hspec tasty-quickcheck vector
+    aeson base bytestring containers deepseq directory fgl
+    fgl-visualize filepath generic-random
+    hspec-expectations-pretty-diff jvm-binary lens lens-action mtl
+    process QuickCheck tasty tasty-discover tasty-hspec tasty-hunit
+    tasty-quickcheck text vector zip-archive
   ];
+  doHaddock = false;
   doCheck = false;
-  homepage = "https://github.com/kalhauge/jvmhs#readme";
-  license = stdenv.lib.licenses.bsd3;
+  preConfigure = "hpack";
+  homepage = "https://github.com/ucla-pls/jvmhs#readme";
+  description = "A library for reading Java class-files";
+  license = stdenv.lib.licenses.mit;
 }

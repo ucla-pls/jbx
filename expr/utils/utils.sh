@@ -1,4 +1,4 @@
-source $stdenv/setup
+# source $stdenv/setup
 
 function toClasspath {
     local classpath=""

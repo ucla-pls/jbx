@@ -6,6 +6,11 @@ cd $out
 
 compose $out $results
 
+mkdir results
+for result in $results; do
+    ln -s "$result" results/${result#*-} 
+done
+
 for f in $results; do
     if [ -e "$f/upper" ]; then
         if [ ! -e upper ]; then

@@ -5,11 +5,11 @@
 Vagrant.configure("2") do |config|
     project = "jbx"
     # our custom built VM
-    config.vm.box = "nixos/nixos-16.09-x86_64"
+    config.vm.box = "nixos/nixos-18.03-x86_64"
 
     config.vm.provider "virtualbox" do |vb|
         # Use VBoxManage to customize the VM. For example to change memory:
-        vb.customize ["modifyvm", :id, "--memory", "2048"]
+        vb.customize ["modifyvm", :id, "--memory", "4096"]
     end
 
 

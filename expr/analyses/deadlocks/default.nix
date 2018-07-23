@@ -1,4 +1,4 @@
-{shared, jchord-2_0, petablox, utils, python, python3, eject, calfuzzer }:
+{shared, jchord-2_0, petablox, utils, python, python3, eject, calfuzzer, jq}:
 let
   jchord_ = jchord-2_0;
   petablox_ = petablox;
@@ -85,27 +85,35 @@ in rec {
       ignoreSandbox = true;
     };
 
-  surveilOptions2 = {
+  dirkOptions = {
       name = "deadlock";
-      logging = loggingSettings;
+      logging = {
+	      depth = -1;
+	      timelimit = 900;
+	      ignoredprefixes = "org/mockito,org/powermock,edu/ucla/pls/wiretap,java,sun,org/dacapo/harness";
+	  };
       cmd = "deadlocks";
-      filter = "unique,lockset";
+      filter = "mhb,lockset";
       provers = ["none"];
-      timelimit = 6000;
+      timelimit = 18000;
       solve-time = 60000;
-      chunkSize = 10000;
-      chunkOffset = 5000;
+      chunkSize = 500000;
+      chunkOffset = 250000;
+      verbose = true;
       ignoreSandbox = true;
     };
   
-  surveil2FlatAll = 
-    utils.onAllInputs (shared.surveilFlat surveilOptions2) {};
+  dirk = 
+    utils.onAllInputs dirkOne {};
+  dirkOne = shared.surveil dirkOptions;
+  dirkWiretapOne = shared.wiretapSurveil {} dirkOptions.logging;
 
+  
   surveil = shared.surveil surveilOptions;
   surveilFlat = shared.surveilFlat surveilOptions;
 
   surveilWiretap =
-    shared.wiretapSurveil loggingSettings;
+    shared.wiretapSurveil {} loggingSettings;
 
   surveilAll =
     utils.onAllInputs surveil {};
@@ -114,10 +122,10 @@ in rec {
      n:
      utils.repeated {
         times = n;
-        tools = [python3 eject];
+        tools = [python3 eject jq];
         foreach = ''
           tail -n +2 "$result/times.csv" | sed 's/^.*\$//' >> times.csv
-          cat "$result/history.size.txt" >> sizes.txt
+	  sed 's/[^0-9,]//g;s/,/\n/g' "$result/history.count.txt" | awk '{x+=$1} END { print x}' >> sizes.txt
         '';
         collect = ''
           python3 ${./cyclestats.py} $name ${builtins.concatStringsSep "," surveilOptions.provers} $results | tee cycles.txt | column -ts,

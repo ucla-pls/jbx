@@ -2,8 +2,8 @@
 let 
   dacapo-all = java: {
     src = fetchurl {
-      url = "http://sourceforge.net/projects/dacapobench/files/9.12-bach/dacapo-9.12-bach.jar/download";
-      md5 = "3f5c11927268b567bc90629c17ec446b";
+      url = "http://sourceforge.net/projects/dacapobench/files/9.12-bach-MR1/dacapo-9.12-MR1-bach.jar/download";
+      md5 = "81a1e72daab989db1814fe7f765f8cee";
     };
     phases = "installPhase";
     buildInputs = [ java.jdk ];
@@ -11,7 +11,7 @@ let
     jar -xf $src
     mkdir -p $out/share/java
     # find . -name "*.jar" -exec cp {} $out/share/java \;
-    cp $src $out/share/java/dacapo-9.12-bach.jar
+    cp $src $out/share/java/dacapo-9.12-MR1-bach.jar
     '';
   };
   harness-benchmark = options @ {
@@ -25,7 +25,7 @@ let
       name = name + "-harness";
       build = dacapo-all;
       tags = tags ++ ["reflection" "dacapo-harness"];
-      mainclass = "org.dacapo.harness.TestHarness";
+      mainclass = "Harness";
       inputs = map (size: { name = size; args = ["-s" size name];}) sizes;
       filter = java: builtins.elem java.version versions;
     };
@@ -60,6 +60,10 @@ in map harness-benchmark [
   }
   {
     name = "lusearch";
+    sizes = ["small" "default" "large"];
+  }
+  {
+    name = "lusearch-fix";
     sizes = ["small" "default" "large"];
   }
   {

@@ -20,7 +20,7 @@ in rec {
       analysis = ''
         let tmp_timelimit=$timelimit
         export timelimit=${toString timelimit}
-        analyse "wiretap-run" java -Xms32g -Xmx32g -javaagent:$wiretap/share/java/wiretap.jar \
+        analyse "wiretap-run" java -noverify -javaagent:$wiretap/share/java/wiretap.jar \
           $settings -cp $classpath $mainclass $args < $stdin
         export timelimit=$tmp_timelimit
       '';
@@ -82,8 +82,7 @@ in rec {
              sed "$((i + 1))q;d" "$sandbox/_wiretap/instructions.txt"
            done | sort | sed 'N;s/\n/ /' > "runtime-deadlock.txt"
         fi
-        wiretap-tools size $sandbox/_wiretap/wiretap.hist > history.size.txt
-        wiretap-tools count $sandbox/_wiretap/wiretap.hist > history.count.txt
+        wiretap-tools count $sandbox/_wiretap/wiretap.hist | tee history.count.txt
         for prover in $provers; do
           analyse "wiretap-tools-$prover" wiretap-tools \
               ${cmd} ${if verbose then "-v" else ""} -h -p $prover \
@@ -93,7 +92,9 @@ in rec {
             } -f ${filter} $sandbox/_wiretap/wiretap.hist > "$prover.${cmd}.txt"
             cat "$prover.${cmd}.txt"
         done | sort -u > lower
-	rm -r $sandbox
+        if [ "$ignoreSandbox" == "0" ]; then
+           rm -r $sandbox
+        fi
       '';
     };
 }
