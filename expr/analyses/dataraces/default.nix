@@ -12,7 +12,7 @@ in rec {
       cmd = "dataraces";
       filter = "mhb,lockset";
       provers = ["none" "dirk"];
-      timelimit = 3600; # thirty minutes timeout
+      timelimit = 1800; # thirty minutes timeout
       solve-time = 60000;
       chunkSize = 10000;
       chunkOffset = 5000;
@@ -52,9 +52,8 @@ in rec {
       rvpredict = tools.rvpredict benchmark.java;
       inst = rvp-instrument benchmark env;
       tools = [ z3 ];
-      timeout = 3600;
+      timelimit = 1800;
       analysis = ''
-        echo $PWD
         OPTIONS="-Xmx32g -Duser.dir=$PWD -Duser.home=$PWD"
         RVE=$rvpredict/share/java/rv-predict-engine.jar
         RVL=$rvpredict/share/java/rv-predict-log.jar

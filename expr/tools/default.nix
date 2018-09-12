@@ -62,6 +62,11 @@ rec {
     javaq
   ;
   
+  inherit (callPackage ./tamiflex {})
+    tamiflex-2_0_3
+    tamiflex
+  ;
+
   inherit (callPackage ./rvpredict { inherit fetchprop;})
     rvpredict
   ;
