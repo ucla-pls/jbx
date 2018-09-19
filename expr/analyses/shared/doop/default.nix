@@ -1,22 +1,19 @@
-{pkgs, tools, mkAnalysis}:
-rec {
-  # This is the base analysis, all the others merly are instanciations
-  # of this.
-  base =
-    options @ { # options related to the execution
-      mode # the name of the analysis, e.g. 'context-insensitive'
-    }:
-    env: # the environment
-    benchmark: # the benchmark
-    mkAnalysis (options // {
-      inherit (benchmark) build jarfile mainclass;
-      env = env;
-      mode = mode;
-      name = "doop-${mode}-${benchmark.name}";
-      analysis = ./doop.sh;
-      doop = tools.doop;
-    });
-
-  context-insensitive = options: base (options // {mode = "context-insensitive";});
-}
+{ lib, utils, zlib, ncurses, sqlite}:
+options @ { 
+  subanalysis
+  , doop
+  , timelimit ? 3600
+  , tools ? [ ]
+  , ...
+}:
+benchmark: 
+utils.mkAnalysis (options // { 
+  inherit timelimit;
+  name = "doop-${subanalysis}";
+  tools = [ doop benchmark.java.jdk zlib ncurses sqlite ] ++ tools;
+  analysis = ''
+    export DOOP_LOG=log DOOP_CACHE=cache DOOP_OUT=out
+    doop -i $build/share/java/* -a ${subanalysis} -id 0 --main $mainclass 
+  '';
+}) benchmark
 

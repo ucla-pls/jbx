@@ -1,4 +1,16 @@
-{ shared, utils, petablox, emma, python, logicblox-4_3_6_3, python3, unzip, javaq, soot, stdenv}:
+{ shared
+, utils
+, petablox
+, doop
+, emma
+, python
+, logicblox-4_3_6_3
+, python3
+, unzip
+, javaq
+, soot
+, stdenv
+}:
 let
   emma_ = emma;
   soot_ = soot;
@@ -20,6 +32,21 @@ in rec {
   };
 
   emmaAll = onAllInputs emma {};
+
+  doopCI = shared.doop { 
+    subanalysis = "context-insensitive-plusplus";
+    doop = doop;
+    ignoreSandbox = true;
+    tools = [ python ];
+    postprocess = ''
+      if [ -f $sandbox/out/context-insensitive-plusplus/0/database/Reachable.csv ]
+      then
+        python2.7 ${./petablox-parse.py} $sandbox/out/context-insensitive-plusplus/0/database/Reachable.csv > $out/upper
+      fi
+      rm -r "$sandbox"
+    '';
+  };
+  
 
   wiretap = shared.wiretap {
     settings = [
@@ -181,6 +208,7 @@ in rec {
   comp = utils.cappedOverview "library-reachable-method" world [
     wiretapAll
     petabloxDynamic
+    doopCI
   ];
 
   wiretapAnalyser = benchmark: env:
