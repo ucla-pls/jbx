@@ -65,4 +65,9 @@ rec {
   inherit (callPackage ./rvpredict { inherit fetchprop;})
     rvpredict
   ;
+  
+  inherit (callPackage ./soot {})
+    soot-3_1_0
+    soot
+  ;
 }

@@ -1,6 +1,7 @@
-{ shared, utils, petablox, emma, python, logicblox-4_3_6_3, python3, unzip, javaq }:
+{ shared, utils, petablox, emma, python, logicblox-4_3_6_3, python3, unzip, javaq, soot, stdenv}:
 let
   emma_ = emma;
+  soot_ = soot;
   inherit (utils) mkDynamicAnalysis onAllInputs;
 in rec {
   # Emma, dynammic reachable methods
@@ -30,6 +31,36 @@ in rec {
       sort -u $sandbox/_wiretap/reachable.txt > $out/lower
       '';
     };
+
+  soot = b: 
+    let sootext = stdenv.mkDerivation { 
+        name = "reachable";
+        buildInputs = [ b.java.jdk ];
+        phases = "installPhase";
+        installPhase = ''
+          mkdir $out
+          cp ${./SootReachableMethod.java} SootReachableMethod.java
+          javac -cp ${soot_}/share/java/soot.jar SootReachableMethod.java -d $out
+        '';
+      };
+    in utils.mkAnalysis {
+      name = "soot-reachable-method";
+      tools = [ b.java.jdk python ];
+      soot = soot_;
+      timelimit = 1800;
+      analysis = ''
+        analyse "soot" java -cp $soot/share/java/soot.jar:${sootext}\
+          SootReachableMethod\
+          -pp -w -cp $classpath -f n -p cg.spark on\
+          -app $mainclass
+      '';
+      postprocess = ''
+        if [ -f $sandbox/reachable-methods.txt ]
+        then
+            python2.7 ${./petablox-parse.py} $sandbox/reachable-methods.txt > $out/upper
+        fi
+      '';
+  } b ;
 
   wiretapAll = onAllInputs wiretap {};
 
