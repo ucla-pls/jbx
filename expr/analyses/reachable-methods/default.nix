@@ -47,8 +47,7 @@ in rec {
     '';
   };
   
-
-  wiretap = shared.wiretap {
+  wiretap = shared.wiretap 420 {
     settings = [
       { name = "wiretappers";     value = "EnterMethod";      }
       { name = "recorder";        value = "ReachableMethods"; }
@@ -209,6 +208,7 @@ in rec {
     wiretapAll
     petabloxDynamic
     doopCI
+    soot
   ];
 
   wiretapAnalyser = benchmark: env:
