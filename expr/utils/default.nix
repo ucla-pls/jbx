@@ -351,7 +351,7 @@ in with lib.debug; rec {
         python ${./overview.py} -w "${world benchmark env}/upper" $results
         column -ts',' overview.txt
         echo "Results from:"
-        cat $out/results
+        ls -l $out/results
       '';
     }) analyses benchmark env;
 

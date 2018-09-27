@@ -204,12 +204,29 @@ in rec {
     wiretapAll
   ];
 
-  comp = utils.cappedOverview "library-reachable-method" world [
-    wiretapAll
-    petabloxDynamic
-    doopCI
-    soot
-  ];
+  compare = 
+    let analyses = 
+        { W = wiretapAll; 
+          P = petabloxDynamic;
+          D = doopCI; 
+          S = soot; 
+        };
+    in
+     benchmark:
+     env:
+     utils.liftL (
+       results: 
+       utils.mkStatistics { 
+        name = "library-reachable-method" + "+" + benchmark.name;
+        tools = [ python3 ];
+        collect = ''
+          cd $out;
+          python3 ${./to-json.py} ${world benchmark env} ${builtins.toString
+   (map (name: name + ":" + (analyses.${name} benchmark env)) (builtins.attrNames analyses))
+        } > compare.json'';
+       } results
+     ) (builtins.attrValues analyses) benchmark env;
+ 
 
   wiretapAnalyser = benchmark: env:
     let
