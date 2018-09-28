@@ -72,4 +72,9 @@ rec {
     soot-3_1_0
     soot
   ;
+  
+  inherit (callPackage ./wala {})
+    wala-1_5_0
+    wala
+  ;
 }

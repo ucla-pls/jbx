@@ -10,10 +10,12 @@
 , javaq
 , soot
 , stdenv
+, wala
 }:
 let
   emma_ = emma;
   soot_ = soot;
+  wala_ = wala;
   inherit (utils) mkDynamicAnalysis onAllInputs;
 in rec {
   # Emma, dynammic reachable methods
@@ -84,6 +86,37 @@ in rec {
         if [ -f $sandbox/reachable-methods.txt ]
         then
             python2.7 ${./petablox-parse.py} $sandbox/reachable-methods.txt > $out/upper
+        fi
+      '';
+  } b ;
+
+  wala = b: 
+    let walaext = stdenv.mkDerivation { 
+        name = "reachable";
+        buildInputs = [ b.java.jdk ];
+        phases = "installPhase";
+        installPhase = ''
+          mkdir $out
+          cp ${./WalaReachableMethod.java} WalaReachableMethod.java
+          javac -cp ${wala_}/share/java/core.jar:${wala_}/share/java/util.jar:${wala_}/share/java/shrike.jar WalaReachableMethod.java -d $out
+        '';
+      };
+    in utils.mkAnalysis {
+      name = "wala-reachable-method";
+      tools = [ b.java.jdk python ];
+      wala = wala_;
+      timelimit = 1800;
+      analysis = ''
+        analyse "wala" java -cp ${wala_}/share/java/core.jar:${wala_}/share/java/util.jar:${wala_}/share/java/shrike.jar:${walaext}\
+          WalaReachableMethod\
+          -classpath $classpath \
+          -exclude ${./WalaExclusions.txt} \
+          -mainclass $mainclass
+      '';
+      postprocess = ''
+        if [ -f $sandbox/reachable-methods.txt ]
+        then
+            cp $sandbox/reachable-methods.txt $out/upper
         fi
       '';
   } b ;
@@ -210,6 +243,7 @@ in rec {
           P = petabloxDynamic;
           D = doopCI; 
           S = soot; 
+          A = wala; 
         };
     in
      benchmark:
