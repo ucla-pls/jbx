@@ -48,17 +48,6 @@ in rec {
       rm -r "$sandbox"
     '';
   };
-  
-  wiretap = shared.wiretap 420 {
-    settings = [
-      { name = "wiretappers";     value = "EnterMethod";      }
-      { name = "recorder";        value = "ReachableMethods"; }
-      { name = "ignoredprefixes"; value = "edu/ucla/pls/wiretap,java"; }
-    ];
-    postprocess = ''
-      sort -u $sandbox/_wiretap/reachable.txt > $out/lower
-      '';
-    };
 
   soot = b: 
     let sootext = stdenv.mkDerivation { 
@@ -120,6 +109,18 @@ in rec {
         fi
       '';
   } b ;
+
+  
+  wiretap = shared.wiretap 420 {
+    settings = [
+      { name = "wiretappers";     value = "EnterMethod";      }
+      { name = "recorder";        value = "ReachableMethods"; }
+      { name = "ignoredprefixes"; value = "edu/ucla/pls/wiretap,java"; }
+    ];
+    postprocess = ''
+      sort -u $sandbox/_wiretap/reachable.txt > $out/lower
+      '';
+    };
 
   wiretapAll = onAllInputs wiretap {};
 
@@ -239,7 +240,7 @@ in rec {
 
   compare = 
     let analyses = 
-        { W = wiretapAll; 
+        { W = wiretapAnalyser (utils.overview "static-rm" [petabloxDynamic doopCI soot wala]) world; 
           P = petabloxDynamic;
           D = doopCI; 
           S = soot; 
@@ -248,40 +249,38 @@ in rec {
     in
      benchmark:
      env:
-     utils.liftL (
-       results: 
-       utils.mkStatistics { 
-        name = "library-reachable-method" + "+" + benchmark.name;
-        tools = [ python3 ];
-        collect = ''
-          cd $out;
+     utils.cappedOverview "reachable-methods" world (builtins.attrValues analyses) {
+       tools = [ python3 ];
+       after = ''
           python3 ${./to-json.py} ${world benchmark env} ${builtins.toString
-   (map (name: name + ":" + (analyses.${name} benchmark env)) (builtins.attrNames analyses))
-        } > compare.json'';
-       } results
-     ) (builtins.attrValues analyses) benchmark env;
- 
+	    (map (name: name + ":" + (analyses.${name} benchmark env)) 
+            (builtins.attrNames analyses))
+          } > compare.json
+	  python3 ${./firstlost.py} ${analyses.W benchmark env}/unsoundness0
+       '';
+     } benchmark env;
 
-  wiretapAnalyser = benchmark: env:
+  wiretapAnalyser = static: w: benchmark: env:
     let
-      upper_ = "${petabloxDynamic benchmark env}/upper";
-      world_ = "${world benchmark env}/upper";
-    in onAllInputs (shared.wiretap (rec {
-    settings = [
-      { name = "wiretappers";       value = "EnterMethod,ReturnMethod";      }
-      { name = "recorder";          value = "ReachableMethodsAnalyzer"; }
-      { name = "ignoredprefixes";   value = "edu/ucla/pls/wiretap/,java/,sun/,javax/,com/sun/,com/ibm/,org/xml/,org/w3c/,apple/awt/,com/apple/"; }
-      { name = "overapproximation"; value = upper_; }
-      { name = "world";             value = world_; }
-    ];
-    timelimit = 840;
-    postprocess = ''
-      if [[ -e  $sandbox/_wiretap/unsoundness ]]; then
-        cp -r $sandbox/_wiretap/unsoundness $out
-        cp -r $sandbox/_wiretap/reachable.txt $out/lower
-      fi
-      '';
-    })) {
+      upper_ = "${static benchmark env}/upper";
+      world_ = "${w benchmark env}/upper";
+      wiretapa = shared.wiretap 420
+        rec {
+          settings = [
+            { name = "wiretappers";       value = "EnterMethod,ReturnMethod";      }
+            { name = "recorder";          value = "ReachableMethodsAnalyzer"; }
+            { name = "ignoredprefixes";   value = "edu/ucla/pls/wiretap/,java/,sun/"; }
+            { name = "overapproximation"; value = upper_; }
+            { name = "world";             value = world_; }
+          ];
+          postprocess = ''
+            if [[ -e  $sandbox/_wiretap/unsoundness ]]; then
+              cp -r $sandbox/_wiretap/unsoundness $out
+            fi
+            cp -r $sandbox/_wiretap/reachable.txt $out/lower
+            '';
+        };
+    in onAllInputs wiretapa {
       collect = ''
         var=0
         for f in $results; do
@@ -291,10 +290,6 @@ in rec {
           fi
         done
         ln -s ${benchmark.build} $out/benchmark
-        cp ${upper_} $out/upper
-        cp ${world_} $out/world
-
-        touch $out/phases
       '';
     } benchmark env;
 
