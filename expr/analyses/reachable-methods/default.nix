@@ -11,6 +11,7 @@
 , soot
 , stdenv
 , wala
+, jq
 }:
 let
   emma_ = emma;
@@ -237,10 +238,11 @@ in rec {
 
   world = benchmark: utils.mkAnalysis {
     name = "reachable-methods-world";
-    tools = [ python3 unzip benchmark.java.jdk];
+    tools = [ javaq jq ];
     timelimit = 420;
     analysis = ''
-      analyse "reachable-methods-world" python3 ${./worldex.py} $build/ | sort -u > $out/upper
+      analyse "reachable-methods-world" javaq --cp=$classpath > javaq.json
+      jq '.name as $name | .methods[] | $name + "." + .' -r javaq.json | sed 's|<init>|"<init>"|;s|<clinit>|"<clinit>"|' > $out/upper
     '';
   } benchmark;
 
