@@ -20,14 +20,12 @@ try:
         methods = []
         for line in mf:
             methods.append(line.strip().split(" "))
-    print(methods)
     for sign, name in methods:
         if sign == "-": break
     else: 
         raise Exception("no methods in folder")
     
     firstlost = name
-    print(firstlost)
 
     for stack in glob.glob(path.join(unsoundnessfolder, "*.stack")):
         try: 

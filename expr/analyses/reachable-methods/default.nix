@@ -34,6 +34,19 @@ in rec {
   };
 
   emmaAll = onAllInputs emma {};
+  
+  doopCI_ = shared.doop { 
+    subanalysis = "context-insensitive";
+    doop = doop;
+    ignoreSandbox = false;
+    tools = [ python ];
+    postprocess = ''
+      if [ -f $sandbox/out/context-insensitive-plusplus/0/database/Reachable.csv ]
+      then
+        python2.7 ${./petablox-parse.py} $sandbox/out/context-insensitive-plusplus/0/database/Reachable.csv > $out/upper
+      fi
+    '';
+  };
 
   doopCI = shared.doop { 
     subanalysis = "context-insensitive-plusplus";
@@ -242,7 +255,7 @@ in rec {
     let analyses = 
         { W = wiretapAnalyser (utils.overview "static-rm" [petabloxDynamic doopCI soot wala]) world; 
           P = petabloxDynamic;
-          D = doopCI; 
+          # D = doopCI; 
           S = soot; 
           A = wala; 
         };

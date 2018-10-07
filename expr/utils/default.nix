@@ -330,9 +330,6 @@ in with lib.debug; rec {
       collect = ''
         cd $out
         python ${./overview.py} $results
-        column -ts',' overview.txt
-        echo "Results from:"
-        ls -l $out/results
       '';
     }) analyses benchmark;
 
@@ -351,9 +348,6 @@ in with lib.debug; rec {
       collect = ''
         cd $out
         python ${./overview.py} -w "${world benchmark env}/upper" $results
-        column -ts',' overview.txt
-        echo "Results from:"
-        ls -l $out/results
         runHook after
       '';
     }) analyses benchmark env;

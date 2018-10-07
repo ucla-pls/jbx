@@ -1,56 +1,40 @@
-{ fetchurl
-, libtool
-, automake
-, cmake
-, autoconf
-, git
-, ncurses
-, zlib
-, sqlite
-, getopt
-, lsb-release
-, bison
-, boost
-, openjdk
-, doxygen
-, perl
-, graphviz
-, flex
-, stdenv
-, gradle
-, makeWrapper
-}:
+{ stdenv, fetchFromGitHub
+, boost, bison, flex, openjdk, doxygen
+, perl, graphviz, ncurses, zlib, sqlite
+, autoreconfHook }:
+
 stdenv.mkDerivation rec {
-  version = "1.2.0";
-  name = "souffle-${version}";
-  src = fetchurl {
-    url = "https://github.com/souffle-lang/souffle/archive/${version}.tar.gz";
-    sha256 = "1isrblmj06cpfrgnyhwx9wwxfciwmbzqw097ca6cnxslyq6dl2y4";
+  version = "1.4.0";
+  name    = "souffle-${version}";
+
+  src = fetchFromGitHub {
+    owner  = "souffle-lang";
+    repo   = "souffle";
+    rev    = version;
+    sha256 = "1g8yvm40h102mab8lacpl1cwgqsw1js0s1yn4l84l9fjdvlh2ygd";
   };
 
+  nativeBuildInputs = [ autoreconfHook bison flex ];
+
   buildInputs = [
-    libtool git
-    lsb-release getopt
-    autoconf automake boost bison flex openjdk
-    zlib sqlite
-    ncurses
-    # Used for docs
-    doxygen perl graphviz
-    makeWrapper
+    boost openjdk ncurses zlib sqlite doxygen perl graphviz
   ];
 
+  patchPhase = ''
+    substituteInPlace configure.ac \
+      --replace "m4_esyscmd([git describe --tags --abbrev=0 --always | tr -d '\n'])" "${version}"
+  '';
+
+  # Without this, we get an obscure error about not being able to find a library version
+  # without saying what library it's looking for. Turns out it's searching global paths
+  # for boost and failing there, so we tell it what's what here.
   configureFlags = [ "--with-boost-libdir=${boost}/lib" ];
 
-  preConfigure = ''
-    substituteInPlace configure.ac \
-       --replace "m4_esyscmd([git describe --tags --abbrev=0 --always | tr -d '\n'])" "${version}"
-
-    sh ./bootstrap
-   '';
- 
-  #  postInstall = ''
-  #  mv $out/bin/souffle $out/bin/souffle_unwrapped
-  #  makeWrapper $out/bin/souffle_unwrapped $out/bin/souffle \
-  #    --suffix-each LD_LIBRARY_PATH : $(zlib)/lib
-  #  '';
+  meta = with stdenv.lib; {
+    description = "A translator of declarative Datalog programs into the C++ language";
+    homepage    = "http://souffle-lang.github.io/";
+    platforms   = platforms.unix;
+    maintainers = with maintainers; [ copumpkin wchresta ];
+    license     = licenses.upl;
+  };
 }

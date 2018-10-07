@@ -16,9 +16,13 @@ rec {
   ;
   logicblox = logicblox-4_3_8_2;
 
-  doop = callPackage ./doop { inherit souffle; };
+  inherit (callPackage ./doop { souffle = souffle-1_4_0; })
+    doop-3_3_1
+    doop-4_10_11
+  ;
+  doop = doop-4_10_11;
 
-  souffle = callPackage ./souffle {};
+  souffle-1_4_0 = callPackage ./souffle {};
 
   dljc = callPackage ./do-like-javac {};
 
