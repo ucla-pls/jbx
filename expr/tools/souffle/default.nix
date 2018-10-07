@@ -1,4 +1,4 @@
-{ stdenv, fetchFromGitHub
+{ stdenv, fetchFromGitHub, mcpp
 , boost, bison, flex, openjdk, doxygen
 , perl, graphviz, ncurses, zlib, sqlite
 , autoreconfHook }:
@@ -10,19 +10,23 @@ stdenv.mkDerivation rec {
   src = fetchFromGitHub {
     owner  = "souffle-lang";
     repo   = "souffle";
-    rev    = version;
-    sha256 = "1g8yvm40h102mab8lacpl1cwgqsw1js0s1yn4l84l9fjdvlh2ygd";
+    rev    = "c0ef14446bc3d48e68957d120af9b1a1c89782b3";
+    sha256 = "0j70azbfn7w8230wj5zdvxs6w1759s3pwaq2gzl1w12lpwhkw23q";
   };
 
   nativeBuildInputs = [ autoreconfHook bison flex ];
 
   buildInputs = [
-    boost openjdk ncurses zlib sqlite doxygen perl graphviz
+    boost openjdk doxygen perl graphviz 
+  ];
+
+  propagatedBuildInputs = [ 
+    ncurses zlib sqlite mcpp
   ];
 
   patchPhase = ''
     substituteInPlace configure.ac \
-      --replace "m4_esyscmd([git describe --tags --abbrev=0 --always | tr -d '\n'])" "${version}"
+      --replace "m4_esyscmd([git describe --tags --always | tr -d '\n'])" "${version}-c0ef144"
   '';
 
   # Without this, we get an obscure error about not being able to find a library version

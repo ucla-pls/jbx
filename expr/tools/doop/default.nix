@@ -106,7 +106,7 @@ doop-4_10_11 =
      version = "4.10.11";
      src = fetchurl {
        url = "http://tupai.cs.ucla.edu/${name}.tar";
-       sha256 = "0mw4chsfqdz57d1vgl89ybs5fpgbqj70ihi45r73q0vlrvw80zpx";
+       sha256 = "17dp9cx8d2h5ac7d1dnqjbqb8dwswl5747dr7l8l7jr0r0w0dfm9";
      };
      
      benchmarks = fetchgit { 
@@ -119,9 +119,12 @@ doop-4_10_11 =
      phases = [ "unpackPhase" "installPhase" ];
   
      buildInputs = [
+       makeWrapper
+     ];
+
+     propagatedBuildInputs = [
        souffle
        glibcLocales
-       makeWrapper
      ];
   
      installPhase = ''
@@ -141,8 +144,7 @@ doop-4_10_11 =
        makeWrapper $out/bin/doop_unwrapped $out/bin/doop \
          --set DOOP_HOME $out/ \
          --set GRADLE_OPTS "--offline" \
-         --set DOOP_PLATFORMS_LIB $benchmarks \
-         --prefix PATH : ${souffle}/bin
+         --set DOOP_PLATFORMS_LIB $benchmarks
      '';
   };
 }
