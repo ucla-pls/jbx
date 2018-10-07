@@ -64,7 +64,8 @@ public class WalaReachableMethod {
         {
             name = "\"" + name + "\"";
         }
-        fw.write("" + t.getPackage() + "/" + t.getClassName() + "." + name + ":" + sel.getDescriptor() + "\n");
+	
+        fw.write("" + ( t.getPackage() == null ? "" : t.getPackage() + "/" ) + t.getClassName() + "." + name + ":" + sel.getDescriptor() + "\n");
     }
     fw.close();    
   }

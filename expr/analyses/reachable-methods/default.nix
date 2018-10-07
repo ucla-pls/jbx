@@ -270,6 +270,8 @@ in rec {
             (builtins.attrNames analyses))
           } > compare.json
 	  python3 ${./firstlost.py} ${analyses.W benchmark env}/unsoundness0
+	  ln -s ${benchmark.build} program
+	  echo "${benchmark.mainclass}" | sed 's|\.|/|g' > mainclass
        '';
      } benchmark env;
 
