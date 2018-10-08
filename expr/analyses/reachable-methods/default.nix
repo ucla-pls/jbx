@@ -51,16 +51,18 @@ in rec {
   });
 
   doopCI = shared.doop { 
-    subanalysis = "context-insensitive-plusplus";
+    subanalysis = "context-insensitive";
     doop = doop;
     ignoreSandbox = true;
     tools = [ python ];
+    timelimit = 1800;
     postprocess = ''
       file="$sandbox/out/$subanalysis/0/database/Reachable.csv"
       if [ -f "$file" ]
       then
         python2.7 ${./petablox-parse.py} "$file" > $out/upper
       fi
+      rm -r $sandbox
     '';
   };
 
@@ -224,7 +226,7 @@ in rec {
     petablox = petablox;
     name = "dynamic";
     reflection = "dynamic";
-    timelimit = 1200;
+    timelimit = 1800;
     subanalyses = [ "reachable-methods" ];
     tools = [ python ];
     postprocess = ''
