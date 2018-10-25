@@ -12,6 +12,8 @@
 , stdenv
 , wala
 , jq
+, makeWrapper
+, openjdk8
 }:
 let
   emma_ = emma;
@@ -66,27 +68,34 @@ in rec {
     '';
   };
 
+  soot-rm = java: stdenv.mkDerivation { 
+    name = "soot-rm";
+    buildInputs = [ java makeWrapper ];
+      phases = "installPhase";
+      installPhase = ''
+	mkdir -p $out/bin
+        cp ${./SootReachableMethod.java} SootReachableMethod.java
+        javac -cp ${soot_}/share/java/soot.jar SootReachableMethod.java -d $out
+
+	makeWrapper ${java}/bin/java $out/bin/soot-rm \
+          --add-flags "-cp ${soot_}/share/java/soot.jar:$out" \
+          --add-flags SootReachableMethod\
+          --add-flags "-p cg.spark on" \
+          --add-flags "-pp -w -f n" \
+          --add-flags -app
+      '';
+    };
+
+  soot-rm8 = soot-rm openjdk8;
+
   soot = b: 
-    let sootext = stdenv.mkDerivation { 
-        name = "reachable";
-        buildInputs = [ b.java.jdk ];
-        phases = "installPhase";
-        installPhase = ''
-          mkdir $out
-          cp ${./SootReachableMethod.java} SootReachableMethod.java
-          javac -cp ${soot_}/share/java/soot.jar SootReachableMethod.java -d $out
-        '';
-      };
-    in utils.mkAnalysis {
+    utils.mkAnalysis {
       name = "soot-reachable-method";
-      tools = [ b.java.jdk python ];
+      tools = [ (soot-rm b.java.jdk) python ];
       soot = soot_;
       timelimit = 1800;
       analysis = ''
-        analyse "soot" java -cp $soot/share/java/soot.jar:${sootext}\
-          SootReachableMethod\
-          -pp -w -cp $classpath -f n -p cg.spark on\
-          -app $mainclass
+        analyse "soot" soot-rm -cp $classpath $mainclass
       '';
       postprocess = ''
         if [ -f $sandbox/reachable-methods.txt ]
@@ -96,28 +105,47 @@ in rec {
       '';
   } b ;
 
-  wala = b: 
-    let walaext = stdenv.mkDerivation { 
-        name = "reachable";
-        buildInputs = [ b.java.jdk ];
+  wala-rm = 
+    java:
+    stdenv.mkDerivation { 
+        name = "wala-rm";
+        buildInputs = [ java makeWrapper ];
         phases = "installPhase";
         installPhase = ''
           mkdir $out
           cp ${./WalaReachableMethod.java} WalaReachableMethod.java
           javac -cp ${wala_}/share/java/core.jar:${wala_}/share/java/util.jar:${wala_}/share/java/shrike.jar WalaReachableMethod.java -d $out
+          mkdir $out/bin
+	  makeWrapper ${java}/bin/java $out/bin/wala-rm \
+		  --add-flags -cp \
+		  --add-flags ${wala_}/share/java/core.jar:${wala_}/share/java/util.jar:${wala_}/share/java/shrike.jar:$out\
+		  --add-flags WalaReachableMethod\
         '';
       };
-    in utils.mkAnalysis {
+
+  wala-rm-exclude = 
+    java:
+    stdenv.mkDerivation { 
+        name = "wala-rm-exclude";
+        buildInputs = [ makeWrapper ];
+        phases = "installPhase";
+        installPhase = ''
+	  makeWrapper ${wala-rm java}/bin/wala-rm $out/bin/wala-rm-exclude \
+		  --add-flags -exclude\
+                  --add-flags ${./WalaExclusions.txt}
+        '';
+      };
+
+  wala-rm8 = wala-rm openjdk8;
+
+  wala = b: 
+    utils.mkAnalysis {
       name = "wala-reachable-method";
-      tools = [ b.java.jdk python ];
+      tools = [ python (wala-rm-exclude b.java.jdk)];
       wala = wala_;
       timelimit = 1800;
       analysis = ''
-        analyse "wala" java -cp ${wala_}/share/java/core.jar:${wala_}/share/java/util.jar:${wala_}/share/java/shrike.jar:${walaext}\
-          WalaReachableMethod\
-          -classpath $classpath \
-          -exclude ${./WalaExclusions.txt} \
-          -mainclass $mainclass
+        analyse "wala" wala-rm-exclude -classpath $classpath -mainclass $mainclass
       '';
       postprocess = ''
         if [ -f $sandbox/reachable-methods.txt ]
@@ -236,6 +264,23 @@ in rec {
           rm -r "$sandbox/petablox_output/bddbddb"
       fi
       rm -r $sandbox
+      '';
+    };
+  
+  # Petablox with the dynamic reflection handeling
+  petabloxDynamicWithSandbox = shared.petablox {
+    petablox = petablox;
+    name = "dynamic";
+    reflection = "dynamic";
+    timelimit = 1800;
+    subanalyses = [ "reachable-methods" ];
+    tools = [ python ];
+    postprocess = ''
+      if [ -f $sandbox/petablox_output/reachable-methods.txt ]
+      then
+          python2.7 ${./petablox-parse.py} $sandbox/petablox_output/reachable-methods.txt > $out/upper
+          rm -r "$sandbox/petablox_output/bddbddb"
+      fi
       '';
     };
 
