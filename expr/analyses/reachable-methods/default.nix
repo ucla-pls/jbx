@@ -267,6 +267,24 @@ in rec {
       '';
     };
   
+# Petablox with the dynamic reflection handeling
+  petabloxNone = shared.petablox {
+    petablox = petablox;
+    name = "none";
+    reflection = "none";
+    timelimit = 1800;
+    subanalyses = [ "reachable-methods" ];
+    tools = [ python ];
+    postprocess = ''
+      if [ -f $sandbox/petablox_output/reachable-methods.txt ]
+      then
+          python2.7 ${./petablox-parse.py} $sandbox/petablox_output/reachable-methods.txt > $out/upper
+          rm -r "$sandbox/petablox_output/bddbddb"
+      fi
+      rm -r $sandbox
+      '';
+    };
+  
   # Petablox with the dynamic reflection handeling
   petabloxDynamicWithSandbox = shared.petablox {
     petablox = petablox;
@@ -304,7 +322,7 @@ in rec {
   compare = 
     let analyses = 
         { W = wiretapAnalyser (utils.overview "static-rm" [petabloxDynamic doopCI soot wala]) world; 
-          P = petabloxDynamic;
+          P = petabloxNone;
           D = doopCI; 
           S = soot; 
           A = wala; 

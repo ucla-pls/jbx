@@ -1,7 +1,3 @@
-java\/awt\/.*
-javax\/swing\/.*
-sun\/awt\/.*
-sun\/swing\/.*
 com\/sun\/.*
 sun\/.*
 org\/netbeans\/.*
@@ -9,10 +5,3 @@ org\/openide\/.*
 com\/ibm\/crypto\/.*
 com\/ibm\/security\/.*
 org\/apache\/xerces\/.*
-dalvik\/.*
-java\/io\/ObjectStreamClass*
-apple\/.*
-com\/apple\/.*
-jdk\/.*
-org\/omg\/.*
-org\/w3c\/.*
