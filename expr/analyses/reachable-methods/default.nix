@@ -137,6 +137,7 @@ in rec {
       };
 
   wala-rm8 = wala-rm openjdk8;
+  wala-rm-exclude8 = wala-rm-exclude openjdk8;
 
   wala = b: 
     utils.mkAnalysis {

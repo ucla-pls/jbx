@@ -1,4 +1,4 @@
-{ fetchprop, callPackage}:
+{ fetchprop, callPackage, openjdk8}:
 rec {
   openjdk6 = callPackage ./openjdk6 {};
 
@@ -59,6 +59,8 @@ rec {
   inherit (callPackage ./wiretap {})
     wiretap
   ;
+
+  wiretap8 = wiretap { jdk = openjdk8; };
 
   inherit (callPackage ./wiretap-tools {})
     wiretap-tools
