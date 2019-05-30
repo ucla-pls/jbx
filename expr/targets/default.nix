@@ -61,6 +61,7 @@ in rec {
        sir.deadlock
        sir.account
        # sir.airline
+       sir.account2
        sir.diningPhilosophers
        # sir.alarmclock
        # sir.piper
@@ -72,21 +73,69 @@ in rec {
        jaConTeBe.log4j2
     ]));
 
+  deadlockfuzzer1 = 
+    deadlockfuzzer 1;
+  
+  deadlockfuzzer2 = 
+    deadlockfuzzer 2;
+  
+  deadlockfuzzer10 = 
+    deadlockfuzzer 10;
+
+  deadlockfuzzer1000 = 
+    deadlockfuzzer 1000;
+
   deadlockfuzzer = 
-    mkStatistics {
-      name = "deadlockfuzzer-table";
+    n:
+    analyses.deadlocks.joinFuzzer "fuzzer"
+    (onAll 
+       (analyses.deadlocks.deadlockfuzzerRepeatedAll n) 
+       deadlock-benchmarks env);
+  
+deadlockfuzzerY = 
+    analyses.deadlocks.joinFuzzer "fuzzer"
+    (onAll 
+       (analyses.deadlocks.deadlockfuzzerRepeatedAll 1) 
+      (versionize [java.java6] (with benchmarks.byName ; [ JaConTeBe-dbcp1 JaConTeBe-dbcp2 JaConTeBe-derby2 JaConTeBe-log4j2]))
+      env);
+ 
+  deadlockfuzzerX = 
+    mkStatistics { 
+      name = "deadlockfuzzer"; 
+      tools = [python];
       foreach = ''
-        cp -r $result ''${result##*+}
-      '';
-    } (onAll analyses.deadlocks.deadlockfuzzerAll deadlock-benchmarks env);
+	cat $result/times.csv >> $out/times.csv
+	cat $result/stdout >> $out/stdout
+	cat $result/stderr >> $out/stderr
+       '';
+    }
+    (onAll
+      (b: e: analyses.deadlocks.deadlockfuzzer b e (utils.getInput b "small"))
+      (versionize [java.java6] (with benchmarks.byName ; 
+[
+avrora-harness
+batik-harness
+eclipse-harness
+fop-harness
+h2-harness
+jython-harness
+luindex-harness
+lusearch-harness
+pmd-harness
+sunflow-harness
+xalan-harness
+]))
+      env);
 
   deadlocks =
     n:
     analyses.deadlocks.joinCycles "wiretap-cycles"
        (onAll
-         (analyses.deadlocks.surveilRepeatedAll n)
+         (analyses.deadlocks.surveilRepeatedAll )
          deadlock-benchmarks
          env);
+
+  tmp-deadlocks = analyses.deadlocks.surveilRepeatedAll 10 (benchmarks.sir.account2.withJava java.java6) env;
 
   deadlock-stats = 
     analyses.stats.statsJoin 
@@ -115,6 +164,14 @@ in rec {
        (versionize [java.java6]
         ( with benchmarks; [ baseline.dependent_datarace ] ++ rvpredict.all)
        ) env);
+  
+  dataraces-limited =
+    analyses.dataraces.averageAll "dataraces"
+    (onAll
+       (analyses.dataraces.repeatedAll 100)
+       (versionize [java.java6]
+        ( with benchmarks; [rvpredict.bubblesort])
+       ) env);
 
 # ++ (versionize [java.java8] benchmarks.byTag.njr)
 
@@ -130,12 +187,27 @@ in rec {
     mkStatistics { 
       name = "deadlockPerf"; 
       tools = [python];
-      foreach = "python ${./pref.py} $result/times.csv >> $out/times.csv";
+      foreach = "python ${./pref.py} $result >> $out/output.csv";
     }
     (onAll
       (b: e: analyses.deadlockPerf b e (utils.getInput b "small"))
-      (versionize [java.java8] dacapo-harness)
-      env);
+      (versionize [java.java6] (with benchmarks.byName; [
+avrora-harness
+batik-harness
+eclipse-harness
+fop-harness
+h2-harness
+jython-harness
+luindex-harness
+lusearch-harness
+pmd-harness
+sunflow-harness
+xalan-harness
+])) env);
+
+  dacapo-harness-stats = 
+    analyses.stats.statsJoin 
+      (onAll (analyses.stats.stats) (versionize [java.java8] dacapo-harness) env);
 
   reachable-methods =
     onAll

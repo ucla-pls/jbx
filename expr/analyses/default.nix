@@ -43,5 +43,9 @@ in rec {
     b: 
     utils.liftD (utils.compose { 
 	name = "performance+" + b.name;
+       	collect = ''
+          find $results -name history.count.txt -exec sed 's/[^0-9,]//g' {} \; > history.count.txt
+          find $results -name history.size.txt -exec cat {} \; > history.size.txt
+        '';
     }) (utils.withAllD [run.run deadlocks.dirkOne]) b;
 }

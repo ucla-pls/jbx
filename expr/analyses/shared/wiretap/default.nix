@@ -83,6 +83,7 @@ in rec {
            done | sort | sed 'N;s/\n/ /' > "runtime-deadlock.txt"
         fi
         wiretap-tools count $sandbox/_wiretap/wiretap.hist | tee history.count.txt
+	sed 's/[^0-9,]//g;s/,/\n/g' history.count.txt | awk '{x+=$1} END { print x}' >> history.size.txt
         for prover in $provers; do
           analyse "wiretap-tools-$prover" wiretap-tools \
               ${cmd} ${if verbose then "-v" else ""} -h -p $prover \

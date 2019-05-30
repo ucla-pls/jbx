@@ -143,6 +143,14 @@ in rec {
     tags = ["deadlock" "multilock"];
     patches = [ ./DiningPhilosophers.patch ];
   };
+  
+  account2 = sirBenchmark {
+    name = "account2";
+    folder = "account";
+    mainclass = "Main";
+    tags = ["deadlock" "multilock"];
+    patches = [ ./Account2.patch ];
+  };
 
   groovy = sirBenchmark {
     name = "groovy";
@@ -233,6 +241,7 @@ in rec {
 
   all = [
     account
+    account2
     accountsubtype
     airline
     alarmclock
