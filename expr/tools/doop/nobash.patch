@@ -1,0 +1,98 @@
+diff --git a/bin/diff-souffle-lb.sh b/bin/diff-souffle-lb.sh
+index 319a07b8..5038cc9d 100755
+--- a/bin/diff-souffle-lb.sh
++++ b/bin/diff-souffle-lb.sh
+@@ -1,4 +1,4 @@
+-#!/bin/bash
++#!/usr/bin/env bash
+ 
+ # Script to diff two files that contain the relation sizes of an analysis that
+ # was run under Souffle-Doop and LogicBLox-Doop.
+diff --git a/bin/export-TSV.sh b/bin/export-TSV.sh
+index 81240c51..24dd6116 100755
+--- a/bin/export-TSV.sh
++++ b/bin/export-TSV.sh
+@@ -1,4 +1,4 @@
+-#!/bin/bash
++#!/usr/bin/env bash
+ 
+ outDir=$1
+ echo ">>> $outDir"
+diff --git a/bin/generate-bytecode b/bin/generate-bytecode
+index e1b93192..e3dc4140 100755
+--- a/bin/generate-bytecode
++++ b/bin/generate-bytecode
+@@ -1,3 +1,3 @@
+-#!/bin/bash
++#!/usr/bin/env bash
+ [ "x$DOOP_HOME" = "x" ] && { echo "Environment variable DOOP_HOME is not set" ; exit 1 ; }
+ eval '$DOOP_HOME/gradlew -p $DOOP_HOME generateJimple -Pargs="'$@'"'
+diff --git a/bin/mkjar b/bin/mkjar
+index 56f415a0..e0c49533 100755
+--- a/bin/mkjar
++++ b/bin/mkjar
+@@ -1,4 +1,4 @@
+-#!/bin/bash
++#!/usr/bin/env bash
+ 
+ [[ $# != 1 ]] && echo "Must give exactly one argument (the .java file)..." && exit
+ [[ ! $1 =~ ^[a-zA-Z0-9_-]+\.java$ ]] && echo "Argument must be a valid java filename..." && exit
+diff --git a/build.gradle b/build.gradle
+index f494df81..589df2da 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -65,7 +65,7 @@ configurations.all {
+ 
+ dependencies {
+ 
+-    compile "org.clyze:clue-common:2.3.+",
++    compile "org.clyze:clue-common:2.3.0",
+             "org.clyze:deepdoop:0.9.+",
+             "org.codehaus.groovy:groovy-all:2.4.7",             // Groovy
+             "commons-logging:commons-logging:1.1",              // Logging wrapper
+diff --git a/doop b/doop
+index 50816aaa..9ca1b6dc 100755
+--- a/doop
++++ b/doop
+@@ -1,4 +1,4 @@
+-#!/bin/bash
++#!/usr/bin/env bash
+ DIR=$(dirname $(readlink -f ${BASH_SOURCE[0]}))
+ [ "$DIR" != "$(pwd)" ] && { echo "Must be invoked from $DIR" ; exit 1 ; }
+ eval '$DOOP_HOME/gradlew run -Pargs="'$@'"'
+diff --git a/logic/analyses/escape/wrap.sh b/logic/analyses/escape/wrap.sh
+index 1d6b9d6d..671bd974 100755
+--- a/logic/analyses/escape/wrap.sh
++++ b/logic/analyses/escape/wrap.sh
+@@ -1,4 +1,4 @@
+-#!/bin/bash
++#!/usr/bin/env bash
+ ! [[ $# = 1 ]] && { echo "MUST GIVE EXACTLY ONE ARGUMENT (the jar file)"; exit 1; }
+ 
+ JAR=$1
+diff --git a/src/main/groovy/org/clyze/doop/CommandLineAnalysisPostProcessor.groovy b/src/main/groovy/org/clyze/doop/CommandLineAnalysisPostProcessor.groovy
+index 6f0b71c3..7d32b2ca 100644
+--- a/src/main/groovy/org/clyze/doop/CommandLineAnalysisPostProcessor.groovy
++++ b/src/main/groovy/org/clyze/doop/CommandLineAnalysisPostProcessor.groovy
+@@ -18,7 +18,7 @@ class CommandLineAnalysisPostProcessor implements AnalysisPostProcessor<DoopAnal
+             printStats(analysis)
+         if (analysis.options.SANITY.value)
+             printSanityResults(analysis)
+-        linkResult(analysis)
++        // linkResult(analysis)
+     }
+ 
+ 
+diff --git a/src/main/groovy/org/clyze/doop/Main.groovy b/src/main/groovy/org/clyze/doop/Main.groovy
+index 05f5d9ee..dce96827 100644
+--- a/src/main/groovy/org/clyze/doop/Main.groovy
++++ b/src/main/groovy/org/clyze/doop/Main.groovy
+@@ -30,7 +30,7 @@ class Main {
+     static void main(String[] args) {
+ 
+         Doop.initDoop(System.getenv("DOOP_HOME"), System.getenv("DOOP_OUT"), System.getenv("DOOP_CACHE"))
+-        Helper.initLogging("INFO", "${Doop.doopHome}/build/logs", true)
++        Helper.initLogging("INFO", "${System.getenv("DOOP_LOG")}", true)
+ 
+         try {
+             // The builder for displaying usage should not include non-standard flags

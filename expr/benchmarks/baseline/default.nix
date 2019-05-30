@@ -5,8 +5,8 @@ let
     src = fetchgit {
       url = "https://github.com/ucla-pls/baseline.git";
       branchName = "master";
-      rev = "7948c458411570ad4eb44a082d418c7dfa3f5afa";
-      sha256 = "1xycbrn02v7kymr430jhdqr1l5qp17car8hjda04x297j82105s6";
+      rev = "52ab27c90eb0853fa4bdc057473115557e863909";
+      sha256 = "1rhrrk462cjn6jmz3923h78a0pvlrp4mqm063dv7vlzb9d673d0p";
     };
     phases = [ "unpackPhase" "patchPhase" "buildPhase" "installPhase" ];
     buildInputs = [ ant java.jdk ];
@@ -73,6 +73,16 @@ in rec {
   notadeadlock = mkBaseline {
     name = "notadeadlock";
     mainclass = "edu.ucla.pls.baseline.NotADeadlock";
+  };
+  objectarrays = utils.mkBenchmarkTemplate {
+    name = "objectarrays";
+    build = baseline;
+    mainclass = "edu.ucla.pls.baseline.ObjectArrays";
+    inputs = [
+      { name = "one";
+        args = [];
+      }
+    ];
   };
   all = [
     transfer

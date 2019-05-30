@@ -1,4 +1,4 @@
-{ fetchprop, callPackage}:
+{ fetchprop, callPackage, openjdk8}:
 rec {
   openjdk6 = callPackage ./openjdk6 {};
 
@@ -16,7 +16,13 @@ rec {
   ;
   logicblox = logicblox-4_3_8_2;
 
-  doop = callPackage ./doop { inherit logicblox-3_10_21; };
+  inherit (callPackage ./doop { souffle = souffle-1_4_0; })
+    doop-3_3_1
+    doop-4_10_11
+  ;
+  doop = doop-4_10_11;
+
+  souffle-1_4_0 = callPackage ./souffle {};
 
   dljc = callPackage ./do-like-javac {};
 
@@ -54,6 +60,8 @@ rec {
     wiretap
   ;
 
+  wiretap8 = wiretap { jdk = openjdk8; };
+
   inherit (callPackage ./wiretap-tools {})
     wiretap-tools
   ;
@@ -64,5 +72,15 @@ rec {
   
   inherit (callPackage ./rvpredict { inherit fetchprop;})
     rvpredict
+  ;
+  
+  inherit (callPackage ./soot {})
+    soot-3_1_0
+    soot
+  ;
+  
+  inherit (callPackage ./wala {})
+    wala-1_5_0
+    wala
   ;
 }

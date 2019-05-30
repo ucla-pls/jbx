@@ -330,9 +330,6 @@ in with lib.debug; rec {
       collect = ''
         cd $out
         python ${./overview.py} $results
-        column -ts',' overview.txt
-        echo "Results from:"
-        cat $out/results
       '';
     }) analyses benchmark;
 
@@ -341,17 +338,17 @@ in with lib.debug; rec {
     name:
     world:
     analyses:
+    post: 
     benchmark:
     env:
     liftL (mkStatistics {
       name = name + "+" + benchmark.name;
-      tools = [ python eject];
+      tools = [ python eject ] ++ post.tools;
+      after = post.after;
       collect = ''
         cd $out
         python ${./overview.py} -w "${world benchmark env}/upper" $results
-        column -ts',' overview.txt
-        echo "Results from:"
-        cat $out/results
+        runHook after
       '';
     }) analyses benchmark env;
 

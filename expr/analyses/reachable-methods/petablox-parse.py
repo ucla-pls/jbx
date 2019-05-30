@@ -29,6 +29,7 @@ def parseline(line):
     d["rtype"] = transform(d["rtype"])
     d["pkgcls"] = to_class(d["pkgcls"]);
     d["name"] = '"' + d["name"] + '"' if d["name"].startswith("<") else d["name"]
+    d["name"] = d["name"].strip("'")
     return "{pkgcls}.{name}:({params}){rtype}\n".format(**d);
 
 from collections import deque
@@ -48,7 +49,7 @@ def transform(param):
     return type_
 
 def to_class(string):
-    return string.replace(".", "/")
+    return string.replace(".", "/").replace("'", "")
 
 try:
     with open(sys.argv[1]) as f:

@@ -1,6 +1,24 @@
-{ shared, utils, petablox, emma, python, logicblox-4_3_6_3, python3, unzip, javaq }:
+{ shared
+, utils
+, petablox
+, doop
+, emma
+, python
+, logicblox-4_3_6_3
+, python3
+, unzip
+, javaq
+, soot
+, stdenv
+, wala
+, jq
+, makeWrapper
+, openjdk8
+}:
 let
   emma_ = emma;
+  soot_ = soot;
+  wala_ = wala;
   inherit (utils) mkDynamicAnalysis onAllInputs;
 in rec {
   # Emma, dynammic reachable methods
@@ -19,8 +37,127 @@ in rec {
   };
 
   emmaAll = onAllInputs emma {};
+  
+  doopCI_ = shared.doop ({ 
+    subanalysis = "context-insensitive-plusplus";
+    doop = doop;
+    ignoreSandbox = false;
+    tools = [ python ];
+    postprocess = ''
+      file="$sandbox/out/$subanalysis/0/database/Reachable.csv"
+      if [ -f "$file" ]
+      then
+        python2.7 ${./petablox-parse.py} "$file" > $out/upper
+      fi
+    '';
+  });
 
-  wiretap = shared.wiretap {
+  doopCI = shared.doop { 
+    subanalysis = "context-insensitive";
+    doop = doop;
+    ignoreSandbox = true;
+    tools = [ python ];
+    timelimit = 1800;
+    postprocess = ''
+      file="$sandbox/out/$subanalysis/0/database/Reachable.csv"
+      if [ -f "$file" ]
+      then
+        python2.7 ${./petablox-parse.py} "$file" > $out/upper
+      fi
+      rm -r $sandbox
+    '';
+  };
+
+  soot-rm = java: stdenv.mkDerivation { 
+    name = "soot-rm";
+    buildInputs = [ java makeWrapper ];
+      phases = "installPhase";
+      installPhase = ''
+	mkdir -p $out/bin
+        cp ${./SootReachableMethod.java} SootReachableMethod.java
+        javac -cp ${soot_}/share/java/soot.jar SootReachableMethod.java -d $out
+
+	makeWrapper ${java}/bin/java $out/bin/soot-rm \
+          --add-flags "-cp ${soot_}/share/java/soot.jar:$out" \
+          --add-flags SootReachableMethod\
+          --add-flags "-p cg.spark on" \
+          --add-flags "-pp -w -f n" \
+          --add-flags -app
+      '';
+    };
+
+  soot-rm8 = soot-rm openjdk8;
+
+  soot = b: 
+    utils.mkAnalysis {
+      name = "soot-reachable-method";
+      tools = [ (soot-rm b.java.jdk) python ];
+      soot = soot_;
+      timelimit = 1800;
+      analysis = ''
+        analyse "soot" soot-rm -cp $classpath $mainclass
+      '';
+      postprocess = ''
+        if [ -f $sandbox/reachable-methods.txt ]
+        then
+            python2.7 ${./petablox-parse.py} $sandbox/reachable-methods.txt > $out/upper
+        fi
+      '';
+  } b ;
+
+  wala-rm = 
+    java:
+    stdenv.mkDerivation { 
+        name = "wala-rm";
+        buildInputs = [ java makeWrapper ];
+        phases = "installPhase";
+        installPhase = ''
+          mkdir $out
+          cp ${./WalaReachableMethod.java} WalaReachableMethod.java
+          javac -cp ${wala_}/share/java/core.jar:${wala_}/share/java/util.jar:${wala_}/share/java/shrike.jar WalaReachableMethod.java -d $out
+          mkdir $out/bin
+	  makeWrapper ${java}/bin/java $out/bin/wala-rm \
+		  --add-flags -cp \
+		  --add-flags ${wala_}/share/java/core.jar:${wala_}/share/java/util.jar:${wala_}/share/java/shrike.jar:$out\
+		  --add-flags WalaReachableMethod\
+        '';
+      };
+
+  wala-rm-exclude = 
+    java:
+    stdenv.mkDerivation { 
+        name = "wala-rm-exclude";
+        buildInputs = [ makeWrapper ];
+        phases = "installPhase";
+        installPhase = ''
+	  makeWrapper ${wala-rm java}/bin/wala-rm $out/bin/wala-rm-exclude \
+		  --add-flags -exclude\
+                  --add-flags ${./WalaExclusions.txt}
+        '';
+      };
+
+  wala-rm8 = wala-rm openjdk8;
+  wala-rm-exclude8 = wala-rm-exclude openjdk8;
+
+  wala = b: 
+    utils.mkAnalysis {
+      name = "wala-reachable-method";
+      tools = [ python (wala-rm-exclude b.java.jdk)];
+      wala = wala_;
+      timelimit = 1800;
+      analysis = ''
+        analyse "wala" wala-rm-exclude -classpath $classpath -mainclass $mainclass
+      '';
+      postprocess = ''
+        if [ -f $sandbox/reachable-methods.txt ]
+        then
+            cp $sandbox/reachable-methods.txt $out/upper
+        fi
+      '';
+  } b ;
+
+  
+  wiretap = shared.wiretap 420 {
     settings = [
       { name = "wiretappers";     value = "EnterMethod";      }
       { name = "recorder";        value = "ReachableMethods"; }
@@ -118,7 +255,7 @@ in rec {
     petablox = petablox;
     name = "dynamic";
     reflection = "dynamic";
-    timelimit = 1200;
+    timelimit = 1800;
     subanalyses = [ "reachable-methods" ];
     tools = [ python ];
     postprocess = ''
@@ -130,13 +267,49 @@ in rec {
       rm -r $sandbox
       '';
     };
+  
+# Petablox with the dynamic reflection handeling
+  petabloxNone = shared.petablox {
+    petablox = petablox;
+    name = "none";
+    reflection = "none";
+    timelimit = 1800;
+    subanalyses = [ "reachable-methods" ];
+    tools = [ python ];
+    postprocess = ''
+      if [ -f $sandbox/petablox_output/reachable-methods.txt ]
+      then
+          python2.7 ${./petablox-parse.py} $sandbox/petablox_output/reachable-methods.txt > $out/upper
+          rm -r "$sandbox/petablox_output/bddbddb"
+      fi
+      rm -r $sandbox
+      '';
+    };
+  
+  # Petablox with the dynamic reflection handeling
+  petabloxDynamicWithSandbox = shared.petablox {
+    petablox = petablox;
+    name = "dynamic";
+    reflection = "dynamic";
+    timelimit = 1800;
+    subanalyses = [ "reachable-methods" ];
+    tools = [ python ];
+    postprocess = ''
+      if [ -f $sandbox/petablox_output/reachable-methods.txt ]
+      then
+          python2.7 ${./petablox-parse.py} $sandbox/petablox_output/reachable-methods.txt > $out/upper
+          rm -r "$sandbox/petablox_output/bddbddb"
+      fi
+      '';
+    };
 
   world = benchmark: utils.mkAnalysis {
     name = "reachable-methods-world";
-    tools = [ python3 unzip benchmark.java.jdk];
+    tools = [ javaq jq ];
     timelimit = 420;
     analysis = ''
-      analyse "reachable-methods-world" python3 ${./worldex.py} $build/ | sort -u > $out/upper
+      analyse "reachable-methods-world" javaq --cp=$classpath > javaq.json
+      jq '.name as $name | .methods[] | $name + "." + .' -r javaq.json | sed 's|<init>|"<init>"|;s|<clinit>|"<clinit>"|' > $out/upper
     '';
   } benchmark;
 
@@ -147,31 +320,51 @@ in rec {
     wiretapAll
   ];
 
-  comp = utils.cappedOverview "library-reachable-method" world [
-    wiretapAll
-    petabloxDynamic
-  ];
+  compare = 
+    let analyses = 
+        { W = wiretapAnalyser (utils.overview "static-rm" [petabloxDynamic doopCI soot wala]) world; 
+          P = petabloxNone;
+          D = doopCI; 
+          S = soot; 
+          A = wala; 
+        };
+    in
+     benchmark:
+     env:
+     utils.cappedOverview "reachable-methods" world (builtins.attrValues analyses) {
+       tools = [ python3 ];
+       after = ''
+          python3 ${./to-json.py} ${world benchmark env} ${builtins.toString
+	    (map (name: name + ":" + (analyses.${name} benchmark env)) 
+            (builtins.attrNames analyses))
+          } > compare.json
+	  python3 ${./firstlost.py} ${analyses.W benchmark env}/unsoundness0
+	  ln -s ${benchmark.build} program
+	  echo "${benchmark.mainclass}" | sed 's|\.|/|g' > mainclass
+       '';
+     } benchmark env;
 
-  wiretapAnalyser = benchmark: env:
+  wiretapAnalyser = static: w: benchmark: env:
     let
-      upper_ = "${petabloxDynamic benchmark env}/upper";
-      world_ = "${world benchmark env}/upper";
-    in onAllInputs (shared.wiretap (rec {
-    settings = [
-      { name = "wiretappers";       value = "EnterMethod,ReturnMethod";      }
-      { name = "recorder";          value = "ReachableMethodsAnalyzer"; }
-      { name = "ignoredprefixes";   value = "edu/ucla/pls/wiretap/,java/,sun/,javax/,com/sun/,com/ibm/,org/xml/,org/w3c/,apple/awt/,com/apple/"; }
-      { name = "overapproximation"; value = upper_; }
-      { name = "world";             value = world_; }
-    ];
-    timelimit = 840;
-    postprocess = ''
-      if [[ -e  $sandbox/_wiretap/unsoundness ]]; then
-        cp -r $sandbox/_wiretap/unsoundness $out
-        cp -r $sandbox/_wiretap/reachable.txt $out/lower
-      fi
-      '';
-    })) {
+      upper_ = "${static benchmark env}/upper";
+      world_ = "${w benchmark env}/upper";
+      wiretapa = shared.wiretap 420
+        rec {
+          settings = [
+            { name = "wiretappers";       value = "EnterMethod,ReturnMethod";      }
+            { name = "recorder";          value = "ReachableMethodsAnalyzer"; }
+            { name = "ignoredprefixes";   value = "edu/ucla/pls/wiretap/,java/,sun/"; }
+            { name = "overapproximation"; value = upper_; }
+            { name = "world";             value = world_; }
+          ];
+          postprocess = ''
+            if [[ -e  $sandbox/_wiretap/unsoundness ]]; then
+              cp -r $sandbox/_wiretap/unsoundness $out
+            fi
+            cp -r $sandbox/_wiretap/reachable.txt $out/lower
+            '';
+        };
+    in onAllInputs wiretapa {
       collect = ''
         var=0
         for f in $results; do
@@ -181,10 +374,6 @@ in rec {
           fi
         done
         ln -s ${benchmark.build} $out/benchmark
-        cp ${upper_} $out/upper
-        cp ${world_} $out/world
-
-        touch $out/phases
       '';
     } benchmark env;
 
