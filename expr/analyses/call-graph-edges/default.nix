@@ -36,7 +36,7 @@ rec {
     }: b: 
     utils.mkAnalysis {
       name = "wala-cge-${analysis}-${(if reflection then "" else "no")
-+ "reflect"}-${if resolveinterfaces then "intf" else "nointf"}";
+        + "reflect"}-${if resolveinterfaces then "intf" else "nointf"}";
       tools = [ (wala-call-graph-edges b.java.jdk) ];
       timelimit = 1800;
       analysis = ''
@@ -97,28 +97,60 @@ rec {
       analysis = "0cfa";
     };
   
-  doop = reflection_: shared.doop { 
+  doop = { reflection ? true }: 
+  shared.doop { 
     subanalysis = "context-insensitive";
     doop = tools.doop;
     tools = [ pkgs.python3 javaq];
     ignoreSandbox = true;
-    reflection = reflection_;
+    reflection = reflection;
     timelimit = 1800;
     postprocess = ''
       file="$sandbox/out/$subanalysis/0/database/Reachable.csv"
       if [ -f "$file" ]
       then
         cp "$file" $out/DoopReachable.csv
-        javaq --format=json-full --cp=$classpath > $out/javaq.json
-        python ${./doop-parse.py} $out/upper $out/javaq.json $out/DoopReachable.csv 
       fi
-      rm -r $sandbox
     '';
+    # postprocess = ''
+    #   file="$sandbox/out/$subanalysis/0/database/Reachable.csv"
+    #   if [ -f "$file" ]
+    #   then
+    #     cp "$file" $out/DoopReachable.csv
+    #     javaq --format=json-full --cp=$classpath > $out/javaq.json
+    #     python ${./doop-parse.py} $out/upper $out/javaq.json $out/DoopReachable.csv 
+    #   fi
+    #   rm -r $sandbox
+    # '';
   };
 
-  doop-noreflect = doop false;
-  doop-reflect = doop true;
+  doop-noreflect = doop { reflection = false; };
+  doop-reflect = doop { reflection = true; };
 
+  javaq = utils.mkAnalysis {
+    name = "javaq";
+    tools = [ tools.javaq ];
+    timelimit = 300;
+    analysis = ''
+      analyse "javaq" javaq --format=json-full --cp $classpath > decompiled.json
+    '';
+    postprocess = ''
+      mv "$sandbox/decompiled.json" "$out"
+    '';
+  };
+  
+  doop-simple = 
+    b: e: utils.postprocess {
+      tools = [ pkgs.python3 tools.javaq ];
+      postprocess = ''
+        file="$sandbox/out/context-insensitive/0/database/Reachable.csv"
+        if [ -f "$file" ]
+        then
+          cp "$file" $out/DoopReachable.csv
+          python ${./doop-parse.py} $out/upper "${javaq b e}/decompiled.json" $out/DoopReachable.csv 
+        fi
+      '';
+    } (doop-noreflect b e);
 
 #  petabloxDefault = shared.petablox {
 #    petablox = petablox;
