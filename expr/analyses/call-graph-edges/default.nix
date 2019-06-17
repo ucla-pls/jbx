@@ -54,7 +54,7 @@ rec {
   doop = reflection_: shared.doop { 
     subanalysis = "context-insensitive";
     doop = tools.doop;
-    tools = [ pkgs.python javaq];
+    tools = [ pkgs.python3 javaq];
     ignoreSandbox = true;
     reflection = reflection_;
     timelimit = 1800;
@@ -64,7 +64,7 @@ rec {
       then
         cp "$file" $out/DoopReachable.csv
         javaq --format=json-full --cp=$classpath > $out/javaq.json
-        python ${./doop-parse.py} $out/javaq.json $out/DoopReachable.csv 
+        python ${./doop-parse.py} $out/upper $out/javaq.json $out/DoopReachable.csv 
       fi
       rm -r $sandbox
     '';
