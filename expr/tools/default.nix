@@ -68,6 +68,8 @@ rec {
   
   inherit (callPackage ./javaq {})
     javaq
+    jvmhs
+    jvm-binary
   ;
   
   inherit (callPackage ./tamiflex {})
@@ -85,7 +87,7 @@ rec {
   ;
   
   inherit (callPackage ./wala {})
-    wala-1_5_0
+    wala-1_5_3
     wala
   ;
 }

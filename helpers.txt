@@ -1,0 +1,3 @@
+  305  nix-build  expr/ -A analyses.call-graph-edges.wala-call-graph-edges8
+  323  ./jbx -j8 -d analyse -o avrora -a call-graph-edges.wala
+  349  nix-env -i -f expr -A analyses.call-graph-edges.wala-call-graph-edges8

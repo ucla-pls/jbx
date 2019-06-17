@@ -33,6 +33,9 @@ in rec {
   data-flow-graph =
     callPackage ./data-flow-graph { inherit shared; };
 
+  call-graph-edges =
+    callPackage ./call-graph-edges { inherit shared; };
+
   traces =
     callPackage ./traces {};
 
