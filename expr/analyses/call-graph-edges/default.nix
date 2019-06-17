@@ -127,7 +127,7 @@ rec {
   doop-noreflect = doop { reflection = false; };
   doop-reflect = doop { reflection = true; };
 
-  javaq = utils.mkAnalysis {
+  decompile = utils.mkAnalysis {
     name = "javaq";
     tools = [ tools.javaq ];
     timelimit = 300;
@@ -147,7 +147,8 @@ rec {
         if [ -f "$file" ]
         then
           cp "$file" $out/DoopReachable.csv
-          python ${./doop-parse.py} $out/upper "${javaq b e}/decompiled.json" $out/DoopReachable.csv 
+          ln -s "${decompile b e}/decompiled.json" .
+          python ${./doop-parse.py} $out/upper decompiled.json $out/DoopReachable.csv 
         fi
       '';
     } (doop-noreflect b e);

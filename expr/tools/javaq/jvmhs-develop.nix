@@ -18,7 +18,7 @@ mkDerivation {
   libraryToolDepends = [ hpack ];
   testHaskellDepends = [
     aeson base bytestring containers deepseq directory fgl
-    fgl-visualize filepath generic-random
+    fgl-visualize filepath generic-random 
     hspec-expectations-pretty-diff jvm-binary lens lens-action mtl
     process QuickCheck tasty tasty-discover tasty-hspec tasty-hunit
     tasty-quickcheck text vector zip-archive

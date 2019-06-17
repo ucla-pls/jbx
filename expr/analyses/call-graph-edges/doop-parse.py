@@ -82,16 +82,9 @@ def reformat_method(node):
 #this is not straightforward because each file is a list of json strings
 #the file as a whole is not a valid single json string.
 #So we first convert it into the right format
-def read_javaq_output():
-    javaq_output = '{"program" : ['
-    with open(JAVAQ_OUTPUT) as fp: 
-        line = fp.readline()
-        javaq_output += "\n" + line
-        while line:
-           javaq_output += "," + "\n" + line
-           line = fp.readline()
-    javaq_output += "]}"
-    return json.loads(javaq_output)
+def read_javaq_output(file):
+    with open(file) as fp: 
+        return json.load(fp)
 
 #Removes the arguments and return type from a method in bytecode format
 #sample input = methd:(Lint;[Ljava/lang/String;)V
@@ -103,10 +96,10 @@ def main():
     output = []
     unique_edges_with_off = {}
     #Read in the JAVAQ output
-    javaq_json = read_javaq_output()
+    javaq_json = read_javaq_output(file=JAVAQ_OUTPUT)
     invoke_count = 0
     #Read in all unique edges and their possible bytecode offsets from Javaq
-    for src_class_obj in javaq_json['program']:
+    for src_class_obj in javaq_json:
         src_class_name = src_class_obj['name']
         methods = src_class_obj['methods']
         for src_method in methods:
@@ -120,6 +113,7 @@ def main():
                 continue
             #Else iterate through the invoke instructions
             for instr in methods[src_method]['code']['byte_code']:
+                print(instr)
                 if instr["opc"] == "invoke":
                     offset = instr["off"]
                     #if class is not in instruction, the reason is that 

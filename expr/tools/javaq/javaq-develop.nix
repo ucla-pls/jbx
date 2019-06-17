@@ -1,6 +1,7 @@
 { mkDerivation, aeson, base, base16-bytestring, bytestring
 , containers, cryptohash-sha256, deepseq, docopt, fetchgit
 , filepath, hpack, jvmhs, lens, lens-action, stdenv, text, src
+, cassava, ansi-wl-pprint, hexstring, optparse-applicative
 }:
 mkDerivation {
   pname = "javaq";
@@ -14,6 +15,7 @@ mkDerivation {
     aeson base base16-bytestring bytestring containers
     cryptohash-sha256 deepseq docopt filepath jvmhs lens lens-action
     text
+    cassava ansi-wl-pprint hexstring optparse-applicative
   ];
   preConfigure = "hpack";
   homepage = "https://github.com/ucla-pls/jvmhs#readme";
