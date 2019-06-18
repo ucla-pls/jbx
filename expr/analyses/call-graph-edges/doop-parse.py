@@ -6,15 +6,16 @@ import json
 import csv
 
 OUTPUT_FILE = sys.argv[1]
-JAVAQ_OUTPUT = sys.argv[2]
-DOOP_OUTPUT = sys.argv[3]
+DOOP_OUTPUT = sys.argv[2]
 DOOP_FAKE_ROOT = "doop/FakeRootClass.fakeRootMethod:()V"
 INIT_FUNCTIONS = ["<main-thread-init>","<thread-group-init>"]
 #Native methods are only used for the following method 
 #java/security/AccessController.doPrivileged
 NATIVE = "native "
 #This is the value set by WALA, so we will be sticking to it
-NATIVE_OFFSET = 0
+DEFAULT_ORDER = -1
+REG_FINALIZE = "<register-finalize "
+DEFAULT_TARGET = "target_unavailable"
 
 #formats a type to the correct format
 def format_type(type_string):
@@ -59,7 +60,6 @@ def reformat_method(node):
     #Correct the return type format
     return_type = format_type(return_type)
 
-    print(method_name_with_args)
     #Correct the method args
     method_args = method_name_with_args.split("(")[1]
     method_args = method_args[:-2] #remove the last 2 characters ( ')>' )
@@ -79,14 +79,15 @@ def reformat_method(node):
     )
     return node_string
 
-#Read javaq output.
-#this is not straightforward because each file is a list of json strings
-#the file as a whole is not a valid single json string.
-#So we first convert it into the right format
-def read_javaq_output(file):
-    with open(file, encoding="utf-8") as fp: 
-        for line in fp:
-            yield json.loads(line.strip())
+#reformats the target to the required format
+#sample input - java.lang.Object.finalize
+#sample output - java/lang/Object.finalize
+def reformat_target(declared_target):
+    split = declared_target.split(".")
+    class_name = "/".join(split[:-1])
+    method_name = split[-1]
+    formatted_target = class_name + "." + method_name
+    return formatted_target
 
 #Removes the arguments and return type from a method in bytecode format
 #sample input = methd:(Lint;[Ljava/lang/String;)V
@@ -96,83 +97,53 @@ def remove_args(method):
 
 def main():
     output = []
-    unique_edges_with_off = {}
-    #Read in the JAVAQ output
-    javaq_json = read_javaq_output(file=JAVAQ_OUTPUT)
-    invoke_count = 0
-    #Read in all unique edges and their possible bytecode offsets from Javaq
-    for src_class_obj in javaq_json:
-        src_class_name = src_class_obj['name']
-        methods = src_class_obj['methods']
-        for src_method, method in methods.items():
-            #Skip methods with no bytecode
-            code = method.get('code', False)
-            if not code:
-                continue
-            byte_code = code.get('byte_code', False)
-            if not byte_code:
-                continue
-            #Else iterate through the invoke instructions
-            for instr in byte_code:
-                if instr["opc"] == "invoke":
-                    offset = instr["off"]
-                    #if class is not in instruction, the reason is that 
-                    #it is a dynamic call target as described here 
-                    #https://docs.oracle.com/javase/specs/jvms/se11/html/jvms-4.html#jvms-4.4.10
-                    if "class" not in instr:
-                        print(src_class_name)
-                        print(src_method)
-                        print(instr["method"])
-                        print()
-                        continue
-                    declared_target_class = instr["class"].replace("/",".")
-                    dest_method = remove_args(instr["method"])
-                    src_node = src_class_name + "." + src_method
-                    declared_target = declared_target_class + "." + dest_method
-                    edge = (src_node,declared_target)
-                    if edge not in unique_edges_with_off:
-                        unique_edges_with_off[edge] = []
-                    unique_edges_with_off[edge].append(offset)
-
     #Read in the Doop outputs
     #note - don't skip first line. There is no header.
     with open(DOOP_OUTPUT) as doop_fp:
         doop_csv = csv.reader(doop_fp, delimiter='\t')
         for row in doop_csv:
-            print(row)
             #Compute the src and destination nodes
             dest_node = row[3]
             src_method_call = row[1]
-            src_node = src_method_call.split("/")[0]
-
-            #Compute the destination node
-            formatted_dest_node = reformat_method(dest_node)
-            #Handle the special case of an init function
-            if (src_node in INIT_FUNCTIONS):
-                output.append([DOOP_FAKE_ROOT,"-1",formatted_dest_node])
+            if REG_FINALIZE in src_method_call:
+                continue #This corresponds to a new statement. Wala skips these. 
+                #src_node = src_method_call.split("/")[1]
+                #declared_target = src_method_call.split("/")[2]
+                #declared_target = declared_target[4:] #skip the 'new ' in the string
+                #formatted_declared_target = reformat_target(declared_target)
+                #order = DEFAULT_ORDER
+                #formatted_src_node = reformat_method(src_node)
             else:
-                #Format the source node, and get the declared target
-                formatted_src_node = reformat_method(src_node)
-                declared_target = src_method_call.split("/")[1]
-                #Deal with Native targets
-                if NATIVE in declared_target[:7]:
-                    offset = NATIVE_OFFSET
-                #If not a native target, look for the bytecode offset from javaq
-                elif (formatted_src_node,declared_target) in unique_edges_with_off:
-                    call_site_order = int(src_method_call.split("/")[2])
-                    if call_site_order>=len(unique_edges_with_off[
-                            (formatted_src_node,declared_target)]):
-                        offset = 0
+                src_node = src_method_call.split("/")[0]
+                #Handle the special case of an init function
+                if (src_node in INIT_FUNCTIONS):
+                    order = DEFAULT_ORDER
+                    formatted_src_node = DOOP_FAKE_ROOT
+                    formatted_declared_target = DEFAULT_TARGET
+                else: #All other cases
+                    #Format the source node, and get the declared target
+                    formatted_src_node = reformat_method(src_node)
+                    declared_target = src_method_call.split("/")[1]
+                    formatted_declared_target = reformat_target(declared_target)
+                    #Deal with Native targets
+                    if NATIVE in declared_target[:7]:
+                        order = DEFAULT_ORDER
+                    #If not a native target, order will be written
                     else:
-                        offset = unique_edges_with_off[
-                        (formatted_src_node,declared_target)][call_site_order]
-                else: #Corresponding function not found
-                    offset = 0
-                output.append([formatted_src_node,offset,formatted_dest_node])
+                        order = int(src_method_call.split("/")[2])
+                #Compute the destination node
+                formatted_dest_node = reformat_method(dest_node)
+                output.append([
+                    formatted_src_node,
+                    order,
+                    formatted_dest_node,
+                    formatted_declared_target
+                ])
+    
     #Now just write the output
     with open(OUTPUT_FILE, mode='w') as outputf:
         csv_writer = csv.writer(outputf, delimiter=',')
-        csv_writer.writerow(["method","offset","target"])
+        csv_writer.writerow(["method","order","target","declared_target"])
         for line in output:
             csv_writer.writerow(line)
 

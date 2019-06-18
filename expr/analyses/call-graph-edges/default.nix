@@ -147,7 +147,9 @@ rec {
         then
           cp "$file" $out/CallGraphEdge.csv
           ln -s "${decompile b e}/decompiled.json" .
-          python ${./doop-parse.py} $out/upper decompiled.json $out/CallGraphEdge.csv 
+          python ${./doop-parse.py} $out/doop-formatted.csv $out/CallGraphEdge.csv
+          python ${./callsites.py} $out/javaq-formatted.csv "${decompile b e}/decompiled.json"
+          python ${./mapping.py} $out/upper $out/javaq-formatted.csv $out/doop-formatted.csv
         fi
       '';
     } (doop-noreflect b e);
