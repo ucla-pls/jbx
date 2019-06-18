@@ -146,9 +146,8 @@ rec {
         file="$sandbox/out/context-insensitive/0/database/CallGraphEdge.csv"
         if [ -f "$file" ]
         then
-          cp "$file" $out/CallGraphEdge.csv
           ln -s "${decompile b e}" $out/decompiled
-          python ${./doop-parse.py} $out/doop-formatted.csv $out/CallGraphEdge.csv
+          python ${./doop-parse.py} $out/doop-formatted.csv $file
           python ${./mapping.py} $out/upper $out/decompiled/callsites.csv $out/doop-formatted.csv
         fi
       '';
@@ -187,7 +186,6 @@ rec {
           -process-dir $classpath -allow-phantom-refs \
           -main-class $mainclass 
       '';
-      # TODO: What about -process-dir
       postprocess = ''
         if [ -f $sandbox/callgraph.txt ]
         then
@@ -195,6 +193,9 @@ rec {
         fi
       '';
   } b ;
+
+  
+
 
 #  petabloxDefault = shared.petablox {
 #    petablox = petablox;
