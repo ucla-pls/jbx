@@ -128,13 +128,14 @@ rec {
 
   decompile = b: utils.mkAnalysis {
     name = "decompile";
-    tools = [ b.java.jdk tools.javaq ];
+    tools = [ b.java.jdk tools.javaq pkgs.python3 ];
     timelimit = 300;
     analysis = ''
       analyse "decompile" javaq --cp $classpath decompile > decompiled.json
     '';
     postprocess = ''
       mv "$sandbox/decompiled.json" "$out"
+      python ${./callsites.py} < $out/decompiled.json > "$out/callsites.csv"
     '';
   } b;
   
@@ -146,10 +147,9 @@ rec {
         if [ -f "$file" ]
         then
           cp "$file" $out/CallGraphEdge.csv
-          ln -s "${decompile b e}/decompiled.json" .
+          ln -s "${decompile b e}" $out/decompiled
           python ${./doop-parse.py} $out/doop-formatted.csv $out/CallGraphEdge.csv
-          python ${./callsites.py} $out/javaq-formatted.csv "${decompile b e}/decompiled.json"
-          python ${./mapping.py} $out/upper $out/javaq-formatted.csv $out/doop-formatted.csv
+          python ${./mapping.py} $out/upper $out/decompiled/callsites.csv $out/doop-formatted.csv
         fi
       '';
     } (doop-noreflect b e);
