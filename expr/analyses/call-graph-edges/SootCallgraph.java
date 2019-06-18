@@ -29,7 +29,10 @@ public class SootCallgraph extends SceneTransformer {
     writer.write(";");
     writer.write(e != null ? e.toString() : "null");
     writer.write(";");
-    writer.write(stmt.getInvokeExpr().getMethodRef().toString());
+    SootMethodRef ref = stmt.getInvokeExpr().getMethodRef();
+    writer.write(ref.declaringClass().getName());
+    writer.write(".");
+    writer.write(ref.name());
     writer.write("\n");
   }
 
