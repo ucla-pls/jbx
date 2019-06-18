@@ -5,7 +5,6 @@
 , makeWrapper
 , stdenv
 , openjdk8
-, javaq
 }:
 rec {
   wala-call-graph-edges = 
@@ -101,7 +100,7 @@ rec {
   shared.doop { 
     subanalysis = "context-insensitive";
     doop = tools.doop;
-    tools = [ pkgs.python3 javaq];
+    tools = [ pkgs.python3 ];
     ignoreSandbox = true;
     reflection = reflection;
     timelimit = 1800;
@@ -127,31 +126,73 @@ rec {
   doop-noreflect = doop { reflection = false; };
   doop-reflect = doop { reflection = true; };
 
-  decompile = utils.mkAnalysis {
-    name = "javaq";
-    tools = [ tools.javaq ];
+  decompile = b: utils.mkAnalysis {
+    name = "decompile";
+    tools = [ b.java.jdk tools.javaq ];
     timelimit = 300;
     analysis = ''
-      analyse "javaq" javaq --format=json-full --cp $classpath > decompiled.json
+      analyse "decompile" javaq --cp $classpath decompile > decompiled.json
     '';
     postprocess = ''
       mv "$sandbox/decompiled.json" "$out"
     '';
-  };
+  } b;
   
   doop-simple = 
     b: e: utils.postprocess {
-      tools = [ pkgs.python3 tools.javaq ];
+      tools = [ pkgs.python3 ];
       postprocess = ''
-        file="$sandbox/out/context-insensitive/0/database/Reachable.csv"
+        file="$sandbox/out/context-insensitive/0/database/CallGraphEdge.csv"
         if [ -f "$file" ]
         then
-          cp "$file" $out/DoopReachable.csv
+          cp "$file" $out/CallGraphEdge.csv
           ln -s "${decompile b e}/decompiled.json" .
-          python ${./doop-parse.py} $out/upper decompiled.json $out/DoopReachable.csv 
+          python ${./doop-parse.py} $out/upper decompiled.json $out/CallGraphEdge.csv 
         fi
       '';
     } (doop-noreflect b e);
+
+  soot-call-graph-edges = 
+    let soot = tools.soot; in
+    java:
+      stdenv.mkDerivation { 
+        name = "soot-call-graph-edges";
+        buildInputs = [ java makeWrapper ];
+        phases = "installPhase";
+        sootjars = "${soot}/share/java/soot.jar";
+        installPhase = ''
+         mkdir $out
+         cp ${./SootCallgraph.java} SootCallgraph.java
+         javac -cp $sootjars SootCallgraph.java -d $out
+         mkdir $out/bin
+         makeWrapper ${java}/bin/java $out/bin/$name \
+          --add-flags -cp \
+          --add-flags $sootjars:$out\
+          --add-flags SootCallgraph\
+        '';
+      };
+  soot-call-graph-edges8 = soot-call-graph-edges openjdk8;
+
+  soot = b: 
+    utils.mkAnalysis {
+      name = "soot-cge";
+      tools = [ (soot-call-graph-edges b.java.jdk) ];
+      timelimit = 1800;
+      analysis = ''
+        analyse "$name" soot-call-graph-edges \
+          callgraph.txt \
+          -p cg.spark on -pp -w -f n -app \
+          -process-dir $classpath -allow-phantom-refs \
+          -main-class $mainclass 
+      '';
+      # TODO: What about -process-dir
+      postprocess = ''
+        if [ -f $sandbox/callgraph.txt ]
+        then
+            cat $sandbox/callgraph.txt | sort > $out/upper
+        fi
+      '';
+  } b ;
 
 #  petabloxDefault = shared.petablox {
 #    petablox = petablox;
@@ -170,24 +211,5 @@ rec {
 #      '';
 #    };
 
-
-#  doop-pp = b: e: 
-#    postprocess { 
-#      tools = [ pkgs.python javaq ];
-#      postprocess = ''
-#          javaq --format=json --cp=$classpath > $out/javaq.json
-#          python doop-parse.py $out/javaq.json $out/DoopReachable.csv 
-#      '';
-#  } (doop-noreflect b e);
-
-    
-#      stdenv.mkDerivation {
-#        name = "javaq";
-#        buildInputs = [ ];
-#        phases = "installPhase";
-#        installPhase = ''
-#        javaq --format json --cp  >         
-
-#      };
 }
 

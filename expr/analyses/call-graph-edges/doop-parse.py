@@ -59,6 +59,7 @@ def reformat_method(node):
     #Correct the return type format
     return_type = format_type(return_type)
 
+    print(method_name_with_args)
     #Correct the method args
     method_args = method_name_with_args.split("(")[1]
     method_args = method_args[:-2] #remove the last 2 characters ( ')>' )
@@ -83,8 +84,9 @@ def reformat_method(node):
 #the file as a whole is not a valid single json string.
 #So we first convert it into the right format
 def read_javaq_output(file):
-    with open(file) as fp: 
-        return json.load(fp)
+    with open(file, encoding="utf-8") as fp: 
+        for line in fp:
+            yield json.loads(line.strip())
 
 #Removes the arguments and return type from a method in bytecode format
 #sample input = methd:(Lint;[Ljava/lang/String;)V
@@ -102,18 +104,16 @@ def main():
     for src_class_obj in javaq_json:
         src_class_name = src_class_obj['name']
         methods = src_class_obj['methods']
-        for src_method in methods:
+        for src_method, method in methods.items():
             #Skip methods with no bytecode
-            if src_method == None: continue
-            if ('code' not in methods[src_method] 
-                    or methods[src_method]['code']==None): 
+            code = method.get('code', False)
+            if not code:
                 continue
-            if ('byte_code' not in methods[src_method]['code']
-                    or methods[src_method]['code']['byte_code'])==None: 
+            byte_code = code.get('byte_code', False)
+            if not byte_code:
                 continue
             #Else iterate through the invoke instructions
-            for instr in methods[src_method]['code']['byte_code']:
-                print(instr)
+            for instr in byte_code:
                 if instr["opc"] == "invoke":
                     offset = instr["off"]
                     #if class is not in instruction, the reason is that 
@@ -139,6 +139,7 @@ def main():
     with open(DOOP_OUTPUT) as doop_fp:
         doop_csv = csv.reader(doop_fp, delimiter='\t')
         for row in doop_csv:
+            print(row)
             #Compute the src and destination nodes
             dest_node = row[3]
             src_method_call = row[1]
