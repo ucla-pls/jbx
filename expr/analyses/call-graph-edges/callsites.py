@@ -27,12 +27,6 @@ def read_javaq_output():
     javaq_output += "]}"
     return json.loads(javaq_output)
 
-#Removes the arguments and return type from a method in bytecode format
-#sample input = methd:(Lint;[Ljava/lang/String;)V
-#sample output = methd
-def remove_args(method):
-    return method.split(":")[0]
-
 def main():
     output = []
     callsites = []

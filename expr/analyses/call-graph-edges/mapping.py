@@ -11,6 +11,10 @@ OUTPUT_FILE = sys.argv[1]
 JAVAQ_FILE = sys.argv[2]
 DOOP_FILE = sys.argv[3]
 
+#javaq_edges is a dictionary with key=(src_method,declared_target)
+#and value='list of bytecode offsets'
+#The 'order' entry of the doop file is used to index into this list
+#to pick the right bytecode offset.
 javaq_edges = {}
 insufficient_count = 0
 missing_count = 0
@@ -36,14 +40,9 @@ with open(OUTPUT_FILE, mode='w') as outputf:
           offset = javaq_edges[edge][order]
         else:
           offset = -1
-          print("not enough offsets",row)
-          #if "avrora" in row["method"]:
-          #  print(row)
         csv_writer.writerow([row["method"],offset,row["target"]])
       else:
         csv_writer.writerow([row["method"],0,row["target"]])
-        #if "avrora" in row["method"]:
-        #    print(row)
 
 
         

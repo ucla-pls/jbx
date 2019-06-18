@@ -1,4 +1,9 @@
-''''''
+'''
+This script reads in the raw Doop output, converts all methods
+to the bytecode format (as opposed to the Java source code 
+format used in the raw Doop output) and writes to a csv as
+source,offset,dest,declared_target
+'''
 
 import sys
 import pathlib
@@ -89,11 +94,6 @@ def reformat_target(declared_target):
     formatted_target = class_name + "." + method_name
     return formatted_target
 
-#Removes the arguments and return type from a method in bytecode format
-#sample input = methd:(Lint;[Ljava/lang/String;)V
-#sample output = methd
-def remove_args(method):
-    return method.split(":")[0]
 
 def main():
     output = []
@@ -106,13 +106,7 @@ def main():
             dest_node = row[3]
             src_method_call = row[1]
             if REG_FINALIZE in src_method_call:
-                continue #This corresponds to a new statement. Wala skips these. 
-                #src_node = src_method_call.split("/")[1]
-                #declared_target = src_method_call.split("/")[2]
-                #declared_target = declared_target[4:] #skip the 'new ' in the string
-                #formatted_declared_target = reformat_target(declared_target)
-                #order = DEFAULT_ORDER
-                #formatted_src_node = reformat_method(src_node)
+                continue #This corresponds to a new statement. Wala skips these
             else:
                 src_node = src_method_call.split("/")[0]
                 #Handle the special case of an init function
