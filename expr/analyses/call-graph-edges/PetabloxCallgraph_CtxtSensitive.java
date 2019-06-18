@@ -15,7 +15,7 @@ import soot.jimple.Stmt;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-@Petablox(name="petablox-cg-java")
+@Petablox(name="petablox-ctxt-cg-java")
 public class PetabloxCallgraph extends JavaAnalysis {
 
     private ITask cspa;
