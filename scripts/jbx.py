@@ -58,7 +58,7 @@ def main(
     java:
         Arg("-j",
             help = "Java version"
-        ) = 6,
+        ) = 8,
 
     environment:
         Arg("-E",
