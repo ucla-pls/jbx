@@ -58,6 +58,8 @@ rec {
 
   inherit (callPackage ./wiretap {})
     wiretap
+    wiretap-pointsto-src
+    wiretap-pointsto
   ;
 
   wiretap8 = wiretap { jdk = openjdk8; };

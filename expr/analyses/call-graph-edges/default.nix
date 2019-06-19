@@ -138,7 +138,28 @@ rec {
       python ${./callsites.py} < $out/decompiled.json > "$out/callsites.csv"
     '';
   } b;
+
+  wiretap-shared = 
+    { ignoredprefixes ? "edu/ucla/pls/wiretap,java,sun"
+    , timelimit ? 420
+    }:
+    shared.wiretap timelimit {
+      settings = [
+      { name = "recorder"; value = "PointsTo"; }
+      { name = "ignoredprefixes";  value = ignoredprefixes; }
+      ];
+      tools = [ tools.wiretap-pointsto ];
+      postprocess = ''
+        ls -l $sandbox/_wiretap
+        ls -l $sandbox/_wiretap/pointsto
+        wiretap-pointsto $sandbox/_wiretap > $out/lower 
+      '';
+    };
+
+  wiretap = wiretap-shared {};
   
+  wiretapAll = utils.onAllInputs wiretap {};
+
   doop-simple = 
     b: e: utils.postprocess {
       tools = [ pkgs.python3 ];
