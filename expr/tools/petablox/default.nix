@@ -64,10 +64,10 @@ in {
     branchName = "master";
     # patches = [ ./deadlock-fix.patch ];
   };
-  # petablox-test = testPetablox {
-  #   # md5 = "49304df10ef89179c1117cf9b5da4faa";
-  #   sha256 = "1jdpkz77jybi6zaw162vhwl9f71xfghpxl7w15d0q1vgdcc8ayi6";
-  #   rev = "058ffa2ebc9874e8a1664de640bbbac916bf9841";
-  #   branchName = "develop";
-  # };
+  petablox-test = testPetablox {
+    # md5 = "49304df10ef89179c1117cf9b5da4faa";
+    sha256 = "1jdpkz77jybi6zaw162vhwl9f71xfghpxl7w15d0q1vgdcc8ayi6";
+    rev = "058ffa2ebc9874e8a1664de640bbbac916bf9841";
+    branchName = "develop";
+  };
 }

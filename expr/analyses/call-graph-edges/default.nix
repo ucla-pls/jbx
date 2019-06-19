@@ -194,7 +194,51 @@ rec {
       '';
   } b ;
 
-  
+  # Build the petablox analysis 
+  petablox-call-graph-edges = 
+    let petablox = tools.petablox-test; in
+    java:
+      stdenv.mkDerivation {
+        name = "petablox-call-graph-edges";
+        buildInputs = [ java makeWrapper ];
+        phases = "installPhase";
+        petabloxjars = "${petablox}/share/java/petablox.jar"; # assume this is where it is
+        installPhase = ''
+          mkdir $out
+          cp ${./PetabloxCallgraph.java} PetabloxCallgraph.java
+          javac -cp $petabloxjars PetabloxCallgraph.java -d $out
+          mkdir $out/bin 
+          makeWrapper ${java}/bin/java $out/bin/$name \
+            --add-flags -cp \
+            --add-flags $petabloxjars:$out\
+            --add-flags PetabloxCallgraph\
+        '';
+      };
+  petablox-call-graph-edges8 = petablox-call-graph-edges openjdk8;
+
+  petablox = { ctxt_sensitive ? false }: 
+    shared.petablox {
+      petablox = tools.petablox-test;
+      subanalyses =[ "petablox-cg-java" ];
+      timelimit = 1800;
+      reflection = "none";
+      settings = [
+         {name = "cs";  value = ${(if ctxt_sensitive then "1" else "0")}; }
+         {name = "kcfa.k"; value = "1"; }
+         {name = "inst.ctxt.kind"; value = ${(if ctxt_sensitive then "cs" else "ci")}; }
+         {name = "stat.ctxt.kind"; value = ${(if ctxt_sensitive then "cs" else "ci")}; }
+         {name = "outfile"; value = "callgraph.txt";}
+      ];
+      postprocess = ''
+        if [ -f $sandbox/petablox_output/callgraph.txt ]
+        then
+            cat $sandbox/petablox_output/callgraph.txt | sort > $out/upper
+        fi
+      '';
+    };
+
+  petablox-0cfa = petablox { ctxt_sensitive = false; };
+  petablox-1cfa = petablox { ctxt_sensitive = true; };
 
 
 #  petabloxDefault = shared.petablox {
