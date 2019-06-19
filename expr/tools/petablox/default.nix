@@ -70,4 +70,9 @@ in {
     rev = "058ffa2ebc9874e8a1664de640bbbac916bf9841";
     branchName = "develop";
   };
+  petablox-gt-develop = testPetablox {
+    #sha256 = "";
+    rev = "f58c37ced9ec8451f2e8badd11a4a97f8fa7977f";
+    branchName = "gt-develop";
+  };
 }
