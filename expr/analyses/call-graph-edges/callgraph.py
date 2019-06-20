@@ -152,27 +152,41 @@ def main(args):
                 callsites[row["method"]].add(row["offset"])
         callsites = dict(callsites)
 
-    writer = csv.writer(sys.stdout)
-    warnings = set()
-    if callsites:
-        for edge in remove_stdlib(csv.reader(sys.stdin), stdlib):
-            _from, offset, _to = edge
-            instr = callsites.get(_from, set())
-            if not instr:
-                warnings.add((_from, offset))
-            elif not offset in instr:
-                warnings.add((_from, offset))
-            else:
-                writer.writerow(edge)
+    methods = None
+    if args.methods: 
+        with open(args.methods) as fp:
+            methods = set(line.strip() for line in fp)
 
-        if warnings:
-            print(f"Had {len(warnings)} invalid callsites:")
-            for _from, offset in sorted(warnings):
-                instr = callsites.get(_from, set())
-                print(f"  {_from}!{offset} {list(instr)}", file=sys.stderr)
-    else:
-        for edge in remove_stdlib(csv.reader(sys.stdin), stdlib):
+    writer = csv.writer(sys.stdout)
+    bad_callsites = set()
+    bad_targets = set()
+    for edge in remove_stdlib(csv.reader(sys.stdin), stdlib):
+        _from, offset, _to = edge
+        instr = callsites.get(_from, set())
+
+        success = True
+        
+        if not instr or not offset in instr:
+            bad_callsites.add((_from, offset))
+            success = False
+
+        if not _to in methods:
+            bad_targets.add(_to)
+            success = False
+       
+        if success:
             writer.writerow(edge)
+
+    if bad_targets:
+        print(f"Had {len(bad_targets)} invalid targets:", file=sys.stderr)
+        for _to in sorted(bad_targets):
+            print(f"  {_to}", file=sys.stderr)
+
+    if bad_callsites:
+        print(f"Had {len(bad_callsites)} invalid callsites:", file=sys.stderr)
+        for _from, offset in sorted(bad_callsites):
+            instr = callsites.get(_from, set())
+            print(f"  {_from}!{offset} {list(instr)}", file=sys.stderr)
 
 
 
@@ -181,6 +195,7 @@ def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument("--stdlib", help="A list of std library methods.")
     p.add_argument("--callsites", help="A list of application callsites.")
+    p.add_argument("--methods", help="A list of application methods.")
     return p.parse_args()
 
 if __name__ == "__main__":

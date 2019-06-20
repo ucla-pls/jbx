@@ -97,6 +97,7 @@ rec {
     };
   
   doop = { reflection ? true }: 
+  b: e:
   shared.doop { 
     subanalysis = "context-insensitive";
     doop = tools.doop;
@@ -105,26 +106,20 @@ rec {
     reflection = reflection;
     timelimit = 1800;
     postprocess = ''
-      file="$sandbox/out/$subanalysis/0/database/Reachable.csv"
-      if [ -f "$file" ]
-      then
-        cp "$file" $out/DoopReachable.csv
-      fi
+        file="$sandbox/out/context-insensitive/0/database/CallGraphEdge.csv"
+        if [ -f "$file" ]
+        then
+          ln -s "${decompile b e}" $out/decompiled
+          python ${./doop-parse.py} $out/doop-formatted.csv $file
+          python ${./mapping.py} $out/upper $out/decompiled/callsites.csv $out/doop-formatted.csv
+        fi
     '';
-    # postprocess = ''
-    #   file="$sandbox/out/$subanalysis/0/database/Reachable.csv"
-    #   if [ -f "$file" ]
-    #   then
-    #     cp "$file" $out/DoopReachable.csv
-    #     javaq --format=json-full --cp=$classpath > $out/javaq.json
-    #     python ${./doop-parse.py} $out/upper $out/javaq.json $out/DoopReachable.csv 
-    #   fi
-    #   rm -r $sandbox
-    # '';
-  };
+  } b e;
 
   doop-noreflect = doop { reflection = false; };
   doop-reflect = doop { reflection = true; };
+
+  doop-noreflect-closed = close-graph doop-noreflect;
 
   decompile = b: utils.mkAnalysis {
     name = "decompile";
@@ -132,9 +127,11 @@ rec {
     timelimit = 300;
     analysis = ''
       analyse "decompile" javaq --cp $classpath decompile > decompiled.json
+      analyse "list-methods" javaq --cp $classpath list-methods > methods.txt
     '';
     postprocess = ''
       mv "$sandbox/decompiled.json" "$out"
+      mv "$sandbox/methods.txt" "$out"
       python ${./callsites.py} < $out/decompiled.json > "$out/callsites.csv"
     '';
   } b;
@@ -169,20 +166,6 @@ rec {
   wiretap = wiretap-shared {};
   
   wiretapAll = utils.onAllInputs wiretap {};
-
-  doop-simple = 
-    b: e: utils.postprocess {
-      tools = [ pkgs.python3 ];
-      postprocess = ''
-        file="$sandbox/out/context-insensitive/0/database/CallGraphEdge.csv"
-        if [ -f "$file" ]
-        then
-          ln -s "${decompile b e}" $out/decompiled
-          python ${./doop-parse.py} $out/doop-formatted.csv $file
-          python ${./mapping.py} $out/upper $out/decompiled/callsites.csv $out/doop-formatted.csv
-        fi
-      '';
-    } (doop-noreflect b e);
 
   soot-call-graph-edges = 
     let soot = tools.soot; in
@@ -271,23 +254,53 @@ rec {
   petablox-0cfa = petablox { ctxt_sensitive = false; };
   petablox-1cfa = petablox { ctxt_sensitive = true; };
 
+  close-graph = a: b: e:
+    utils.postprocess {
+      name = "closed";
+      tools = [ pkgs.python3 ];
+      ignoreSandbox = true;
+      postprocess = ''
+        mv upper upper.before
+        mkdir closed
+        cd closed
+        ln -s ${decompile b e} decompiled
+        python ${./callgraph.py} \
+          --stdlib ${stdlib-methods b.java.jdk} \
+          --callsites decompiled/callsites.csv \
+          --methods decompiled/methods.txt \
+          < ../upper.before > ../upper 2>warnings
+      '';
+    } (a b e);
 
-#  petabloxDefault = shared.petablox {
-#    petablox = petablox;
-#    name = "none";
-#    reflection = "none";
-#    timelimit = 1800;
-#    subanalyses = [ "reachable-methods" ];
-#    tools = [ python ];
-#    postprocess = ''
-#      if [ -f $sandbox/petablox_output/edges.txt ]
-#      then
-#          $sandbox/petablox_output/edges.txt > $out/upper #python ${./petablox-parse.py} $sandbox/petablox_output/edges.txt > $out/upper
-#          rm -r "$sandbox/petablox_output/bddbddb"
-#      fi
-#      rm -r $sandbox
-#      '';
-#    };
 
+  all = [
+    wala-0cfa-noreflect 
+    wala-0cfa-reflect 
+    wala-1cfa-noreflect 
+    wala-1cfa-reflect 
+    wala-rta-noreflect  
+    wala-0cfa-noreflect-nointf 
+    doop-noreflect 
+    doop-reflect 
+    # petablox-0cfa
+    # petablox-1cfa 
+    soot
+  ];
+
+  afew = [ 
+    wala-0cfa-noreflect 
+    doop-reflect 
+  ];
+
+  combined = b:
+    utils.liftL ( 
+      utils.mkStatistics { 
+        name = "call-graph-edges+${b.name}"; 
+        foreach = ''
+          echo "In $result" >> warnings
+          cat $result/closed/warnings >> warnings
+        '';
+    }) 
+    (builtins.map close-graph all) b;
 }
 
