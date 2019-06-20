@@ -188,10 +188,10 @@ rec {
       };
   soot-call-graph-edges8 = soot-call-graph-edges openjdk8;
 
-  soot = b: 
+  soot = b: e: 
     utils.mkAnalysis {
       name = "soot-cge";
-      tools = [ (soot-call-graph-edges b.java.jdk) ];
+      tools = [ pkgs.python3 (soot-call-graph-edges b.java.jdk) ];
       timelimit = 1800;
       analysis = ''
         analyse "$name" soot-call-graph-edges \
@@ -203,10 +203,13 @@ rec {
       postprocess = ''
         if [ -f $sandbox/callgraph.txt ]
         then
-            cat $sandbox/callgraph.txt | sort > $out/upper
+           ln -s "${decompile b e}" $out/decompiled
+           python ${./soot-parse.py} $out/soot-formatted.csv $sandbox/callgraph.txt
+           python ${./mapping.py} $out/upper $out/decompiled/callsites.csv $out/soot-formatted.csv
+#           cp $sandbox/callgraph.txt $out/upper  
         fi
       '';
-  } b ;
+  } b e;
 
   # Build the petablox analysis 
   petablox-call-graph-edges = 

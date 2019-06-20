@@ -36,7 +36,7 @@ def main():
                         offset = offsets[order]
                     except IndexError:
                         offset = -1
-                        print("not enough offsets",row, file=sys.stderr)
+                        #print("not enough offsets",row, file=sys.stderr)
                 else:
                     offset = 0
                 csv_writer.writerow([row["method"],offset,row["target"]])
