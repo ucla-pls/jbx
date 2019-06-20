@@ -7,11 +7,11 @@
 }:
 mkDerivation {
   pname = "jvm-binary";
-  version = "0.4.0";
+  version = "0.5.0";
   src = fetchgit {
     url = "https://github.com/ucla-pls/jvm-binary.git";
-    sha256 = "1m78z89lm730fh9vcjn7972aijbx0bhz474w2nzm6kzwdf9cp2w0";
-    rev = "c8088e8a43b24edd65f63686569a5182927d2866";
+    sha256 = "0m5apwxcbx2k4781i39dhvq2xyl0w67j7z72xcig532nyr7gimli";
+    rev = "638b6f0ca4cb609a30af140f27f9db998af1622e";
   };
   libraryHaskellDepends = [
     attoparsec base binary bytestring containers data-binary-ieee754

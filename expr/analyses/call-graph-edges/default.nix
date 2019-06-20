@@ -139,6 +139,17 @@ rec {
     '';
   } b;
 
+  stdlib-methods = java: stdenv.mkDerivation {
+    name = "stdlib-methods";
+    buildInputs = [ tools.javaq java ];
+    phases = "installPhase";
+    installPhase = ''
+      javaq --cp /dev/null --stdlib --jre ${java}/jre list-methods > $out
+    '';
+  };
+  stdlib-methods8 = stdlib-methods pkgs.openjdk8;
+
+
   wiretap-shared = 
     { ignoredprefixes ? "edu/ucla/pls/wiretap,java,sun"
     , timelimit ? 420
@@ -150,9 +161,8 @@ rec {
       ];
       tools = [ tools.wiretap-pointsto ];
       postprocess = ''
-        ls -l $sandbox/_wiretap
-        ls -l $sandbox/_wiretap/pointsto
         wiretap-pointsto $sandbox/_wiretap > $out/lower 
+        rm -rf $sandbox/_wiretap/pointsto
       '';
     };
 
@@ -244,10 +254,10 @@ rec {
       timelimit = 1800;
       reflection = "none";
       settings = [
-         {name = "cs";  value = ${(if ctxt_sensitive then "1" else "0")}; }
+         {name = "cs";  value = if ctxt_sensitive then "1" else "0"; }
          {name = "kcfa.k"; value = "1"; }
-         {name = "inst.ctxt.kind"; value = ${(if ctxt_sensitive then "cs" else "ci")}; }
-         {name = "stat.ctxt.kind"; value = ${(if ctxt_sensitive then "cs" else "ci")}; }
+         {name = "inst.ctxt.kind"; value = if ctxt_sensitive then "cs" else "ci"; }
+         {name = "stat.ctxt.kind"; value = if ctxt_sensitive then "cs" else "ci"; }
          {name = "outfile"; value = "callgraph.txt";}
       ];
       postprocess = ''

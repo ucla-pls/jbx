@@ -2,8 +2,8 @@
 rec {
   src = fetchgit {
     url = "https://github.com/ucla-pls/jvmhs.git";
-    sha256 = "0q08p05zm68mf56vs304r54m15961kjqd4xy3qhwbk4b9a5wckk2";
-    rev = "37e069cc02a249225d3cc0fcc3acc3083a1c8682";
+    sha256 = "1id6qzmly0783lr5shz9j7r90ivfn2fvww9331cvrzdxcr56bs5g";
+    rev = "12cb4e7a97a509e4494a560f699bf1bb1127b34f";
   };
 
   javaq = haskellPackages.callPackage ./javaq-develop.nix {
