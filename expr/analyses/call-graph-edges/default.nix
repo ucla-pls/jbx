@@ -282,8 +282,8 @@ rec {
     wala-0cfa-noreflect-nointf 
     doop-noreflect 
     doop-reflect 
-    # petablox-0cfa
-    # petablox-1cfa 
+    petablox-0cfa
+    petablox-1cfa 
     soot
   ];
 
