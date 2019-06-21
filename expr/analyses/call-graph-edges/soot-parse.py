@@ -98,6 +98,8 @@ def main():
         soot_csv = csv.reader(soot_fp, delimiter=';')
         for row in soot_csv:
             #Compute the src and destination nodes
+            if len(row)<4: #Skip these
+                print(row)
             src_node = row[0]
             order = row[1]
             dest_node = row[2]

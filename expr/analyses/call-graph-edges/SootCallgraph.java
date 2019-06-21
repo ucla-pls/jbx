@@ -4,6 +4,7 @@ import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.Edge;
 import soot.jimple.toolkits.callgraph.ReachableMethods;
 import soot.util.Chain;
+import soot.options.Options;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 
 public class SootCallgraph extends SceneTransformer {
 
@@ -41,10 +43,13 @@ public class SootCallgraph extends SceneTransformer {
     ReachableMethods reachableMethods = Scene.v().getReachableMethods();
     BufferedWriter writer = new BufferedWriter(new FileWriter(output));
 
+
     for (SootClass sc : app) {
       List<SootMethod> methods = sc.getMethods();
       for (SootMethod method : methods) {
-        if (!reachableMethods.contains(method)) continue;
+        if (!reachableMethods.contains(method)) {
+            continue;
+        }
         if (method.isPhantom() || method.isAbstract() || !method.hasActiveBody()) continue;
 
         // Extracting the code body of this method
@@ -69,9 +74,9 @@ public class SootCallgraph extends SceneTransformer {
               found = true;
             }
           }
-          if (!found) {
-            write(writer, method, counter, null, stmt);
-          }
+          //if (!found) {
+          //  write(writer, method, counter, null, stmt);
+          //}
           counter += 1;
         }
       }
@@ -91,10 +96,24 @@ public class SootCallgraph extends SceneTransformer {
  
  public static void main(String[] args) {
    String output = args[0];
-   String[] newargs = new String[args.length -1];
-   for (int i = 1; i < args.length; i++) {
-     newargs[i - 1] = args[i];
+   String[] newargs = new String[args.length -2];
+   for (int i = 2; i < args.length; i++) {
+     newargs[i - 2] = args[i];
    }
+   
+   // Adding a new cmd argument to specify the main class name
+   // because we need to set ther entry point manually (soot would treat all methods 
+   // in the main class as entry points if none is set)  
+   String mainClass = args[1];
+   Options.v().parse(newargs);
+   SootClass c = Scene.v().forceResolve(mainClass, SootClass.BODIES);
+   c.setApplicationClass();
+   Scene.v().loadNecessaryClasses();
+   SootMethod method = Scene.v().getMainMethod();
+   List <SootMethod> entryPoints = new ArrayList<>();
+   entryPoints.add(method);
+   Scene.v().setEntryPoints(entryPoints);
+   
    PackManager.v().getPack("wjtp").add(new Transform("wjtp.myTrans", new SootCallgraph(output)));
    soot.Main.main(newargs);
  }

@@ -66,12 +66,13 @@ in {
   };
   petablox-test = testPetablox {
     # md5 = "49304df10ef89179c1117cf9b5da4faa";
-    sha256 = "1jdpkz77jybi6zaw162vhwl9f71xfghpxl7w15d0q1vgdcc8ayi6";
+    sha256 = "00w9vzi4mz6qyy2zcxqmb6srf6hdf0bplkqmamis2hakr0q3bk5m";
     rev = "058ffa2ebc9874e8a1664de640bbbac916bf9841";
     branchName = "develop";
   };
+  
   petablox-gt-develop = testPetablox {
-    #sha256 = "";
+    sha256 = "18bf89mrrfi6wnjgg1hmsqq7fr4s1an8wbffsbvf47r7bl74az9c";
     rev = "f58c37ced9ec8451f2e8badd11a4a97f8fa7977f";
     branchName = "gt-develop";
   };

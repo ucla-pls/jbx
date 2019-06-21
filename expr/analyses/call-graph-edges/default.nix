@@ -1,4 +1,4 @@
-{ shared
+        { shared
 , pkgs
 , utils
 , tools
@@ -196,9 +196,10 @@ rec {
       analysis = ''
         analyse "$name" soot-call-graph-edges \
           callgraph.txt \
-          -p cg.spark on -pp -w -f n -app \
-          -process-dir $classpath -allow-phantom-refs \
-          -main-class $mainclass 
+          $mainclass \
+          -p cg.spark on \
+          -pp -w -f n -app \
+          -process-dir $classpath -allow-phantom-refs 
       '';
       postprocess = ''
         if [ -f $sandbox/callgraph.txt ]
@@ -213,7 +214,7 @@ rec {
 
   # Build the petablox analysis 
   petablox-call-graph-edges = 
-    let petablox = tools.petablox-test; in
+    let petablox = tools.petablox-gt-develop; in
     java:
       stdenv.mkDerivation {
         name = "petablox-call-graph-edges";
@@ -234,9 +235,11 @@ rec {
   petablox-call-graph-edges8 = petablox-call-graph-edges openjdk8;
 
   petablox = { ctxt_sensitive ? false }: 
+    b: e: 
     shared.petablox {
-      petablox = tools.petablox-test;
+      petablox = tools.petablox-gt-develop;
       subanalyses =[ "petablox-cg-java" ];
+      tools = [ pkgs.python3 (petablox-call-graph-edges b.java.jdk) ];
       timelimit = 1800;
       reflection = "none";
       settings = [
@@ -245,14 +248,18 @@ rec {
          {name = "inst.ctxt.kind"; value = if ctxt_sensitive then "cs" else "ci"; }
          {name = "stat.ctxt.kind"; value = if ctxt_sensitive then "cs" else "ci"; }
          {name = "outfile"; value = "callgraph.txt";}
+         {name = "ext.java.analysis.path"; value = "${(petablox-call-graph-edges b.java.jdk)}"; } 
       ];
       postprocess = ''
         if [ -f $sandbox/petablox_output/callgraph.txt ]
         then
-            cat $sandbox/petablox_output/callgraph.txt | sort > $out/upper
+           ln -s "${decompile b e}" $out/decompiled
+           python ${./soot-parse.py} $out/petablox-formatted.csv $sandbox/petablox_output/callgraph.txt
+           python ${./mapping.py} $out/upper $out/decompiled/callsites.csv $out/petablox-formatted.csv
+           # cat $sandbox/petablox_output/callgraph.txt | sort > $out/upper
         fi
       '';
-    };
+    } b e;
 
   petablox-0cfa = petablox { ctxt_sensitive = false; };
   petablox-1cfa = petablox { ctxt_sensitive = true; };

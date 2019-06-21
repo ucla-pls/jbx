@@ -37,6 +37,7 @@ rec {
     petablox-1_0
     petablox-test
     petablox-HEAD
+    petablox-gt-develop
   ;
   petablox = petablox-HEAD;
 
