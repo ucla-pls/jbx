@@ -92,6 +92,12 @@ def reformat_target(declared_target):
 
 def main():
     output = []
+    #Soot/Petablox outputs orders as the sequence of invoke instructions
+    #for a 'src_node'
+    #However doop outputs orders as the sequence of invoke instructions
+    #for a 'src_node'-'declared_target' pair, and we are going to move
+    #things to the doop format through this new_orders
+    new_orders = {}
     #Read in the Soot outputs
     #note - don't skip first line. There is no header.
     with open(SOOT_OUTPUT) as soot_fp:
@@ -101,7 +107,7 @@ def main():
             if len(row)<4: #Skip these
                 print(row)
             src_node = row[0]
-            order = row[1]
+            old_order = row[1]
             dest_node = row[2]
             declared_target = row[3]
             if dest_node == NULL_ENTRY: #skip null entries
@@ -112,11 +118,29 @@ def main():
             formatted_dest_node = reformat_method(dest_node)
             output.append([
                 formatted_src_node,
-                order,
+                old_order,
                 formatted_dest_node,
                 formatted_declared_target
             ])
+
+            #Record in the new_orders{} dictionary for fixing the orders at a later point.
+            if (formatted_src_node,formatted_declared_target) not in new_orders:
+                new_orders[(formatted_src_node,formatted_declared_target)] = []
+            new_orders[(formatted_src_node,formatted_declared_target)].append(int(old_order))
     
+    #Keep all the orders in a sorted list
+    for entry in new_orders:
+        new_orders[entry].sort()
+
+    #print(new_orders)
+    #Now just fix all the orders
+    for entry in output:
+        new_order_list = new_orders[entry[0],entry[3]]
+        new_order_value = new_order_list.index(int(entry[1]))
+        #The required entry is the index of the 'old_order' entry in the
+        #corresponding sorted 'new_orders' list
+        entry[1] = new_order_value
+
     #Now just write the output
     with open(OUTPUT_FILE, mode='w') as outputf:
         csv_writer = csv.writer(outputf, delimiter=',')
