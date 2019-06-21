@@ -49,7 +49,8 @@ rec {
       postprocess = ''
         if [ -f $sandbox/edges.txt ]
         then
-            sed 1d $sandbox/edges.txt | sort > $out/upper
+            # Remove duplicate entries if using 1cfa
+            sed 1d $sandbox/edges.txt | sort ${if analysis=="1cfa" then "-u" else ""} > $out/upper
         fi
       '';
   } b ;
