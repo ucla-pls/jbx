@@ -61,9 +61,9 @@ class Graph:
 
         State = namedtuple("State", "idx report")
 
-        dfs = queue.LifoQueue(State(i, False) for i in range(len(self.nodes)))
-        while not dfs.empty():
-            elem, report = dfs.get()
+        dfs = list(reversed([State(i, False) for i, _ in enumerate(self.nodes)]))
+        while dfs:
+            elem, report = dfs.pop()
             if report:
                 yield elem
 
@@ -72,10 +72,10 @@ class Graph:
 
             for i in self.nodes[elem].outedges:
                 if not visited[i]:
-                    dfs.put(State(i, False))
+                    dfs.append(State(i, False))
 
             visited[elem] = True
-            dfs.put(State(elem, True))
+            dfs.append(State(elem, True))
 
 
     def join(self, sets):
@@ -87,9 +87,9 @@ class Graph:
         """
         closures = list(sets)
 
-        update = queue.LifoQueue(reversed(list(self.postorder())))
-        while not update.empty():
-            i = update.get()
+        update = list(self.postorder())
+        while update:
+            i = update.pop()
             closure = closures[i]
             updated = False
             for j in self.nodes[i].outedges:
@@ -103,7 +103,7 @@ class Graph:
             if updated:
                 closures[i] = closure
                 for j in self.nodes[i].inedges:
-                    update.put(j)
+                    update.append(j)
 
         return closures
 
@@ -162,17 +162,18 @@ def main(args):
     bad_targets = set()
     for edge in remove_stdlib(csv.reader(sys.stdin), stdlib):
         _from, offset, _to = edge
-        instr = callsites.get(_from, set())
 
         success = True
-        
-        if not instr or not offset in instr:
-            bad_callsites.add((_from, offset))
-            success = False
-
-        if not _to in methods:
-            bad_targets.add(_to)
-            success = False
+       
+        if callsites:
+            instr = callsites.get(_from, set())
+            if not instr or not offset in instr:
+                bad_callsites.add((_from, offset))
+                success = False
+        if methods:
+            if not _to in methods:
+                bad_targets.add(_to)
+                success = False
        
         if success:
             writer.writerow(edge)
