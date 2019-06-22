@@ -9,7 +9,7 @@ options @ {
   , ...
 }:
 benchmark: 
-let name = "doop-${subanalysis}";
+let name = "doop-${subanalysis}-${if reflection then "reflect" else "noreflect"}";
 in
 utils.mkAnalysis (options // { 
   inherit timelimit name postprocess;

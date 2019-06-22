@@ -268,7 +268,7 @@ rec {
   close-graph = a: b: e:
     utils.postprocess {
       name = "closed";
-      tools = [ pkgs.python3.withPackages (p: [p.graph_tool])];
+      tools = [ (pkgs.python3.withPackages (p: [p.graph-tool])) ];
       ignoreSandbox = true;
       postprocess = ''
         mv upper upper.before
@@ -295,8 +295,8 @@ rec {
     wala-0cfa-noreflect-nointf 
     doop-noreflect 
     doop-reflect 
-    petablox-0cfa
-    petablox-1cfa 
+    # petablox-0cfa
+    # petablox-1cfa 
     soot
   ];
 
@@ -312,6 +312,9 @@ rec {
         foreach = ''
           echo "In $result" >> warnings
           cat $result/closed/warnings >> warnings
+        '';
+        collect = ''
+          ls results/
         '';
     }) 
     (builtins.map close-graph all) b;

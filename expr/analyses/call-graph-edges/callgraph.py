@@ -54,9 +54,6 @@ def remove_stdlib(edges, stdlib):
 
     print(f"Graph computed {g}", file=sys.stderr)
 
-    print(missed)
-    print(verticies)
-   
     print("Computing the trasitive closure", file=sys.stderr)
     tgc = gt_top.transitive_closure(g);
     tgc.set_vertex_filter(keep)
@@ -68,16 +65,16 @@ def remove_stdlib(edges, stdlib):
         alls = set()
         for _to in tos:
             if not _to in stdlib:
-                alls.add(_to)
+                alls.add((_to, True))
             else:
                 try:
                     refs = references[_to]
                 except KeyError:
                     j = verticies[_to]
-                    refs = { method[x] for x in tgc.get_out_neighbors(j)} - {""}
+                    refs = { (method[x], False) for x in tgc.get_out_neighbors(j)} - {""}
                     references[_to] = refs
                 alls |= refs
-        yield from ((_from, offset, t) for t in refs)
+        yield from (((_from, offset, t), direct) for t, direct in alls)
         
 def main(args):
     with open(args.stdlib) as fp:
@@ -100,7 +97,7 @@ def main(args):
     writer = csv.writer(sys.stdout)
     bad_callsites = set()
     bad_targets = set()
-    for edge in remove_stdlib(csv.reader(sys.stdin), stdlib):
+    for edge, direct in remove_stdlib(csv.reader(sys.stdin), stdlib):
         _from, offset, _to = edge
 
         success = True
@@ -116,7 +113,7 @@ def main(args):
                 success = False
        
         if success:
-            writer.writerow(edge)
+            writer.writerow([_from, offset, _to, (1 if direct else 0)])
 
     if bad_targets:
         print(f"Had {len(bad_targets)} invalid targets:", file=sys.stderr)
