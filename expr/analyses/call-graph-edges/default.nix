@@ -268,7 +268,7 @@ rec {
   close-graph = a: b: e:
     utils.postprocess {
       name = "closed";
-      tools = [ pkgs.python3 ];
+      tools = [ pkgs.python3.withPackages (p: [p.graph_tool])];
       ignoreSandbox = true;
       postprocess = ''
         mv upper upper.before
@@ -283,6 +283,8 @@ rec {
       '';
     } (a b e);
 
+
+  wala-0cfa-noreflect-closed = close-graph wala-0cfa-noreflect;
 
   all = [
     wala-0cfa-noreflect 
