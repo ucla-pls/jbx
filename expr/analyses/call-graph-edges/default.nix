@@ -208,7 +208,6 @@ rec {
            ln -s "${decompile b e}" $out/decompiled
            python ${./soot-parse.py} $out/soot-formatted.csv $sandbox/callgraph.txt
            python ${./mapping.py} $out/upper $out/decompiled/callsites.csv $out/soot-formatted.csv
-#           cp $sandbox/callgraph.txt $out/upper  
         fi
       '';
   } b e;
@@ -235,8 +234,7 @@ rec {
       };
   petablox-call-graph-edges8 = petablox-call-graph-edges openjdk8;
 
-  petablox = { ctxt_sensitive ? false }: 
-    b: e: 
+  petablox = { ctxt_sensitive ? false }: b: e:
     shared.petablox {
       petablox = tools.petablox-gt-develop;
       subanalyses =[ "petablox-cg-java" ];
@@ -257,7 +255,6 @@ rec {
            ln -s "${decompile b e}" $out/decompiled
            python ${./soot-parse.py} $out/petablox-formatted.csv $sandbox/petablox_output/callgraph.txt
            python ${./mapping.py} $out/upper $out/decompiled/callsites.csv $out/petablox-formatted.csv
-           # cat $sandbox/petablox_output/callgraph.txt | sort > $out/upper
         fi
       '';
     } b e;
@@ -295,8 +292,8 @@ rec {
     wala-0cfa-noreflect-nointf 
     doop-noreflect 
     doop-reflect 
-    # petablox-0cfa
-    # petablox-1cfa 
+    petablox-0cfa
+    # petablox-1cfa -> runs too slow
     soot
   ];
 

@@ -46,7 +46,6 @@ def format_type(type_string):
 def reformat_method(node):
     #First split into the main parts
     node_split = node.split(" ")
-    if len(node_split)<2: print(node_split)
     class_name = node_split[0]
     return_type = node_split[1]
     method_name_with_args = node_split[2]
@@ -105,7 +104,7 @@ def main():
         for row in soot_csv:
             #Compute the src and destination nodes
             if len(row)<4: #Skip these
-                print(row)
+                continue
             src_node = row[0]
             old_order = row[1]
             dest_node = row[2]
