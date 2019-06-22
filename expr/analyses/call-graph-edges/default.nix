@@ -159,7 +159,7 @@ rec {
       ];
       tools = [ tools.wiretap-pointsto ];
       postprocess = ''
-        wiretap-pointsto $sandbox/_wiretap > $out/lower 
+        wiretap-pointsto $sandbox/_wiretap > $out/lower
         rm -rf $sandbox/_wiretap/pointsto
       '';
     };
@@ -294,7 +294,7 @@ rec {
     doop-reflect 
     petablox-0cfa
     # petablox-1cfa -> runs too slow
-    soot
+    # soot -> too many edgesi
   ];
 
   afew = [ 
@@ -306,12 +306,14 @@ rec {
     utils.liftL ( 
       utils.mkStatistics { 
         name = "call-graph-edges+${b.name}"; 
+        tools = [ pkgs.python3 ];
         foreach = ''
           echo "In $result" >> warnings
           cat $result/closed/warnings >> warnings
         '';
         collect = ''
           ls results/
+          python ${./collect-graphs.py} results upper combined_dataset.csv
         '';
     }) 
     (builtins.map close-graph all) b;
