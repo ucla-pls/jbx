@@ -1,4 +1,4 @@
-        { shared
+{ shared
 , pkgs
 , utils
 , tools
@@ -302,7 +302,7 @@ rec {
     doop-reflect 
   ];
 
-  combined = b:
+  combined = b: e:
     utils.liftL ( 
       utils.mkStatistics { 
         name = "call-graph-edges+${b.name}"; 
@@ -312,10 +312,10 @@ rec {
           cat $result/closed/warnings >> warnings
         '';
         collect = ''
-          ls results/
-          python ${./collect-graphs.py} results upper combined_dataset.csv
+          ln -s ${wiretapAll b e} wiretap
+          python ${./collect-graphs.py} results wiretap combined_dataset.csv
         '';
     }) 
-    (builtins.map close-graph all) b;
+    (builtins.map close-graph all) b e;
 }
 
