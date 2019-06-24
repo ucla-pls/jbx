@@ -30,11 +30,11 @@ public class PetabloxCallgraph extends JavaAnalysis {
             PrintWriter writer, SootMethod src, int counter,
             SootMethod tgt, Stmt stmt) {
 
-        writer.print(src.toString().replace("\'",""));
+        writer.print(src.toString().replaceAll("\'",""));
         writer.print(";");
         writer.print(Integer.toString(counter));
         writer.print(";");
-        writer.print(tgt != null ? tgt.toString().replace("\'","") : "null");
+        writer.print(tgt != null ? tgt.toString().replaceAll("\'","") : "null");
         writer.print(";");
         SootMethodRef ref = stmt.getInvokeExpr().getMethodRef();
         writer.print(ref.declaringClass().getName());
@@ -61,14 +61,7 @@ public class PetabloxCallgraph extends JavaAnalysis {
                 ArraySet<Unit> invokes = cicg.getCallersOrdered(callee);
                 for (Unit unit : invokes) {
                     Stmt stmt = (Stmt) unit;
-                    SootMethod caller = SootUtilities.getMethod(unit);
-					
-					/// DEBUGGING ///
-					if (caller.getDeclaringClass().getName().contains("FileTime")){
-						System.out.println("#### " + caller.toString());
-					}
-					////////////////
-
+                    SootMethod caller = SootUtilities.getMethod(unit);	
                     int counter = getOrder(caller, stmt);
                     write(writer, caller, counter, callee, stmt);
                 }
