@@ -29,11 +29,12 @@ public class PetabloxCallgraph extends JavaAnalysis {
     private static void write(
             PrintWriter writer, SootMethod src, int counter,
             SootMethod tgt, Stmt stmt) {
-        writer.print(src.toString());
+
+        writer.print(src.toString().replace("\'",""));
         writer.print(";");
         writer.print(Integer.toString(counter));
         writer.print(";");
-        writer.print(tgt != null ? tgt.toString() : "null");
+        writer.print(tgt != null ? tgt.toString().replace("\'","") : "null");
         writer.print(";");
         SootMethodRef ref = stmt.getInvokeExpr().getMethodRef();
         writer.print(ref.declaringClass().getName());
@@ -56,10 +57,18 @@ public class PetabloxCallgraph extends JavaAnalysis {
             ClassicProject.g().runTask(cicgAnalysis);
             cicg = cicgAnalysis.getCallGraph();
             for (SootMethod callee : cicg.getNodes()) {
+
                 ArraySet<Unit> invokes = cicg.getCallersOrdered(callee);
                 for (Unit unit : invokes) {
                     Stmt stmt = (Stmt) unit;
                     SootMethod caller = SootUtilities.getMethod(unit);
+					
+					/// DEBUGGING ///
+					if (caller.getDeclaringClass().getName().contains("FileTime")){
+						System.out.println("#### " + caller.toString());
+					}
+					////////////////
+
                     int counter = getOrder(caller, stmt);
                     write(writer, caller, counter, callee, stmt);
                 }
@@ -91,6 +100,7 @@ public class PetabloxCallgraph extends JavaAnalysis {
         } else {
             System.err.println("Invalid petablox analysis flag (only 0 or 1 is valid)");
         }
+	writer.close();
     }
 
     private static int getOrder(SootMethod m, Unit instr){
