@@ -18,16 +18,18 @@ def main():
             continue
         
         name, _ = analysis.name.rsplit("-", 1)
-        analysis_names.append(name)
+        analysis_names.append(name + "-direct")
+        analysis_names.append(name + "-indirect")
         
         with open(analysis / "upper", 'r') as readfp:
             csv_reader = csv.reader(readfp, delimiter=',')
             for method, offset, target, direct in csv_reader:
-                output_rows[method, offset, target].add(name)
+                output_rows[method, offset, target].add(name + ("-direct" if
+                    direct else "-indirect"))
         
     with open(Path(DYN_ANALYSIS) / "lower", 'r') as readfp:
         csv_reader = csv.reader(readfp, delimiter=',')
-        for method, offset, target in csv_reader:
+        for method, offset, target, direct in csv_reader:
             output_rows[method, offset, target].add("wiretap")
 
     with open(OUTPUT_FILE, mode='w') as csv_file:

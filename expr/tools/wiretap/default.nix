@@ -5,8 +5,8 @@ rec {
     name = "wiretap";
     src = fetchgit {
       url = "https://github.com/ucla-pls/wiretap.git";
-      rev = "ae63db40b8ad2dec7d18bc2da99ee646e5133a54";
-      sha256 = "1wxn61p74gzwxj9gjmxanh62sk84jzbpfyrfnsbfhhzh82v4z1kr";
+      rev = "16df2a4ff8ab367bd58ea9d66fe4673c945e818a";
+      sha256 = "1ybx0arn7rsjx7c98cfzb3wkxi867h67w5gj9hhk2xracvldjlsk";
       branchName = "develop";
     };
     buildInputs = [ unzip ant java.jdk makeWrapper];
@@ -26,8 +26,8 @@ rec {
 
   wiretap-pointsto-src = fetchgit {
     url = "https://github.com/ucla-pls/wiretap-pointsto.git";
-    rev = "11d0045b3416e8be093f1bc35fc1e6f36657d2eb";
-    sha256 = "0smshvrx32bpf412lf2x5l8kvadcvymjqn8zg6qr4ficz76173y7";
+    rev = "2905815e3a2e7c7bbbd7809c73726db7d4dc3250";
+    sha256 = "1161ynk88al01cwww7swsy1kvj0gc50z839mzkzah7pc5xq44282";
     branchName = "master";
   };
 

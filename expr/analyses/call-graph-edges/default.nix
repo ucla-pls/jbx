@@ -268,15 +268,27 @@ rec {
       tools = [ (pkgs.python3.withPackages (p: [p.graph-tool])) ];
       ignoreSandbox = true;
       postprocess = ''
-        mv upper upper.before
         mkdir closed
         cd closed
         ln -s ${decompile b e} decompiled
-        python ${./callgraph.py} \
-          --stdlib ${stdlib-methods b.java.jdk} \
-          --callsites decompiled/callsites.csv \
-          --methods decompiled/methods.txt \
-          < ../upper.before > ../upper 2>warnings
+        if [ -e ../upper ] 
+        then
+          mv ../upper upper.before
+          python ${./callgraph.py} \
+            --stdlib ${stdlib-methods b.java.jdk} \
+            --callsites decompiled/callsites.csv \
+            --methods decompiled/methods.txt \
+            < upper.before > ../upper 2>> warnings
+        fi
+        if [ -e ../lower ] 
+        then
+          mv ../lower lower.before
+          python ${./callgraph.py} \
+            --stdlib ${stdlib-methods b.java.jdk} \
+            --callsites decompiled/callsites.csv \
+            --methods decompiled/methods.txt \
+            < lower.before > ../lower 2>> warnings
+        fi
       '';
     } (a b e);
 
@@ -312,7 +324,9 @@ rec {
           cat $result/closed/warnings >> warnings
         '';
         collect = ''
-          ln -s ${wiretapAll b e} wiretap
+          ln -s ${close-graph wiretapAll b e} wiretap
+          echo "In $result" >> warnings
+          cat wiretap/closed/warnings >> warnings
           python ${./collect-graphs.py} results wiretap combined_dataset.csv
         '';
     }) 
