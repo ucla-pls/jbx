@@ -1,5 +1,6 @@
 import soot.*;
 import soot.jimple.*;
+import soot.jimple.spark.SparkTransformer;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.Edge;
 import soot.jimple.toolkits.callgraph.ReachableMethods;
@@ -13,6 +14,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.ArrayList;
 
 public class SootCallgraph extends SceneTransformer {
@@ -74,9 +76,6 @@ public class SootCallgraph extends SceneTransformer {
               found = true;
             }
           }
-          //if (!found) {
-          //  write(writer, method, counter, null, stmt);
-          //}
           counter += 1;
         }
       }
@@ -86,6 +85,22 @@ public class SootCallgraph extends SceneTransformer {
 
   @Override
   protected void internalTransform(String phaseName, Map options) {
+    HashMap opt = new HashMap(options);
+    opt.put("enabled","true");
+    opt.put("verbose", "true");
+    opt.put("on-fly-cg","true");
+    opt.put("simple-edges-bidirectional", "false");
+    opt.put("vta", "false");
+    opt.put("rta", "false");
+    opt.put("propagator","worklist");
+    opt.put("force-gc","true");
+    opt.put("ignore-types","false");
+    opt.put("field-based","false");
+    opt.put("pre-jimplify","false");
+    opt.put("class-method-var","true");
+    opt.put("dump-pag","false");
+
+    SparkTransformer.v().transform("", opt);	  
     Chain<SootClass> app = Scene.v().getClasses();
     try {
       proccess(app);
