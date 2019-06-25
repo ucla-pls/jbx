@@ -101,6 +101,13 @@ def main(args):
         _from, offset, _to = edge
 
         success = True
+
+        try:
+            classname, methodname = _to.split('.')
+            if methodname == "<clinit>:()V":
+                _from, offset = "<boot>", "0"
+        except ValueError:
+            pass
        
         if callsites:
             instr = callsites.get(_from, set())
