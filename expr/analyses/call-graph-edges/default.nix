@@ -114,6 +114,7 @@ rec {
           python ${./doop-parse.py} $out/doop-formatted.csv $file
           python ${./mapping.py} $out/upper $out/decompiled/callsites.csv $out/doop-formatted.csv
         fi
+        rm -rf $sandbox
     '';
   } b e;
 
@@ -263,34 +264,37 @@ rec {
   petablox-1cfa = petablox { ctxt_sensitive = true; };
 
   close-graph = a: b: e:
-    utils.postprocess {
-      name = "closed";
-      tools = [ (pkgs.python3.withPackages (p: [p.graph-tool])) ];
+    let result = (a b e); 
+      nameList = pkgs.lib.strings.splitString "+" result.name;
+      benchmarkName = (builtins.elemAt nameList 1);
+      analysisName = (builtins.elemAt nameList 0);
+    in stdenv.mkDerivation {
+      name = "${analysisName}-closed+${benchmarkName}";
+      buildInputs = [ pkgs.procps (pkgs.python3.withPackages (p: [p.graph-tool])) ];
       ignoreSandbox = true;
-      postprocess = ''
-        mkdir closed
-        cd closed
+      phases = "installPhase";
+      installPhase = ''
+        mkdir $out; cd $out
+        ln -s ${result} before
         ln -s ${decompile b e} decompiled
-        if [ -e ../upper ] 
+        if [ -e before/upper ] 
         then
-          mv ../upper upper.before
           python ${./callgraph.py} \
             --stdlib ${stdlib-methods b.java.jdk} \
             --callsites decompiled/callsites.csv \
             --methods decompiled/methods.txt \
-            < upper.before > ../upper 2>> warnings
+            < before/upper > upper 2>> warnings
         fi
-        if [ -e ../lower ] 
+        if [ -e before/lower ] 
         then
-          mv ../lower lower.before
           python ${./callgraph.py} \
             --stdlib ${stdlib-methods b.java.jdk} \
             --callsites decompiled/callsites.csv \
             --methods decompiled/methods.txt \
-            < lower.before > ../lower 2>> warnings
+            < before/lower > lower 2>> warnings
         fi
       '';
-    } (a b e);
+    } ;
 
 
   wala-0cfa-noreflect-closed = close-graph wala-0cfa-noreflect;
@@ -321,12 +325,12 @@ rec {
         tools = [ pkgs.python3 ];
         foreach = ''
           echo "In $result" >> warnings
-          cat $result/closed/warnings >> warnings
+          cat $result/warnings >> warnings
         '';
         collect = ''
           ln -s ${close-graph wiretapAll b e} wiretap
           echo "In $result" >> warnings
-          cat wiretap/closed/warnings >> warnings
+          cat wiretap//warnings >> warnings
           python ${./collect-graphs.py} results wiretap combined_dataset.csv
         '';
     }) 
