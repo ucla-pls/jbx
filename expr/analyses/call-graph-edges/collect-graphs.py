@@ -24,8 +24,10 @@ def main():
         with open(analysis / "upper", 'r') as readfp:
             csv_reader = csv.reader(readfp, delimiter=',')
             for method, offset, target, direct in csv_reader:
-                output_rows[method, offset, target].add(name + ("-direct" if
-                    direct else "-indirect"))
+                if direct:
+                    output_rows[method, offset, target].add(name + "-direct")
+                output_rows[method, offset, target].add(name + "-indirect")
+
         
     with open(Path(DYN_ANALYSIS) / "lower", 'r') as readfp:
         csv_reader = csv.reader(readfp, delimiter=',')
