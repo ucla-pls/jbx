@@ -26,7 +26,7 @@ def main():
             for method, offset, target, direct in csv_reader:
                 if direct:
                     output_rows[method, offset, target].add(name + "-direct")
-                output_rows[method, offset, target].add(name + "-indirect")
+                output_rows[method, offset, target].add(name + "-trans")
 
         
     with open(Path(DYN_ANALYSIS) / "lower", 'r') as readfp:
