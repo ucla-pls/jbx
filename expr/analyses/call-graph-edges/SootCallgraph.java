@@ -1,5 +1,7 @@
 import soot.*;
 import soot.jimple.*;
+import soot.jimple.spark.SparkTransformer;
+import soot.jimple.toolkits.callgraph.CHATransformer;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.Edge;
 import soot.jimple.toolkits.callgraph.ReachableMethods;
@@ -13,6 +15,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.ArrayList;
 
 public class SootCallgraph extends SceneTransformer {
@@ -25,11 +28,11 @@ public class SootCallgraph extends SceneTransformer {
   private static void write(
       BufferedWriter writer, SootMethod method, int counter, 
       SootMethod e, Stmt stmt) throws IOException {
-    writer.write(method.toString());
+    writer.write(method.toString().replaceAll("\'",""));
     writer.write(";");
     writer.write(Integer.toString(counter));
     writer.write(";");
-    writer.write(e != null ? e.toString() : "null");
+    writer.write(e != null ? e.toString().replaceAll("\'","") : "null");
     writer.write(";");
     SootMethodRef ref = stmt.getInvokeExpr().getMethodRef();
     writer.write(ref.declaringClass().getName());
@@ -38,60 +41,94 @@ public class SootCallgraph extends SceneTransformer {
     writer.write("\n");
   }
 
-  private void proccess(Chain<SootClass> app) throws IOException {
-    CallGraph cg = Scene.v().getCallGraph();
-    ReachableMethods reachableMethods = Scene.v().getReachableMethods();
-    BufferedWriter writer = new BufferedWriter(new FileWriter(output));
-
-
-    for (SootClass sc : app) {
-      List<SootMethod> methods = sc.getMethods();
-      for (SootMethod method : methods) {
-        if (!reachableMethods.contains(method)) {
-            continue;
-        }
-        if (method.isPhantom() || method.isAbstract() || !method.hasActiveBody()) continue;
-
-        // Extracting the code body of this method
-        Body body = method.retrieveActiveBody();
-        if (body == null) continue;
-        // Initialize a counter for the order
-        int counter = 0;
-        // Cast to JimpleBody
-        JimpleBody b = (JimpleBody) body;
-
-        PatchingChain<Unit> chain = b.getUnits();
-        for (Unit u : chain) {
-          Stmt stmt = (Stmt) u;
-          if(!stmt.containsInvokeExpr()) continue;
-          Iterator<Edge> o = cg.edgesOutOf(method);
-          boolean found = false;
-          while (o.hasNext()) {
-            Edge e = o.next();
-            Stmt src_stmt = e.srcStmt();
-            if (src_stmt == stmt) {
-              write(writer, method, counter, e.tgt(), stmt);
-              found = true;
+  private static int getOrder(SootMethod m, Unit instr){
+        try {
+            Body method_body = m.retrieveActiveBody();
+            PatchingChain<Unit> chain = method_body.getUnits();
+            int order = 0;
+            for (Unit u : chain) {
+                Stmt stmt = (Stmt) u;
+                if (stmt.containsInvokeExpr()){
+                    if (stmt == instr){
+                        return order;
+                    }
+                    order+=1;
+                }
             }
-          }
-          //if (!found) {
-          //  write(writer, method, counter, null, stmt);
-          //}
-          counter += 1;
+        } catch (Exception e){
+            System.out.println(e.toString());
+            return -1;
         }
-      }
+
+        return -2;
+  }
+
+  private void proccess(Chain<SootClass> app) throws IOException {
+
+    CallGraph cg = Scene.v().getCallGraph();
+
+    BufferedWriter writer = new BufferedWriter(new FileWriter(output));
+    
+    Iterator<MethodOrMethodContext> srcMethod_iterator = cg.sourceMethods();
+    while (srcMethod_iterator.hasNext()){
+        MethodOrMethodContext mmc = srcMethod_iterator.next();
+        SootMethod source = mmc.method();
+        if (source == null) continue;
+        Iterator<Edge> edge_it = cg.edgesOutOf(mmc);
+        while (edge_it.hasNext()) {
+            Edge edge = edge_it.next();
+            SootMethod target = edge.tgt();
+            Stmt stmt = edge.srcStmt();
+            int order = getOrder(source, stmt);
+            if(order < 0) continue;
+            write(writer, source, order, target, stmt);
+        }
     }
+
     writer.close();
   }
 
   @Override
   protected void internalTransform(String phaseName, Map options) {
-    Chain<SootClass> app = Scene.v().getClasses();
-    try {
-      proccess(app);
-    } catch (IOException i) {
 
-    }
+    HashMap opt = new HashMap(options);
+    opt.put("enabled","true");
+    opt.put("verbose", "true");
+    opt.put("on-fly-cg","true");
+    opt.put("simple-edges-bidirectional", "false");
+    opt.put("vta", "false");
+    opt.put("rta", "false");
+    opt.put("propagator","worklist");
+    opt.put("ignore-types","false");
+    opt.put("field-based","false");
+    opt.put("pre-jimplify","false");
+    opt.put("class-method-var","true");
+    opt.put("dump-pag","false");
+    opt.put("force-gc","true");
+    opt.put("pre-jimplify","false");
+    opt.put("merge-stringbuffer","false");
+    opt.put("string-constants","false");
+    opt.put("simulate-natives","true");
+    opt.put("simplify-offline","false");
+    opt.put("simplify-sccs","true");
+    opt.put("ignore-types-for-sccs","false");
+    opt.put("set-impl","double");
+    opt.put("double-set-old","hybrid");
+    opt.put("double-set-new","hybrid");
+    opt.put("dump-html","false");
+    opt.put("dump-pag","false");
+    opt.put("dump-solution","false");
+    opt.put("topo-sort","false");
+    opt.put("dump-types","false");
+    opt.put("dump-answer","false");
+    opt.put("add-tags","false");
+    opt.put("set-mass","false");
+    opt.put("app-only","false");
+
+    SparkTransformer.v().transform("", opt);
+
+    Chain<SootClass> app = Scene.v().getClasses();
+    try {proccess(app);} catch (IOException i) {}
   }
  
  public static void main(String[] args) {
@@ -108,12 +145,15 @@ public class SootCallgraph extends SceneTransformer {
    Options.v().parse(newargs);
    SootClass c = Scene.v().forceResolve(mainClass, SootClass.BODIES);
    c.setApplicationClass();
+
    Scene.v().loadNecessaryClasses();
+
    SootMethod method = Scene.v().getMainMethod();
    List <SootMethod> entryPoints = new ArrayList<>();
    entryPoints.add(method);
    Scene.v().setEntryPoints(entryPoints);
-   
+
+
    PackManager.v().getPack("wjtp").add(new Transform("wjtp.myTrans", new SootCallgraph(output)));
    soot.Main.main(newargs);
  }

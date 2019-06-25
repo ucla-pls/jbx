@@ -310,7 +310,7 @@ rec {
     doop-reflect 
     petablox-0cfa
     # petablox-1cfa -> runs too slow
-    # soot -> too many edgesi
+    soot
   ];
 
   afew = [ 
