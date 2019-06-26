@@ -111,7 +111,7 @@ rec {
         if [ -f "$file" ]
         then
           ln -s "${decompile b e}" $out/decompiled
-          python ${./doop-parse.py} $out/doop-formatted.csv $file
+          python ${./doop-parse.py} $out/doop-formatted.csv $file $mainclass
           python ${./mapping.py} $out/upper $out/decompiled/callsites.csv $out/doop-formatted.csv
         fi
         rm -rf $sandbox
@@ -298,6 +298,7 @@ rec {
 
 
   wala-0cfa-noreflect-closed = close-graph wala-0cfa-noreflect;
+  doop-closed = close-graph doop-noreflect;
 
   all = [
     wala-0cfa-noreflect 

@@ -12,7 +12,8 @@ import csv
 
 OUTPUT_FILE = sys.argv[1]
 DOOP_OUTPUT = sys.argv[2]
-DOOP_FAKE_ROOT = "doop/FakeRootClass.fakeRootMethod:()V"
+MAINCLASS = sys.argv[3]
+DOOP_FAKE_ROOT = "<boot>"
 INIT_FUNCTIONS = ["<main-thread-init>","<thread-group-init>"]
 #Native methods are only used for the following method 
 #java/security/AccessController.doPrivileged
@@ -97,6 +98,11 @@ def reformat_target(declared_target):
 
 def main():
     output = []
+    #Add an edge from boot to main
+    main_class_formatted = MAINCLASS.replace(".","/")
+    main_method = main_class_formatted + ".main:([Ljava/lang/String;)V"
+    main_method_target = main_class_formatted + ".main"
+    output.append([DOOP_FAKE_ROOT,0,main_method,main_method_target])
     #Read in the Doop outputs
     #note - don't skip first line. There is no header.
     with open(DOOP_OUTPUT) as doop_fp:
