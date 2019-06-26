@@ -96,15 +96,15 @@ public class WalaCallgraph {
                     int bytecodeOffset;
                     //Decide the bytecode offset (and fix firstMethod) depending on if it is a boot method
                     if (bootSrcMethod){
-			        	firstMethod = "<boot>";
-			        	bytecodeOffset = 0;
-			        } else {
-			        	bytecodeOffset = csref.getProgramCounter();
-			        }
+                        firstMethod = "<boot>";
+                        bytecodeOffset = 0;
+                    } else {
+                        bytecodeOffset = csref.getProgramCounter();
+                    }
 
-                    //Rename destination node if it is a boot method
+                    //Skip this edge if  destination node is a boot method
                     if (secondMethod.equals("com/ibm/wala/FakeRootClass.fakeWorldClinit:()V\n")){
-                        secondMethod = "<boot>\n";
+                        continue;
                     }
                     fw.write(firstMethod + "," + bytecodeOffset + "," + secondMethod); 
                 }           
@@ -124,9 +124,9 @@ public class WalaCallgraph {
                     bytecodeOffset = csref.getProgramCounter();
                 }
                 
-                //Rename destination node if it is a boot method
+                //Skip this edge if  destination node is a boot method
                 if (secondMethod.equals("com/ibm/wala/FakeRootClass.fakeWorldClinit:()V\n")){
-                    secondMethod = "<boot>\n";
+                    continue;
                 }
 
                 fw.write(firstMethod + "," + bytecodeOffset + "," + secondMethod);
