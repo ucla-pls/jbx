@@ -329,7 +329,7 @@ rec {
         '';
         collect = ''
           ln -s ${close-graph wiretapAll b e} wiretap
-          echo "In $result" >> warnings
+          echo "In wiretap" >> warnings
           cat wiretap//warnings >> warnings
           python ${./collect-graphs.py} results wiretap combined_dataset.csv
         '';
