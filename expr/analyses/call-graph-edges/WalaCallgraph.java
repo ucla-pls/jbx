@@ -78,6 +78,8 @@ public class WalaCallgraph {
         String name1 = sel1.getName().toString();
         String firstMethod = "" + ( t1.getPackage() == null ? "" : t1.getPackage() + "/" ) + t1.getClassName() + "." + name1 + ":" + sel1.getDescriptor();
 
+        boolean bootSrcMethod = (firstMethod.equals("com/ibm/wala/FakeRootClass.fakeRootMethod:()V") 
+                        || firstMethod.equals("com/ibm/wala/FakeRootClass.fakeWorldClinit:()V"));
 
         for(Iterator<CallSiteReference> it2 =  cgnode.iterateCallSites(); it2.hasNext(); ) {
             CallSiteReference csref = it2.next();
@@ -91,7 +93,19 @@ public class WalaCallgraph {
                     String name2 = sel2.getName().toString();
                     String secondMethod = "" + ( t2.getPackage() == null ? "" : t2.getPackage() + "/" ) + t2.getClassName() + "." + name2 + ":" + sel2.getDescriptor() + "\n";
                         
-                    int bytecodeOffset = csref.getProgramCounter();
+                    int bytecodeOffset;
+                    //Decide the bytecode offset (and fix firstMethod) depending on if it is a boot method
+                    if (bootSrcMethod){
+			        	firstMethod = "<boot>";
+			        	bytecodeOffset = 0;
+			        } else {
+			        	bytecodeOffset = csref.getProgramCounter();
+			        }
+
+                    //Rename destination node if it is a boot method
+                    if (secondMethod.equals("com/ibm/wala/FakeRootClass.fakeWorldClinit:()V\n")){
+                        secondMethod = "<boot>\n";
+                    }
                     fw.write(firstMethod + "," + bytecodeOffset + "," + secondMethod); 
                 }           
             } else {
@@ -101,7 +115,20 @@ public class WalaCallgraph {
                 String name2 = sel2.getName().toString();
                 String secondMethod = "" + ( t2.getPackage() == null ? "" : t2.getPackage() + "/" ) + t2.getClassName() + "." + name2 + ":" + sel2.getDescriptor() + "\n";
                 
-                int bytecodeOffset = csref.getProgramCounter();
+                int bytecodeOffset;
+                //Decide the bytecode offset (and fix firstMethod) depending on if it is a boot method
+                if (bootSrcMethod){
+                    firstMethod = "<boot>";
+                    bytecodeOffset = 0;
+                } else {
+                    bytecodeOffset = csref.getProgramCounter();
+                }
+                
+                //Rename destination node if it is a boot method
+                if (secondMethod.equals("com/ibm/wala/FakeRootClass.fakeWorldClinit:()V\n")){
+                    secondMethod = "<boot>\n";
+                }
+
                 fw.write(firstMethod + "," + bytecodeOffset + "," + secondMethod);
             }
         }
