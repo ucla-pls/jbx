@@ -31,7 +31,7 @@ def remove_stdlib(edges, stdlib):
     g = gt.Graph()
     
     keep = g.new_vertex_property("bool", False)
-    method = g.new_vertex_property("string", "")
+    method = g.new_vertex_property("string")
     verticies = defaultdict(g.add_vertex)
 
     print("Iterating through edges", file=sys.stderr)
@@ -71,7 +71,8 @@ def remove_stdlib(edges, stdlib):
                     refs = references[_to]
                 except KeyError:
                     j = verticies[_to]
-                    refs = { (method[x], False) for x in tgc.get_out_neighbors(j)} - {""}
+                    refs = { (method[x], False) for x in
+                            tgc.get_out_neighbors(j)} - {("", False)}
                     references[_to] = refs
                 alls |= refs
         yield from (((_from, offset, t), direct) for t, direct in alls)
@@ -95,8 +96,8 @@ def main(args):
             methods = set(line.strip() for line in fp)
 
     writer = csv.writer(sys.stdout)
-    bad_callsites = set()
-    bad_targets = set()
+    bad_callsites = dict()
+    bad_targets = dict()
     for edge, direct in remove_stdlib(csv.reader(sys.stdin), stdlib):
         _from, offset, _to = edge
 
@@ -112,11 +113,11 @@ def main(args):
         if callsites:
             instr = callsites.get(_from, set())
             if not instr or not offset in instr:
-                bad_callsites.add((_from, offset))
+                bad_callsites[(_from, offset)] = edge
                 success = False
         if methods:
             if not _to in methods:
-                bad_targets.add(_to)
+                bad_targets[_to] = edge
                 success = False
        
         if success:
@@ -124,8 +125,8 @@ def main(args):
 
     if bad_targets:
         print(f"Had {len(bad_targets)} invalid targets:", file=sys.stderr)
-        for _to in sorted(bad_targets):
-            print(f"  {_to}", file=sys.stderr)
+        for _to, edge in sorted(bad_targets.items()):
+            print(f"  {_to} ---- {edge}", file=sys.stderr)
 
     if bad_callsites:
         print(f"Had {len(bad_callsites)} invalid callsites:", file=sys.stderr)
