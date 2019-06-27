@@ -101,7 +101,7 @@ rec {
   b: e:
   shared.doop { 
     subanalysis = "context-insensitive";
-    doop = tools.doop;
+    doop = (tools.doop-jdk8-4_10_11 b.java.jdk);
     tools = [ pkgs.python3 ];
     ignoreSandbox = true;
     reflection = reflection;

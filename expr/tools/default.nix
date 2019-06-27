@@ -19,8 +19,14 @@ rec {
   inherit (callPackage ./doop { souffle = souffle-1_4_0; })
     doop-3_3_1
     doop-4_10_11
+    doop-jdk8-4_10_11
+    doop-platform
   ;
+
   doop = doop-4_10_11;
+  doop-jdk8 = doop-jdk8-4_10_11;
+
+  doop-platform8 = doop-platform openjdk8;
 
   souffle-1_4_0 = callPackage ./souffle {};
 

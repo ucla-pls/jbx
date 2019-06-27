@@ -17,7 +17,8 @@ def main():
         if not analysis.is_dir():
             continue
         
-        name, _ = analysis.name.rsplit("-", 1)
+        analysis_name, _ = analysis.name.rsplit("+", 1)
+        name, _ = analysis_name.rsplit("-", 1)
         analysis_names.append(name + "-direct")
         analysis_names.append(name + "-trans")
         

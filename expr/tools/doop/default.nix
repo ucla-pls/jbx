@@ -64,7 +64,7 @@ let buildDrv =
          --prefix PATH : ${souffle}/bin
      '';
   };
-in {
+in rec {
 doop-3_3_1 =
   stdenv.mkDerivation rec {
      name = "doop-${version}";
@@ -146,5 +146,60 @@ doop-4_10_11 =
          --set GRADLE_OPTS "--offline" \
          --set DOOP_PLATFORMS_LIB $benchmarks
      '';
+  };
+
+  doop-jdk8-4_10_11 =
+    java: stdenv.mkDerivation rec {
+      name = "doop-${version}";
+      version = "4.10.11";
+      src = fetchurl {
+        url = "http://tupai.cs.ucla.edu/${name}.tar";
+        sha256 = "17dp9cx8d2h5ac7d1dnqjbqb8dwswl5747dr7l8l7jr0r0w0dfm9";
+      };
+      
+      phases = [ "unpackPhase" "installPhase" ];
+      benchmarks = doop-platform java;
+  
+      buildInputs = [
+        makeWrapper
+      ];
+
+      propagatedBuildInputs = [
+        souffle
+        glibcLocales
+      ];
+  
+      installPhase = ''
+        patchShebangs .
+        mkdir -p $out
+        cp -r bin/ $out/bin
+        mkdir -p $out/share/java
+        cp -r lib/* $out/share/java
+        cp -r logic $out/logic
+        cp -r souffle-logic $out/souffle-logic
+        ln -s $out/share/java $out/lib
+        mv $out/bin/doop $out/bin/doop_unwrapped
+
+        ln -s $benchmarks $out/platforms
+        ln -s ${souffle} $out/souffle
+   
+        makeWrapper $out/bin/doop_unwrapped $out/bin/doop \
+          --set DOOP_HOME $out/ \
+          --set GRADLE_OPTS "--offline" \
+          --set DOOP_PLATFORMS_LIB $benchmarks
+      '';
+  };
+
+  doop-platform = java: stdenv.mkDerivation {
+    name = "doop-platform";
+    phases = [ "installPhase" ];
+    buildInputs = [];
+    installPhase = ''
+      FOLDER=$out/JREs/jre1.8/lib
+      mkdir -p $FOLDER
+      ln -s ${java}/jre/lib/rt.jar $FOLDER
+      ln -s ${java}/jre/lib/jce.jar $FOLDER
+      ln -s ${java}/jre/lib/jsse.jar $FOLDER
+    '';
   };
 }
