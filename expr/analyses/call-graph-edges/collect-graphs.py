@@ -19,7 +19,7 @@ def main():
         
         name, _ = analysis.name.rsplit("-", 1)
         analysis_names.append(name + "-direct")
-        analysis_names.append(name + "-indirect")
+        analysis_names.append(name + "-trans")
         
         with open(analysis / "upper", 'r') as readfp:
             csv_reader = csv.reader(readfp, delimiter=',')
