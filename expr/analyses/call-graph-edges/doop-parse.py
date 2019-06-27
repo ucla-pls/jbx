@@ -62,6 +62,7 @@ def reformat_method(node):
     
     #Correct the method name
     method_name_without_args = method_name_with_args.split("(")[0]
+    method_name_without_args = method_name_without_args.replace("'","")
 
     #Correct the return type format
     return_type = format_type(return_type)
