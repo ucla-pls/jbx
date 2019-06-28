@@ -5,8 +5,8 @@ let
     src = fetchgit {
       url = "https://github.com/ucla-pls/baseline.git";
       branchName = "master";
-      rev = "52ab27c90eb0853fa4bdc057473115557e863909";
-      sha256 = "1rhrrk462cjn6jmz3923h78a0pvlrp4mqm063dv7vlzb9d673d0p";
+      rev = "9bebeb7fed14dcd6ea384e0d45fd3a5d26485e91";
+      sha256 = "005pqxg7rlxhlngdd0msm6q2ahqfi57wm90zd5l6nmvyc4bdsf05";
     };
     phases = [ "unpackPhase" "patchPhase" "buildPhase" "installPhase" ];
     buildInputs = [ ant java.jdk ];
@@ -84,6 +84,10 @@ in rec {
       }
     ];
   };
+  simplelambda = mkBaseline {
+    name = "simplelambda";
+    mainclass = "edu.ucla.pls.baseline.SimpleLambda";
+  };
   all = [
     transfer
     infinite
@@ -95,5 +99,6 @@ in rec {
     dependent_datarace
     picklock
     notadeadlock
+    simplelambda
   ];
 }
