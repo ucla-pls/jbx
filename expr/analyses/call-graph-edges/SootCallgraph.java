@@ -88,9 +88,7 @@ public class SootCallgraph extends SceneTransformer {
     writer.close();
   }
 
-  @Override
-  protected void internalTransform(String phaseName, Map options) {
-
+  private void callSpark(Map options){
     HashMap opt = new HashMap(options);
     opt.put("enabled","true");
     opt.put("verbose", "true");
@@ -126,35 +124,40 @@ public class SootCallgraph extends SceneTransformer {
     opt.put("app-only","false");
 
     SparkTransformer.v().transform("", opt);
+  }
 
+
+  @Override
+  protected void internalTransform(String phaseName, Map options) {
     Chain<SootClass> app = Scene.v().getClasses();
     try {proccess(app);} catch (IOException i) {}
   }
  
  public static void main(String[] args) {
-   String output = args[0];
-   String[] newargs = new String[args.length -2];
-   for (int i = 2; i < args.length; i++) {
-     newargs[i - 2] = args[i];
-   }
-   
-   // Adding a new cmd argument to specify the main class name
-   // because we need to set ther entry point manually (soot would treat all methods 
-   // in the main class as entry points if none is set)  
-   String mainClass = args[1];
-   Options.v().parse(newargs);
-   SootClass c = Scene.v().forceResolve(mainClass, SootClass.BODIES);
-   c.setApplicationClass();
-
-   Scene.v().loadNecessaryClasses();
-
-   SootMethod method = Scene.v().getMainMethod();
-   List <SootMethod> entryPoints = new ArrayList<>();
-   entryPoints.add(method);
-   Scene.v().setEntryPoints(entryPoints);
-
-
-   PackManager.v().getPack("wjtp").add(new Transform("wjtp.myTrans", new SootCallgraph(output)));
-   soot.Main.main(newargs);
+    String output = args[0];
+    String[] newargs = new String[args.length -2];
+    for (int i = 2; i < args.length; i++) {
+      newargs[i - 2] = args[i];
+    }
+    
+    // Adding a new cmd argument to specify the main class name
+    // because we need to set ther entry point manually (soot would treat all methods 
+    // in the main class as entry points if none is set)  
+    String mainClass = args[1];
+    Options.v().parse(newargs);
+    Options.v().set_no_bodies_for_excluded(true);
+    
+    SootClass entryClass = Scene.v().loadClassAndSupport(mainClass);
+    Scene.v().loadNecessaryClasses();
+    SootMethod entryMethod = entryClass.getMethodByName("main");
+    
+    SootMethod method = Scene.v().getMainMethod();
+    List <SootMethod> entryPoints = new ArrayList<>();
+    entryPoints.add(method);
+    Scene.v().setEntryPoints(entryPoints);
+    
+    
+    PackManager.v().getPack("wjtp").add(new Transform("wjtp.myTrans", new SootCallgraph(output)));
+    soot.Main.main(newargs);
  }
 }
