@@ -22,6 +22,73 @@ import com.ibm.wala.util.io.CommandLine;
 
 public class WalaCallgraph {
   
+  //Lambda start string constants to identify lambda methods
+  public static String walaLambdaStartString = "wala/lambda$";
+  public static String lambdaMetafactoryStartString = "java/lang/invoke/LambdaMetafactory.";
+  public static String lambdaMetafactoryClinit = "<clinit>:()V";
+  public static String walaArrayCopy = "com/ibm/wala/model/java/lang/System.arraycopy:(Ljava/lang/Object;Ljava/lang/Object;)V";
+  public static String javaLibArrayCopy = "java/lang/System.arraycopy:(Ljava/lang/Object;ILjava/lang/Object;II)V";
+  
+  //Reformat the method if it is a lambda. Else simply return it.
+  public static String reformatIfLambda(String inputMethod){
+  	String outputMethod;
+  	if (inputMethod.startsWith(walaLambdaStartString)){
+  		String fullLambdaSignature = inputMethod.substring(walaLambdaStartString.length()); //remove wala start string
+  		String lambdaSignatureWithoutArgs = fullLambdaSignature.split(":")[0];
+  		String classname = lambdaSignatureWithoutArgs.split("\\.")[0];
+  		String classnameFormatted = classname.replaceAll("\\$","/");
+  		String methodname = lambdaSignatureWithoutArgs.split("\\.")[1];
+  		outputMethod = classnameFormatted + "<lambda/" + methodname + ">:()V";
+  		return outputMethod;
+  	}
+  	else if (inputMethod.startsWith(lambdaMetafactoryStartString)){
+  		String fullLambdaSignature = inputMethod.substring(lambdaMetafactoryStartString.length()); //remove lambdametafactor start string
+  		if (fullLambdaSignature.equals(lambdaMetafactoryClinit)){
+  			return inputMethod; //Don't want to do this for the Clinit function
+  		}
+  		String lambdaSignatureWithoutArgs = fullLambdaSignature.split(":")[0];
+  		String methodname = (lambdaSignatureWithoutArgs.split("\\$"))[0];
+  		String classname = lambdaSignatureWithoutArgs.substring(methodname.length()+1); //remove the method name and first $
+  		String classnameFormatted = classname.replaceAll("\\$","/");
+  		outputMethod = classnameFormatted + "<lambda/" + methodname + ">:()V";
+  		return outputMethod;
+  	}
+  	else{ //If it is not a lambda method
+  		return inputMethod;
+  	}
+  }
+
+  //format the method to the required bytecode format
+  public static String formatMethod(TypeName t,String methodname,Selector sel){
+  	String qualifiedClassName = "" + ( t.getPackage() == null ? "" : t.getPackage() + "/" ) + t.getClassName();
+  	String formattedMethod = qualifiedClassName + "." + methodname + ":" + sel.getDescriptor();
+  	//Modify the method if it is a lambda
+    formattedMethod = reformatIfLambda(formattedMethod);
+    //If it is wala arrayCopy, replace with java Arraycopy
+    if (formattedMethod.equals(walaArrayCopy)){
+    	formattedMethod = javaLibArrayCopy;
+    }
+    return formattedMethod;
+  }
+
+  //formats the final output line
+  public static String formatFinalOutput(String firstMethod,String secondMethod,boolean bootSrcMethod,int off){
+  	//Decide the bytecode offset (and fix firstMethod) depending on if it is a boot method
+	int bytecodeOffset;
+	if (bootSrcMethod){
+	    firstMethod = "<boot>";
+	    bytecodeOffset = 0;
+	} else {
+	    bytecodeOffset = off;
+	}
+
+	//Skip this edge if  destination node is a boot method
+	if (secondMethod.equals("com/ibm/wala/FakeRootClass.fakeWorldClinit:()V")){
+	    return null;
+	}
+  	return firstMethod + "," + bytecodeOffset + "," + secondMethod + "\n";
+  }
+
   public static void main(String[] args) throws WalaException, IllegalArgumentException, CancelException, IOException {
     Properties p = CommandLine.parse(args);
     String classpath = p.getProperty("classpath");
@@ -76,8 +143,9 @@ public class WalaCallgraph {
         TypeName t1 = m1.getDeclaringClass().getName();
         Selector sel1 = m1.getSelector();
         String name1 = sel1.getName().toString();
-        String firstMethod = "" + ( t1.getPackage() == null ? "" : t1.getPackage() + "/" ) + t1.getClassName() + "." + name1 + ":" + sel1.getDescriptor();
+        String firstMethod = formatMethod(t1,name1,sel1);
 
+        //Record if this is a fakeRoot/boot method or not
         boolean bootSrcMethod = (firstMethod.equals("com/ibm/wala/FakeRootClass.fakeRootMethod:()V") 
                         || firstMethod.equals("com/ibm/wala/FakeRootClass.fakeWorldClinit:()V"));
 
@@ -91,45 +159,24 @@ public class WalaCallgraph {
                     TypeName t2 = m2.getDeclaringClass().getName();
                     Selector sel2 = m2.getSelector();
                     String name2 = sel2.getName().toString();
-                    String secondMethod = "" + ( t2.getPackage() == null ? "" : t2.getPackage() + "/" ) + t2.getClassName() + "." + name2 + ":" + sel2.getDescriptor() + "\n";
-                        
-                    int bytecodeOffset;
-                    //Decide the bytecode offset (and fix firstMethod) depending on if it is a boot method
-                    if (bootSrcMethod){
-                        firstMethod = "<boot>";
-                        bytecodeOffset = 0;
-                    } else {
-                        bytecodeOffset = csref.getProgramCounter();
+                    
+                    String secondMethod = formatMethod(t2,name2,sel2); 
+                    String formattedOutputLine =  formatFinalOutput(firstMethod,secondMethod,bootSrcMethod,csref.getProgramCounter());
+                    if (formattedOutputLine!=null){
+                    	fw.write(formattedOutputLine); 
                     }
-
-                    //Skip this edge if  destination node is a boot method
-                    if (secondMethod.equals("com/ibm/wala/FakeRootClass.fakeWorldClinit:()V\n")){
-                        continue;
-                    }
-                    fw.write(firstMethod + "," + bytecodeOffset + "," + secondMethod); 
                 }           
             } else {
                 MethodReference m2 = csref.getDeclaredTarget();
                 TypeName t2 = m2.getDeclaringClass().getName();
                 Selector sel2 = m2.getSelector();
                 String name2 = sel2.getName().toString();
-                String secondMethod = "" + ( t2.getPackage() == null ? "" : t2.getPackage() + "/" ) + t2.getClassName() + "." + name2 + ":" + sel2.getDescriptor() + "\n";
                 
-                int bytecodeOffset;
-                //Decide the bytecode offset (and fix firstMethod) depending on if it is a boot method
-                if (bootSrcMethod){
-                    firstMethod = "<boot>";
-                    bytecodeOffset = 0;
-                } else {
-                    bytecodeOffset = csref.getProgramCounter();
+                String secondMethod = formatMethod(t2,name2,sel2);
+                String formattedOutputLine =  formatFinalOutput(firstMethod,secondMethod,bootSrcMethod,csref.getProgramCounter());
+                if (formattedOutputLine!=null){
+                    	fw.write(formattedOutputLine); 
                 }
-                
-                //Skip this edge if  destination node is a boot method
-                if (secondMethod.equals("com/ibm/wala/FakeRootClass.fakeWorldClinit:()V\n")){
-                    continue;
-                }
-
-                fw.write(firstMethod + "," + bytecodeOffset + "," + secondMethod);
             }
         }
         
