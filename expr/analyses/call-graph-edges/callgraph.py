@@ -34,17 +34,23 @@ def remove_stdlib(edges, stdlib):
     method = g.new_vertex_property("string")
     verticies = defaultdict(g.add_vertex)
 
+    def is_stdlib(method):
+        try:
+            return method in stdlib or method.split(".")[0].startswith("<lambda/")
+        except IndexError:
+            return False
+
     print("Iterating through edges", file=sys.stderr)
     missed = defaultdict(list)
     for edge in edges:
         _from, offset, _to = edge
 
         j = verticies[_to]
-        if not _to in stdlib:
+        if not is_stdlib(_to):
             method[j] = _to
             keep[j] = True
             
-        if not _from in stdlib:
+        if not is_stdlib(_from):
             missed[_from, offset].append(_to) 
             keep[j] = True
         else:
@@ -126,13 +132,15 @@ def main(args):
     if bad_targets:
         print(f"Had {len(bad_targets)} invalid targets:", file=sys.stderr)
         for _to, edge in sorted(bad_targets.items()):
-            print(f"  {_to} ---- {edge}", file=sys.stderr)
+            print(f"  {_to}", file=sys.stderr)
+            print(f"    +- {edge[0]}!{edge[1]} -> {edge[2]}\n", file=sys.stderr)
 
     if bad_callsites:
         print(f"Had {len(bad_callsites)} invalid callsites:", file=sys.stderr)
-        for _from, offset in sorted(bad_callsites):
+        for (_from, offset), edge in sorted(bad_callsites.items()):
             instr = callsites.get(_from, set())
             print(f"  {_from}!{offset} {list(instr)}", file=sys.stderr)
+            print(f"    +- {edge[0]}!{edge[1]} -> {edge[2]}\n", file=sys.stderr)
 
 
 

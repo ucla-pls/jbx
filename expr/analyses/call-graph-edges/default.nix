@@ -97,6 +97,7 @@ rec {
       analysis = "0cfa";
     };
   
+  wala-0cfa-noreflect-nointf-closed = close-graph wala-0cfa-noreflect-nointf;
   doop = { reflection ? true }: 
   b: e:
   shared.doop { 
