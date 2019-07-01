@@ -36,7 +36,7 @@ def remove_stdlib(edges, stdlib):
 
     def is_stdlib(method):
         try:
-            return method in stdlib or method.split(".")[0].startswith("<lambda/")
+            return method in stdlib or method.split(".")[1].startswith("<lambda/")
         except IndexError:
             return False
 

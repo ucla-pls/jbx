@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Arrays;
 
 import com.ibm.wala.ipa.callgraph.*;
 import com.ibm.wala.ipa.callgraph.impl.Util;
@@ -35,22 +36,37 @@ public class WalaCallgraph {
   	if (inputMethod.startsWith(walaLambdaStartString)){
   		String fullLambdaSignature = inputMethod.substring(walaLambdaStartString.length()); //remove wala start string
   		String lambdaSignatureWithoutArgs = fullLambdaSignature.split(":")[0];
+
   		String classname = lambdaSignatureWithoutArgs.split("\\.")[0];
-  		String classnameFormatted = classname.replaceAll("\\$","/");
+  		String [] classnameListFormat = classname.split("\\$");
+  		String lambdaIndex = classnameListFormat[classnameListFormat.length-1];
+  		//remove the last element (the lambda index) from the classname
+  		classnameListFormat = Arrays.copyOf(classnameListFormat, classnameListFormat.length-1);
+  		String classnameFormatted = String.join("/",classnameListFormat);
+
   		String methodname = lambdaSignatureWithoutArgs.split("\\.")[1];
-  		outputMethod = classnameFormatted + "<lambda/" + methodname + ">:()V";
+  		outputMethod = classnameFormatted + ".<lambda/" + methodname + "$" + lambdaIndex + ">:()V";
   		return outputMethod;
   	}
   	else if (inputMethod.startsWith(lambdaMetafactoryStartString)){
-  		String fullLambdaSignature = inputMethod.substring(lambdaMetafactoryStartString.length()); //remove lambdametafactor start string
+  		String fullLambdaSignature = inputMethod.substring(lambdaMetafactoryStartString.length()); //remove lambdametafactory start string
   		if (fullLambdaSignature.equals(lambdaMetafactoryClinit)){
   			return inputMethod; //Don't want to do this for the Clinit function
   		}
   		String lambdaSignatureWithoutArgs = fullLambdaSignature.split(":")[0];
+  		if (!lambdaSignatureWithoutArgs.contains("$")){
+  			return inputMethod; //Not really a labmda method.
+  		}
   		String methodname = (lambdaSignatureWithoutArgs.split("\\$"))[0];
+  		
   		String classname = lambdaSignatureWithoutArgs.substring(methodname.length()+1); //remove the method name and first $
-  		String classnameFormatted = classname.replaceAll("\\$","/");
-  		outputMethod = classnameFormatted + "<lambda/" + methodname + ">:()V";
+  		String [] classnameListFormat = classname.split("\\$");
+  		String lambdaIndex = classnameListFormat[classnameListFormat.length-1];
+  		//remove the last element (the lambda index) from the classname
+  		classnameListFormat = Arrays.copyOf(classnameListFormat, classnameListFormat.length-1);
+  		String classnameFormatted = String.join("/",classnameListFormat);
+  		
+  		outputMethod = classnameFormatted + ".<lambda/" + methodname + "$" + lambdaIndex + ">:()V";
   		return outputMethod;
   	}
   	else{ //If it is not a lambda method
