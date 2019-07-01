@@ -70,7 +70,7 @@ def remove_stdlib(edges, stdlib):
     for (_from, offset), tos in missed.items():
         alls = set()
         for _to in tos:
-            if not _to in stdlib:
+            if not is_stdlib(_to):
                 alls.add((_to, True))
             else:
                 try:
