@@ -63,6 +63,19 @@ public class SootCallgraph extends SceneTransformer {
         return -2;
   }
 
+  // For debugging
+  private void printIR (String methodSig) {
+      SootMethod m = Scene.v().getMethod(methodSig);
+      try {
+          for(Unit u : m.retrieveActiveBody().getUnits()){
+              System.out.println("[PRINT] " + u);
+          }
+      } catch (Exception e) {
+        System.out.println("[ERROR] error encountered when trying to print. ");
+      }
+      System.out.println();
+  }
+
   private void proccess(Chain<SootClass> app) throws IOException {
 
     CallGraph cg = Scene.v().getCallGraph();
@@ -81,6 +94,12 @@ public class SootCallgraph extends SceneTransformer {
             Stmt stmt = edge.srcStmt();
             int order = getOrder(source, stmt);
             if(order < 0) continue;
+
+            if(source.getName().contains("printFooter") && target.getName().contains("println")) {
+                System.out.println("[DEBUG] " + source.getSignature());
+                System.out.println("[DEBUG] " + stmt.toString());
+            }
+
             write(writer, source, order, target, stmt);
         }
     }
@@ -130,6 +149,7 @@ public class SootCallgraph extends SceneTransformer {
   @Override
   protected void internalTransform(String phaseName, Map options) {
     Chain<SootClass> app = Scene.v().getClasses();
+
     try {proccess(app);} catch (IOException i) {}
   }
  

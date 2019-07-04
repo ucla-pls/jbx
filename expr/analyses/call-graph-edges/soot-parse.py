@@ -1,14 +1,16 @@
-''''''
-
 import sys
 import pathlib
 import json
 import csv
 
+
 OUTPUT_FILE = sys.argv[1]
 SOOT_OUTPUT = sys.argv[2]
+
+
 #DOOP_FAKE_ROOT = "soot/FakeRootClass.fakeRootMethod:()V"
 #INIT_FUNCTIONS = ["<main-thread-init>","<thread-group-init>"]
+
 #Native methods are only used for the following method 
 #java/security/AccessController.doPrivileged
 #NATIVE = "native "
@@ -17,6 +19,7 @@ DEFAULT_ORDER = -1
 #REG_FINALIZE = "<register-finalize "
 DEFAULT_TARGET = "target_unavailable"
 NULL_ENTRY = "null"
+
 
 #formats a type to the correct format
 def format_type(type_string):
@@ -91,30 +94,38 @@ def reformat_target(declared_target):
 
 def main():
     output = []
-    #Soot/Petablox outputs orders as the sequence of invoke instructions
-    #for a 'src_node'
-    #However doop outputs orders as the sequence of invoke instructions
-    #for a 'src_node'-'declared_target' pair, and we are going to move
-    #things to the doop format through this new_orders
-    new_orders = {}
-    #Read in the Soot outputs
-    #note - don't skip first line. There is no header.
+
+    # Soot/Petablox outputs orders as the sequence of invoke instructions
+    # for a 'src_node'
+    # However doop outputs orders as the sequence of invoke instructions
+    # for a 'src_node'-'declared_target' pair, and we are going to move
+    # things to the doop format through this new_orders
+    new_orders = dict()
+
+    # Read in the Soot outputs
+    # note - don't skip first line. There is no header.
     with open(SOOT_OUTPUT) as soot_fp:
         soot_csv = csv.reader(soot_fp, delimiter=';')
+
         for row in soot_csv:
             #Compute the src and destination nodes
             if len(row)<4: #Skip these
                 continue
+
             src_node = row[0]
             old_order = row[1]
             dest_node = row[2]
             declared_target = row[3]
+
+                        
             if dest_node == NULL_ENTRY: #skip null entries
                 continue
+
             #Format the entries according to the required format
             formatted_src_node = reformat_method(src_node)
             formatted_declared_target = reformat_target(declared_target)
             formatted_dest_node = reformat_method(dest_node)
+
             output.append([
                 formatted_src_node,
                 old_order,
@@ -122,11 +133,14 @@ def main():
                 formatted_declared_target
             ])
 
-            #Record in the new_orders{} dictionary for fixing the orders at a later point.
-            if (formatted_src_node,formatted_declared_target) not in new_orders:
-                new_orders[(formatted_src_node,formatted_declared_target)] = []
-            new_orders[(formatted_src_node,formatted_declared_target)].append(int(old_order))
-    
+            # Record in the new_orders{} dictionary for fixing the orders at a later point.
+            if (formatted_src_node + '->' + formatted_declared_target) not in new_orders:
+                new_orders[(formatted_src_node + '->' + formatted_declared_target)] = []
+
+            if int(str(old_order)) not in new_orders[(formatted_src_node + '->' + formatted_declared_target)]:
+                new_orders[(formatted_src_node + '->' + formatted_declared_target)].append(int(str(old_order)))
+            
+                
     #Keep all the orders in a sorted list
     for entry in new_orders:
         new_orders[entry].sort()
@@ -134,11 +148,12 @@ def main():
     #print(new_orders)
     #Now just fix all the orders
     for entry in output:
-        new_order_list = new_orders[entry[0],entry[3]]
+        new_order_list = new_orders[(entry[0] + '->' + entry[3])]
         new_order_value = new_order_list.index(int(entry[1]))
         #The required entry is the index of the 'old_order' entry in the
         #corresponding sorted 'new_orders' list
         entry[1] = new_order_value
+        
 
     #Now just write the output
     with open(OUTPUT_FILE, mode='w') as outputf:
