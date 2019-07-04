@@ -94,12 +94,6 @@ public class SootCallgraph extends SceneTransformer {
             Stmt stmt = edge.srcStmt();
             int order = getOrder(source, stmt);
             if(order < 0) continue;
-
-            if(source.getName().contains("printFooter") && target.getName().contains("println")) {
-                System.out.println("[DEBUG] " + source.getSignature());
-                System.out.println("[DEBUG] " + stmt.toString());
-            }
-
             write(writer, source, order, target, stmt);
         }
     }
