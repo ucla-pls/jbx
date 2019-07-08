@@ -327,13 +327,23 @@ rec {
         tools = [ pkgs.python3 ];
         foreach = ''
           echo "In $result" >> warnings
-          cat $result/warnings >> warnings
+          if [ -e $result/warnings ] 
+          then
+            cat $result/warnings >> warnings
+          else
+            echo "No warnings file, potential bug" >> warnings
+          fi
         '';
         collect = ''
           ln -s ${close-graph wiretapAll b e} wiretap
           echo "In wiretap" >> warnings
-          cat wiretap//warnings >> warnings
-          python ${./collect-graphs.py} results wiretap combined_dataset.csv
+          if [ -e wiretap/warnings ] 
+          then
+            cat wiretap/warnings >> warnings
+          else
+            echo "No warnings file, potential bug" >> warnings
+          fi
+          python ${./collect-graphs.py} results wiretap combined_dataset.csv || true
         '';
     }) 
     (builtins.map close-graph all) b e;
