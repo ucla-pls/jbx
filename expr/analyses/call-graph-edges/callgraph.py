@@ -91,6 +91,7 @@ def main(args):
     if args.callsites:
         callsites = defaultdict(set)
         callsites["<boot>"].add("0")
+        callsites["<boot>"].add("1")
         with open(args.callsites) as fp:
             for row in csv.DictReader(fp):
                 callsites[row["method"]].add(row["offset"])

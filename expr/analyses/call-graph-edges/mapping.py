@@ -8,9 +8,14 @@ import sys
 import csv
 from collections import defaultdict
 
-OUTPUT_FILE = sys.argv[1]
-JAVAQ_FILE = sys.argv[2]
-DOOP_FILE = sys.argv[3]
+OUTPUT_FILE     = sys.argv[1]
+JAVAQ_FILE      = sys.argv[2]
+DOOP_FILE       = sys.argv[3]
+
+if len(sys.argv) == 5:
+    MAINCLASS       = sys.argv[4] 
+else:
+    MAINCLASS       = ""
 
 def read_edges(file):
     javaq_edges = defaultdict(list)
@@ -24,6 +29,9 @@ def main():
 
     with open(OUTPUT_FILE, mode='w') as outputf:
         csv_writer = csv.writer(outputf, delimiter=',')
+
+        if MAINCLASS != '':
+            csv_writer.writerow(["<boot>", 1, MAINCLASS.replace('.','/') + '.main:([Ljava/lang/String;)V'])
 
         with open(DOOP_FILE) as doop_fp:
             doop_csv = csv.DictReader(doop_fp, delimiter=',')

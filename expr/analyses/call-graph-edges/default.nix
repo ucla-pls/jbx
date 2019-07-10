@@ -209,7 +209,7 @@ rec {
         then
            ln -s "${decompile b e}" $out/decompiled
            python ${./soot-parse.py} $out/soot-formatted.csv $sandbox/callgraph.txt
-           python ${./mapping.py} $out/upper $out/decompiled/callsites.csv $out/soot-formatted.csv
+           python ${./mapping.py} $out/upper $out/decompiled/callsites.csv $out/soot-formatted.csv $mainclass
         fi
       '';
   } b e;
@@ -222,7 +222,7 @@ rec {
         name = "petablox-call-graph-edges";
         buildInputs = [ java makeWrapper ];
         phases = "installPhase";
-        petabloxjars = "${petablox}/share/java/petablox.jar"; # assume this is where it is
+        petabloxjars = "${petablox}/share/java/petablox.jar";
         installPhase = ''
           mkdir $out
           cp ${./PetabloxCallgraph.java} PetabloxCallgraph.java
@@ -256,7 +256,7 @@ rec {
         then
            ln -s "${decompile b e}" $out/decompiled
            python ${./soot-parse.py} $out/petablox-formatted.csv $sandbox/petablox_output/callgraph.txt
-           python ${./mapping.py} $out/upper $out/decompiled/callsites.csv $out/petablox-formatted.csv
+           python ${./mapping.py} $out/upper $out/decompiled/callsites.csv $out/petablox-formatted.csv $mainclass
         fi
       '';
     } b e;
