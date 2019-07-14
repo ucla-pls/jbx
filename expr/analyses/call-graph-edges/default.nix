@@ -336,7 +336,7 @@ rec {
     petablox-0cfa
     # petablox-1cfa -> runs too slow
     soot
-    soot_stdlib
+    # soot_stdlib
   ];
 
   afew = [ 
