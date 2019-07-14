@@ -159,7 +159,7 @@ public class SootCallgraph extends SceneTransformer {
     // in the main class as entry points if none is set)  
     String mainClass = args[1];
     Options.v().parse(newargs);
-    Options.v().set_no_bodies_for_excluded(true);
+    //Options.v().set_no_bodies_for_excluded(true);
     
     SootClass entryClass = Scene.v().loadClassAndSupport(mainClass);
     Scene.v().loadNecessaryClasses();

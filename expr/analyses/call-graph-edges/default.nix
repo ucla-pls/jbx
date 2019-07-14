@@ -201,6 +201,29 @@ rec {
           callgraph.txt \
           $mainclass \
           -p cg.spark on \
+          -pp -w -f n -app -no-bodies-for-excluded\
+          -process-dir $classpath -allow-phantom-refs 
+      '';
+      postprocess = ''
+        if [ -f $sandbox/callgraph.txt ]
+        then
+           ln -s "${decompile b e}" $out/decompiled
+           python ${./soot-parse.py} $out/soot-formatted.csv $sandbox/callgraph.txt
+           python ${./mapping.py} $out/upper $out/decompiled/callsites.csv $out/soot-formatted.csv $mainclass
+        fi
+      '';
+  } b e;
+
+  soot_stdlib = b: e:
+    utils.mkAnalysis {
+      name = "soot-cge-with-stdlib";
+      tools = [ pkgs.python3 (soot-call-graph-edges b.java.jdk) ];
+      timelimit = 1800;
+      analysis = ''
+        analyse "$name" soot-call-graph-edges \
+          callgraph.txt \
+          $mainclass \
+          -p cg.spark on \
           -pp -w -f n -app \
           -process-dir $classpath -allow-phantom-refs 
       '';
@@ -313,6 +336,7 @@ rec {
     petablox-0cfa
     # petablox-1cfa -> runs too slow
     soot
+    soot_stdlib
   ];
 
   afew = [ 
